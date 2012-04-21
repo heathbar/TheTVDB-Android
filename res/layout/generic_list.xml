@@ -28,5 +28,5 @@
   	android:layout_width="fill_parent"
     android:layout_height="fill_parent"
 	android:textSize="20sp"
-    android:text="Oops! No items were found!"/>
+    android:text="@+string/empty_list"/>
 </LinearLayout>
