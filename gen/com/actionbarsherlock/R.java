@@ -837,12 +837,14 @@ containing a value of this type.
         public static final int normal=0x7f040001;
         public static final int refresh_icon=0x7f040029;
         public static final int relativeLayout1=0x7f040028;
-        public static final int series_fragment=0x7f04002b;
+        public static final int search_button=0x7f04002d;
+        public static final int search_text=0x7f04002c;
+        public static final int series_fragment=0x7f04002e;
         public static final int showCustom=0x7f040008;
         public static final int showHome=0x7f040005;
         public static final int showTitle=0x7f040007;
         public static final int tabMode=0x7f040003;
-        public static final int textView1=0x7f04002c;
+        public static final int textView1=0x7f04002b;
         public static final int useLogo=0x7f040004;
         public static final int wrap_content=0x7f040000;
     }
@@ -873,11 +875,13 @@ containing a value of this type.
         public static final int favorites_fragment=0x7f030014;
         public static final int generic_list=0x7f030015;
         public static final int generic_text_row=0x7f030016;
-        public static final int main=0x7f030017;
-        public static final int series_fragment=0x7f030018;
-        public static final int series_overview=0x7f030019;
-        public static final int sherlock_spinner_dropdown_item=0x7f03001a;
-        public static final int sherlock_spinner_item=0x7f03001b;
+        public static final int list_fragment=0x7f030017;
+        public static final int main=0x7f030018;
+        public static final int search_fragment=0x7f030019;
+        public static final int series_fragment=0x7f03001a;
+        public static final int series_overview=0x7f03001b;
+        public static final int sherlock_spinner_dropdown_item=0x7f03001c;
+        public static final int sherlock_spinner_item=0x7f03001d;
     }
     public static final class string {
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 
@@ -912,7 +916,9 @@ containing a value of this type.
         public static final int abs__shareactionprovider_share_with_application=0x7f090009;
         public static final int app_name=0x7f09000a;
         public static final int emptly_list=0x7f09000b;
-        public static final int empty_list=0x7f09000c;
+        public static final int empty_list=0x7f09000e;
+        public static final int search_button_text=0x7f09000d;
+        public static final int search_text=0x7f09000c;
     }
     public static final class style {
         public static final int DialogWindowTitle_Sherlock=0x7f0a0033;

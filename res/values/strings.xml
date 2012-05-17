@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">TheTVDB</string>
     <string name="emptly_list">Oops! No items were found!</string>
+    <string name="search_text">Search by series name:</string>
+    <string name="search_button_text">Search</string>
 </resources>

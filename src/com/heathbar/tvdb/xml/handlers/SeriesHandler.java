@@ -24,7 +24,8 @@ public class SeriesHandler extends DefaultHandler {
     private ArrayList<TvSeries> seriesList = null;
     private StringBuilder sb;
 
-    public void startElement(String uri, String name, String qName, Attributes atts) {
+    @Override
+	public void startElement(String uri, String name, String qName, Attributes atts) {
 	    name = name.trim().toLowerCase();				// format the current element name
 	    sb = new StringBuilder();						// Reset the string builder
 
@@ -35,13 +36,15 @@ public class SeriesHandler extends DefaultHandler {
     
     // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
     // Therefore we must aggregate the data here, and set it in endElement() function
+	@Override
 	public void characters(char ch[], int start, int length) {
 		String chars = (new String(ch).substring(start, start + length));
 		sb.append(chars);
 	}
 
 
-    public void endElement(String uri, String name, String qName) throws SAXException {
+    @Override
+	public void endElement(String uri, String name, String qName) throws SAXException {
 		try {
 			name = name.trim().toLowerCase();
 			

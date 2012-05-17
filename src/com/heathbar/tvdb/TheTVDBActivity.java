@@ -1,42 +1,82 @@
 package com.heathbar.tvdb;
 
 import android.os.Bundle;
-import com.actionbarsherlock.app.SherlockActivity;
 
-public class TheTVDBActivity extends SherlockActivity {
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
+public class TheTVDBActivity extends SherlockFragmentActivity {
+	
+	TabListener<FavoritesFragment> favoritesTabListener;
+	TabListener<SearchFragment> searchTabListener;
+	TabListener<TodaysEpisodesFragment> todaysTabListener;
+	
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        //setContentView(R.layout.main);
         
-        //Resources res = getResources(); // Resource object to get Drawables
-//        TabHost tabHost = getTabHost(); // The activity's tabhost
-//        TabHost.TabSpec spec; 			// Reuseable TabSpec for each tab
-//        Intent intent;					// Reuseable intent for each tab
-//        
-//        //Create an Intent to launch an Activity for the tab
-//        intent = new Intent().setClass(this, FavoritesActivity.class);
-//
-//        // Initialize a TabSpec for each tab and add it to the TabHost
-//    	spec = tabHost.newTabSpec("favorites").setIndicator("Favorites").setContent(intent);
-//        tabHost.addTab(spec);
-//        
-//        // Do the same for the other tabs
-//        intent = new Intent().setClass(this, TodaysEpisodesActivity.class);
-//        spec = tabHost.newTabSpec("today").setIndicator("Today's Episodes").setContent(intent);
-//        tabHost.addTab(spec);
-//
-//        intent = new Intent().setClass(this, SearchActivity.class);
-//        spec = tabHost.newTabSpec("search").setIndicator("Search").setContent(intent);
-//        tabHost.addTab(spec);
-//                
-//        tabHost.setCurrentTab(0);
-//        
-//        // Since we are not using tab icons, shrink all of the tab buttons to 50px 
-//        // TODO: don't hard code 50px
-//        TabWidget widget = tabHost.getTabWidget();
-//        for (int i=0; i < widget.getChildCount(); i++)
-//        	tabHost.getTabWidget().getChildAt(i).getLayoutParams().height = 50;
+        ActionBar bar = getSupportActionBar();
+        bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setDisplayShowTitleEnabled(true);
+        bar.setTitle("The TVDB");
+        
+        favoritesTabListener  = new TabListener<FavoritesFragment>(this, "favs", FavoritesFragment.class, null);
+        bar.addTab(bar.newTab()
+        		.setText("Favorites")
+        		.setTabListener(favoritesTabListener));
+        
+        searchTabListener = new TabListener<SearchFragment>(this, "search", SearchFragment.class, null);
+        bar.addTab(bar.newTab()
+        		.setText("Search")
+        		.setTabListener(searchTabListener));
+        
+        todaysTabListener = new TabListener<TodaysEpisodesFragment>(this, "today", TodaysEpisodesFragment.class, null);
+        bar.addTab(bar.newTab()
+        		.setText("Today's Episodes")
+        		.setTabListener(todaysTabListener));
+        
+        if (savedInstanceState != null) {
+            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+        }
     }
+    
+    
+//    public void setFragment(int tabIndex, Fragment newFragment){
+//    	if (tabIndex == 0)
+//    		favoritesTabListener.setFragment(newFragment);
+//    	else if (tabIndex == 1)
+//    		searchTabListener.setFragment(newFragment);
+//    	else if (tabIndex == 2)
+//    		todaysTabListener.setFragment(newFragment);
+//    }
+    
+    
+    
+    
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()) {
+//        case android.R.id.home:
+//            // app icon in action bar clicked; go home
+//                        Intent intent = new Intent(this, TodaysEpisodesFragment.class);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                        startActivity(intent);
+//                        return true;
+//        default:
+//            return super.onOptionsItemSelected(item);
+//        }
+//    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("tab", getSupportActionBar()
+                .getSelectedNavigationIndex());
+    }
+
 }
