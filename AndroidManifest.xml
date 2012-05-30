@@ -8,7 +8,7 @@
 
     <application android:icon="@drawable/tvdb_logo"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Sherlock">
+        android:theme="@style/Theme.tvdb">
         <activity 
             android:name="com.heath_bar.tvdb.TheTVDBActivity"
             android:label="@string/app_name">

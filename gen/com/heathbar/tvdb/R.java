@@ -784,20 +784,10 @@ containing a value of this type.
         public static final int abs__tab_selected_holo=0x7f020052;
         public static final int abs__tab_selected_pressed_holo=0x7f020053;
         public static final int abs__tab_unselected_pressed_holo=0x7f020054;
-        public static final int actionbar_tab_bg=0x7f020055;
-        public static final int ad_menu_dropdown_panel_holo_light=0x7f020056;
-        public static final int ad_selectable_background=0x7f020057;
-        public static final int ad_spinner_background_holo_light=0x7f020058;
-        public static final int ad_spinner_focused_holo_light=0x7f020059;
-        public static final int ad_spinner_pressed_holo_light=0x7f02005a;
-        public static final int ad_tab_selected_holo=0x7f02005b;
-        public static final int ad_tab_selected_pressed_holo=0x7f02005c;
-        public static final int ad_tab_unselected_holo=0x7f02005d;
-        public static final int icon=0x7f02005e;
-        public static final int selected_background=0x7f02005f;
-        public static final int spinner_default_holo_light=0x7f020060;
-        public static final int spinner_disabled_holo_light=0x7f020061;
-        public static final int tvdb_logo=0x7f020062;
+        public static final int ic_search=0x7f020055;
+        public static final int icon=0x7f020056;
+        public static final int tvdb__ab_background=0x7f020057;
+        public static final int tvdb_logo=0x7f020058;
     }
     public static final class id {
         public static final int abs__action_bar=0x7f040022;
@@ -837,14 +827,15 @@ containing a value of this type.
         public static final int normal=0x7f040001;
         public static final int refresh_icon=0x7f040029;
         public static final int relativeLayout1=0x7f040028;
-        public static final int search_button=0x7f04002d;
-        public static final int search_text=0x7f04002c;
-        public static final int series_fragment=0x7f04002e;
+        public static final int search_button=0x7f04002e;
+        public static final int search_text=0x7f04002d;
+        public static final int series_fragment=0x7f04002f;
         public static final int showCustom=0x7f040008;
         public static final int showHome=0x7f040005;
         public static final int showTitle=0x7f040007;
         public static final int tabMode=0x7f040003;
-        public static final int textView1=0x7f04002b;
+        public static final int text=0x7f04002b;
+        public static final int textView1=0x7f04002c;
         public static final int useLogo=0x7f040004;
         public static final int wrap_content=0x7f040000;
     }
@@ -876,12 +867,14 @@ containing a value of this type.
         public static final int generic_list=0x7f030015;
         public static final int generic_text_row=0x7f030016;
         public static final int list_fragment=0x7f030017;
-        public static final int main=0x7f030018;
-        public static final int search_fragment=0x7f030019;
-        public static final int series_fragment=0x7f03001a;
-        public static final int series_overview=0x7f03001b;
-        public static final int sherlock_spinner_dropdown_item=0x7f03001c;
-        public static final int sherlock_spinner_item=0x7f03001d;
+        public static final int list_navigation=0x7f030018;
+        public static final int main=0x7f030019;
+        public static final int search_fragment=0x7f03001a;
+        public static final int series_fragment=0x7f03001b;
+        public static final int series_overview=0x7f03001c;
+        public static final int sherlock_spinner_dropdown_item=0x7f03001d;
+        public static final int sherlock_spinner_item=0x7f03001e;
+        public static final int text=0x7f03001f;
     }
     public static final class string {
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 
@@ -923,19 +916,6 @@ containing a value of this type.
     public static final class style {
         public static final int DialogWindowTitle_Sherlock=0x7f0a0033;
         public static final int DialogWindowTitle_Sherlock_Light=0x7f0a0034;
-        /**  style for the tabs 
- style for the tabs 
-         */
-        public static final int MyActionBarTabStyle=0x7f0a0059;
-        /**  style the items within the overflow menu 
-         */
-        public static final int MyDropDownListView=0x7f0a005b;
-        /**  style the list navigation 
-         */
-        public static final int MyDropDownNav=0x7f0a005c;
-        /**  style the overflow menu 
-         */
-        public static final int MyPopupMenu=0x7f0a005a;
         public static final int Sherlock___TextAppearance_Small=0x7f0a0047;
         public static final int Sherlock___Theme=0x7f0a004a;
         public static final int Sherlock___Theme_DarkActionBar=0x7f0a004c;
@@ -967,9 +947,6 @@ containing a value of this type.
         public static final int TextAppearance_Sherlock_Widget_PopupMenu_Large=0x7f0a003f;
         public static final int TextAppearance_Sherlock_Widget_PopupMenu_Small=0x7f0a0041;
         public static final int TextAppearance_Sherlock_Widget_TextView_SpinnerItem=0x7f0a0043;
-        /** <item name="android:actionOverflowButtonStyle">@style/MyOverflowButton</item>
-         */
-        public static final int TheTVDBTheme=0x7f0a0058;
         public static final int Theme_Sherlock=0x7f0a004e;
         public static final int Theme_Sherlock_Dialog=0x7f0a0056;
         public static final int Theme_Sherlock_ForceOverflow=0x7f0a0053;
@@ -980,6 +957,7 @@ containing a value of this type.
         public static final int Theme_Sherlock_Light_ForceOverflow=0x7f0a0054;
         public static final int Theme_Sherlock_Light_NoActionBar=0x7f0a0052;
         public static final int Theme_Sherlock_NoActionBar=0x7f0a0051;
+        public static final int Theme_tvdb=0x7f0a0058;
         public static final int Widget=0x7f0a0000;
         public static final int Widget_Sherlock_ActionBar=0x7f0a0002;
         public static final int Widget_Sherlock_ActionBar_Solid=0x7f0a0003;
@@ -1025,6 +1003,12 @@ containing a value of this type.
         public static final int Widget_Sherlock_ProgressBar_Horizontal=0x7f0a0030;
         public static final int Widget_Sherlock_Spinner_DropDown_ActionBar=0x7f0a0024;
         public static final int Widget_Sherlock_TextView_SpinnerItem=0x7f0a0032;
+        /**  
+        <item name="backgroundStacked">@drawable/abs__ab_stacked_transparent_dark_holo</item>
+        <item name="backgroundSplit">@drawable/abs__ab_bottom_transparent_dark_holo</item>
+         
+         */
+        public static final int Widget_Styled_ActionBar=0x7f0a0059;
     }
     public static final class styleable {
         /**  Attributes used to style the Action Bar. 
