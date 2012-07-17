@@ -1,13 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:id="@+id/series_overview_linear_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Series Overview" />
+        android:orientation="vertical" >
+        
+        <TextView
+		    android:id="@+id/loading1"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:textColor="@color/white"
+		    android:text="@string/loading" />
+        
+        <Button
+		    android:id="@+id/btn_add_to_favorites"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_gravity="right"
+		    android:background="@drawable/button_background"
+		    android:textColor="@color/white"
+		    android:padding="6dp"
+		    android:layout_margin="4dp"
+		    android:contentDescription="@string/add_to_favorites"
+		    android:text="@string/add_to_favorites"
+		    android:visibility="gone" />
 
-</LinearLayout>
+		<ImageView
+		    android:id="@+id/series_banner"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:adjustViewBounds="true"
+		    android:background="#FFFFFF"
+		    android:padding="1dp"
+		    android:layout_marginTop="10dp"
+		    android:layout_marginBottom="10dp"
+		    android:contentDescription="@string/banner_alt_text"
+		    android:visibility="gone" />
+
+		<TextView
+		    android:id="@+id/series_overview"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="18dp"
+		    android:visibility="gone" />
+		
+		<TextView
+		    android:id="@+id/seasons_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:paddingLeft="2dp"
+		    android:paddingTop="2dp"
+		    android:paddingRight="2dp"
+		    android:paddingBottom="2dp"
+		    android:layout_marginTop="12dp"
+		    android:background="@color/tvdb_green"
+		    android:textColor="@color/white"
+		    android:textStyle="bold"
+		    android:textSize="18dp"
+		    android:text="@string/seasons_header"
+		    android:visibility="gone" />
+		
+		<TextView
+		    android:id="@+id/loading2"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:textColor="@color/white"
+		    android:text="@string/loading"
+		    android:visibility="gone" />
+		
+    </LinearLayout>
+</ScrollView>
