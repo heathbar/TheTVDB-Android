@@ -38,5 +38,6 @@
         
 
         <service  android:name="com.heath_bar.tvdb.UpdateService" android:enabled="true"></service>
+        <activity android:name="com.heath_bar.tvdb.EpisodeDetails"></activity>
     </application>
 </manifest>
