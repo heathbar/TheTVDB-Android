@@ -3,13 +3,13 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/scrollView1"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/series_overview_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical">
         
         <TextView
 		    android:id="@+id/loading1"
@@ -25,8 +25,8 @@
 		    android:layout_gravity="right"
 		    android:background="@drawable/button_background"
 		    android:textColor="@color/white"
-		    android:padding="6dp"
-		    android:layout_margin="4dp"
+		    android:padding="6dip"
+		    android:layout_margin="4dip"
 		    android:contentDescription="@string/add_to_favorites"
 		    android:text="@string/add_to_favorites"
 		    android:visibility="gone" />
@@ -37,32 +37,112 @@
 		    android:layout_height="wrap_content"
 		    android:adjustViewBounds="true"
 		    android:background="#FFFFFF"
-		    android:padding="1dp"
-		    android:layout_marginTop="10dp"
-		    android:layout_marginBottom="10dp"
+		    android:padding="1dip"
+		    android:layout_marginTop="10dip"
+		    android:layout_marginBottom="12dip"
 		    android:contentDescription="@string/banner_alt_text"
 		    android:visibility="gone" />
 
 		<TextView
+		    android:id="@+id/airs_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/airs" />
+		
+		<TextView
+		    android:id="@+id/series_air_info"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+		
+		<TextView
+		    android:id="@+id/last_episode"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />	
+		    		
+		<TextView
+		    android:id="@+id/next_episode"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginBottom="12dip"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+				
+		<TextView
+		    android:id="@+id/starring"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/starring" />
+		
+		<TextView
+		    android:id="@+id/series_actors"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone"
+		    android:layout_marginBottom="12dip" />
+
+		<TextView
+		    android:id="@+id/rating_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/rating" />
+		
+		<TextView
+		    android:id="@+id/rating"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone"
+		    android:layout_marginBottom="12dip" />
+		
+		<TextView
+		    android:id="@+id/overview_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/overview" />
+		
+		<TextView
 		    android:id="@+id/series_overview"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="18dp"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
 		    android:visibility="gone" />
 		
 		<TextView
 		    android:id="@+id/seasons_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content" 
-		    android:paddingLeft="2dp"
-		    android:paddingTop="2dp"
-		    android:paddingRight="2dp"
-		    android:paddingBottom="2dp"
-		    android:layout_marginTop="12dp"
+		    android:paddingLeft="2dip"
+		    android:paddingTop="2dip"
+		    android:paddingRight="2dip"
+		    android:paddingBottom="2dip"
+		    android:layout_marginTop="12dip"
 		    android:background="@color/tvdb_green"
 		    android:textColor="@color/white"
 		    android:textStyle="bold"
-		    android:textSize="18dp"
+		    android:textSize="18dip"
 		    android:text="@string/seasons_header"
 		    android:visibility="gone" />
 		
