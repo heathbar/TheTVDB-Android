@@ -14,4 +14,8 @@
     <string name="starring">Starring</string>
     <string name="rating">Rating</string>
     <string name="overview">Overview</string>
+    <string name="director">Director</string>
+    <string name="writer">Writer</string>
+    <string name="first_aired">First Aired</string>
+    <string name="guest_stars">Guest Stars</string>
 </resources>

@@ -123,7 +123,7 @@
 		    android:text="@string/overview" />
 		
 		<TextView
-		    android:id="@+id/series_overview"
+		    android:id="@+id/overview"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
