@@ -33,6 +33,10 @@
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
         
+        <activity android:name="com.heath_bar.tvdb.ActorDetails">
+            <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
+        </activity>
+        
         <activity android:name="com.heath_bar.tvdb.SearchResults" android:permission="com.heath_bar.tvdb.search">
              <intent-filter>
 	            <action android:name="android.intent.action.SEARCH" />
