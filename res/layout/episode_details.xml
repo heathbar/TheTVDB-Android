@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/series_overview_linear_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        
+        <TextView
+		    android:id="@+id/loading1"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:textColor="@color/white"
+		    android:text="@string/loading" />
+
+        
+        <TextView
+		    android:id="@+id/title"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content" 
+		    android:textColor="@color/white"
+		    android:textSize="26dip" />
+        
+        <ImageView
+		    android:id="@+id/episode_thumb"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_gravity="center_horizontal"
+		    android:adjustViewBounds="true"
+		    android:background="#FFFFFF"
+		    android:padding="1dip"
+		    android:layout_marginTop="10dip"
+		    android:layout_marginBottom="12dip"
+		    android:contentDescription="@string/banner_alt_text"
+		    android:visibility="gone" />
+        
+        <TextView
+		    android:id="@+id/overview_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/overview" />
+		
+		<TextView
+		    android:id="@+id/overview"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+		
+		<TextView
+		    android:id="@+id/director_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/director" />
+		
+		<TextView
+		    android:id="@+id/director"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+        
+        <TextView
+		    android:id="@+id/writer_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/writer" />
+		
+		<TextView
+		    android:id="@+id/writer"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+				
+		
+		<TextView
+		    android:id="@+id/rating_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/rating" />
+		
+		<TextView
+		    android:id="@+id/rating"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+		
+		
+		<TextView
+		    android:id="@+id/first_aired_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/first_aired" />
+		
+		<TextView
+		    android:id="@+id/first_aired"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+				
+		
+		<TextView
+		    android:id="@+id/guest_stars_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/guest_stars" />
+		
+		<TextView
+		    android:id="@+id/guest_stars"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
+		        
+        </LinearLayout>
+</ScrollView>
