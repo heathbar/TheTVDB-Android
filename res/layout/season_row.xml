@@ -12,6 +12,7 @@
 	    android:textSize="30sp"
 	    android:paddingTop="8dip"
 	    android:paddingBottom="8dip"
-	    android:textColor="@color/tvdb_green" />
+	    android:textColor="@color/tvdb_green"
+	    android:drawableLeft="@drawable/arrow_right" />
     
 </LinearLayout>

@@ -3,8 +3,6 @@
     <string name="app_name">TheTVDB</string>
     <string name="empty_list">Oops! No items were found!</string>
     <string name="empty_list_favorites">\tYour favorite shows will appear here. Use the search button above to locate shows, then add them to your favorites list for quick access.</string>
-    <string name="search_text">Search by series name:</string>
-    <string name="search_button_text">Search</string>
     <string name="search_hint">Search TheTVDB.com</string>
     <string name="banner_alt_text">Banner</string>
     <string name="add_to_favorites">Add to Favorites</string>

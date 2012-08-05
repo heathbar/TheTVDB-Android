@@ -307,27 +307,28 @@ public class SeriesOverview extends SherlockActivity {
 		text = null;
 		richTextView = (TextView)findViewById(R.id.next_episode);
 
-		if (next == null){
-			 text = new SpannableString("Next Episode: unknown");
-		}else{
-		
-			text = new SpannableString("Next Episode: " + next.getName() + " (" + DateUtil.toString(next.getAirDate()) + ")");
-
-			NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
-		        @Override  
-		        public void onClick(View view) { 
-		        	episodeListener.onClick(view);  
-		        }  
-		    };
-		    int start = 14;
-			int end = start + next.getName().length();
-		    text.setSpan(clickableSpan, start, end, 0);
-		    text.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
-			richTextView.setId(next.getId());
-			richTextView.setMovementMethod(LinkMovementMethod.getInstance());
+		if (!seriesInfo.getStatus().equals("Ended")){
+			if (next == null){
+				 text = new SpannableString("Next Episode: unknown");
+			}else{
+			
+				text = new SpannableString("Next Episode: " + next.getName() + " (" + DateUtil.toString(next.getAirDate()) + ")");
+	
+				NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
+			        @Override  
+			        public void onClick(View view) { 
+			        	episodeListener.onClick(view);  
+			        }  
+			    };
+			    int start = 14;
+				int end = start + next.getName().length();
+			    text.setSpan(clickableSpan, start, end, 0);
+			    text.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
+				richTextView.setId(next.getId());
+				richTextView.setMovementMethod(LinkMovementMethod.getInstance());
+			}
+			richTextView.setText(text, BufferType.SPANNABLE);
 		}
-		richTextView.setText(text, BufferType.SPANNABLE);
-
 	}
 	
 	
@@ -340,7 +341,8 @@ public class SeriesOverview extends SherlockActivity {
 		if (epLinearLayout.getChildCount() == 1){	// if collapsed, expand (add) the seasons
 		
 			TextView seasonText = (TextView)seasonRow.findViewById(R.id.season_text);
-			
+			seasonText.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.arrow_down), null, null, null);
+
 			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			
 			for (int i=0; i<episodeList.size(); i++){
@@ -359,6 +361,9 @@ public class SeriesOverview extends SherlockActivity {
 				}
 			}
 		} else {	 // else season is expanded, collapse it
+			TextView seasonText = (TextView)seasonRow.findViewById(R.id.season_text);
+			seasonText.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.arrow_right), null, null, null);
+			
 			for (int i=epLinearLayout.getChildCount()-1; i>0; i--){
 				epLinearLayout.removeView(epLinearLayout.getChildAt(i));	
 			}

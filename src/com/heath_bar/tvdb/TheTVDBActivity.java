@@ -52,10 +52,16 @@ public class TheTVDBActivity extends SherlockListActivity  {
         header_text.setBackgroundColor(getResources().getColor(R.color.tvdb_green));
         header_text.setTypeface(null, Typeface.BOLD);
         getListView().addHeaderView(header, null, false);
-        
-		RefreshFavoritesAsync();
 	}	
 			
+    
+    // When the task is created, or the user returns, refresh to pick up any new favorites
+    @Override
+    protected void onResume(){
+    	super.onResume();
+    	RefreshFavoritesAsync();
+	}
+    
 	private void RefreshFavoritesAsync(){
 		
 		// Hide refresh button and show Progress animation
@@ -228,15 +234,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
     	return true;
     }
     
-    
-    // When the user returns, refresh to pick up any new favorites
-    @Override 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {     
-      super.onActivityResult(requestCode, resultCode, data); 
-      RefreshFavoritesAsync();
-    }
-    
-    
+
 	
 	/** Close the database, we're done. */
 	@Override

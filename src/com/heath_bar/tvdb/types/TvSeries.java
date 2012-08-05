@@ -19,8 +19,29 @@ public class TvSeries {
 	private String airTime;
 	private String network;
 	private String rating;
+	private String status;
+	private String genre;
+	private String runtime;
 	
 	
+	public String getRuntime() {
+		return runtime;
+	}
+	public void setRuntime(String runtime) {
+		this.runtime = runtime;
+	}
+	public String getGenre() {
+		return genre;
+	}
+	public void setGenre(String genre) {
+		this.genre = genre;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
 	public String getAirDay() {
 		return airDay;
 	}

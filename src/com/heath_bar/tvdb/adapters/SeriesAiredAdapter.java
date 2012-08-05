@@ -42,7 +42,10 @@ public class SeriesAiredAdapter extends SimpleCursorAdapter {
 
 	        holder.textView1.setText(cursor.getString(holder.column1));
 	        holder.textView2.setText("Last Aired: " + cursor.getString(holder.column2));
-	        holder.textView3.setText("Next Aired: " + cursor.getString(holder.column3));
+	        if (cursor.getString(holder.column3).equals("Unknown"))
+	        	holder.textView3.setText("");
+	        else
+	        	holder.textView3.setText("Next Aired: " + cursor.getString(holder.column3));
 	    }
 
 	    static class ViewHolder {
