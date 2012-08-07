@@ -29,6 +29,7 @@ import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
 import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
+import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
 import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
 
@@ -98,6 +99,14 @@ public class SeriesOverview extends SherlockActivity {
 	}
 	// Populate the interface with the data pulled from the webz
 	private void PopulateStuff(TvSeries seriesInfo){
+		
+		if (seriesInfo == null)
+		{
+			Toast.makeText(getApplicationContext(), "Something bad happened. No data was found.", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+		
 		// Set title
 		getSupportActionBar().setTitle(seriesInfo.getName());
 		
@@ -151,7 +160,7 @@ public class SeriesOverview extends SherlockActivity {
 		SpannableStringBuilder text = tagsBuilder(seriesInfo.getActors(), "|");
 		textview.setText(text, BufferType.SPANNABLE);
 		textview.setMovementMethod(LinkMovementMethod.getInstance());
-				
+		
 		// Set rating
 		textview = (TextView)findViewById(R.id.rating_header);
 		textview.setVisibility(View.VISIBLE);
@@ -160,6 +169,24 @@ public class SeriesOverview extends SherlockActivity {
 		textview.setText(seriesInfo.getRating() + " / 10");
 		textview.setVisibility(View.VISIBLE);
 				
+		
+		// Set genre
+		textview = (TextView)findViewById(R.id.genre_header);
+		textview.setVisibility(View.VISIBLE);
+		
+		textview = (TextView)findViewById(R.id.genre);
+		textview.setText(StringUtil.commafy(seriesInfo.getGenre()));
+		textview.setVisibility(View.VISIBLE);
+		
+		
+		// Set runtime
+		textview = (TextView)findViewById(R.id.runtime_header);
+		textview.setVisibility(View.VISIBLE);
+		
+		textview = (TextView)findViewById(R.id.runtime);
+		textview.setText(seriesInfo.getRuntime() + " minutes");
+		textview.setVisibility(View.VISIBLE);
+		
 		
 		// Set overview
 		textview = (TextView)findViewById(R.id.overview_header);

@@ -75,9 +75,9 @@ public class SeriesInfoHandler extends DefaultHandler {
 			}else if (name.equals("status")){
 				currentSeries.setStatus(sb.toString());
 			}else if (name.equals("genre")){
-				currentSeries.setStatus(sb.toString());
+				currentSeries.setGenre(sb.toString());
 			}else if (name.equals("runtime")){
-				currentSeries.setStatus(sb.toString());
+				currentSeries.setRuntime(sb.toString());
 			}
 				
 		} catch (Exception e) {

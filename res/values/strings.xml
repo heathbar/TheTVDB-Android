@@ -16,4 +16,6 @@
     <string name="writer">Writer</string>
     <string name="first_aired">First Aired</string>
     <string name="guest_stars">Guest Stars</string>
+    <string name="genre">Genre</string>
+    <string name="runtime">Run Time</string>
 </resources>

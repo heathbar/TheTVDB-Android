@@ -11,6 +11,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.types.Actor;
+import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.ActorHandler;
 
 public class ActorDetails extends SherlockActivity {
@@ -95,7 +96,7 @@ public class ActorDetails extends SherlockActivity {
 		// Set Role
 		textview = (TextView)findViewById(R.id.role);
 		textview.setVisibility(View.VISIBLE);
-		textview.setText(theActor.getRole());
+		textview.setText(StringUtil.commafy(theActor.getRole()));
 		
 		// Set Image
 		if (theActor.getImage().getBitmap() == null || theActor.getImage().getUrl().equals("")){

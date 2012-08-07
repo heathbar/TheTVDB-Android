@@ -114,6 +114,42 @@
 		    android:layout_marginBottom="12dip" />
 		
 		<TextView
+		    android:id="@+id/genre_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/genre" />
+		
+		<TextView
+		    android:id="@+id/genre"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone"
+		    android:layout_marginBottom="12dip" />
+		
+		<TextView
+		    android:id="@+id/runtime_header"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:textSize="24dip"
+		    android:textColor="@color/header_white"
+		    android:visibility="gone"
+		    android:text="@string/runtime" />
+		
+		<TextView
+		    android:id="@+id/runtime"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone"
+		    android:layout_marginBottom="12dip" />
+		
+		<TextView
 		    android:id="@+id/overview_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"

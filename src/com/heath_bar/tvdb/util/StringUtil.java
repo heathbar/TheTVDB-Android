@@ -2,11 +2,11 @@ package com.heath_bar.tvdb.util;
 
 public class StringUtil {
 
-	public static String commafy(String actorListString){
-		if (actorListString == null)
+	public static String commafy(String pipeDelimitedString){
+		if (pipeDelimitedString == null)
 			return ""; 
 		
-		String[] list = actorListString.split("[\\|]+");
+		String[] list = pipeDelimitedString.split("[\\|]+");
 		
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<list.length; i++){

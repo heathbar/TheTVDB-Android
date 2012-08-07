@@ -34,7 +34,8 @@ public class TheTVDBActivity extends SherlockListActivity  {
 	private Cursor refreshCursor;
 	private SeriesAiredAdapter adapter;
 	private ResponseReceiver updateReceiver;
-	private boolean showRefreshButton = true; 
+	private boolean showRefreshButton = true;
+	private Intent updater;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,10 @@ public class TheTVDBActivity extends SherlockListActivity  {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getSupportActionBar().setHomeButtonEnabled(false);
         setContentView(R.layout.favorites_list);
-
+        
+        if (updater == null)
+        	updater = new Intent(getApplicationContext(), UpdateService.class);
+        
         // Setup the ListView header
         View header = getLayoutInflater().inflate(R.layout.text, null);
         TextView header_text = (TextView) header.findViewById(R.id.text);
@@ -77,6 +81,9 @@ public class TheTVDBActivity extends SherlockListActivity  {
 		new QueryDatabaseTask().execute();
 		
 		// Register for responses from the update service
+		if (updateReceiver != null)
+			unregisterReceiver(updateReceiver);
+		
 		updateReceiver = new ResponseReceiver();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(UpdateService.ACTION_UPDATE);
@@ -121,7 +128,6 @@ public class TheTVDBActivity extends SherlockListActivity  {
 	        }
 	        
 			// Launch the update service to lookup the aired dates in the background
-			Intent updater = new Intent(getApplicationContext(), UpdateService.class);
 			startService(updater);
 		}
 	}

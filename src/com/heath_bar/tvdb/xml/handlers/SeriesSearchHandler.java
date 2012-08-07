@@ -69,7 +69,7 @@ public class SeriesSearchHandler extends DefaultHandler {
 				currentSeries.setOverview(sb.toString());
 			}else{
 				if (AppSettings.LOG_ENABLED)
-					Log.w("xml.handlers.SeriesSearchHandler", "'"+ name + "' - tag not recognized: " + sb.toString());
+					Log.d("xml.handlers.SeriesSearchHandler", "'"+ name + "' - tag not recognized: " + sb.toString());
 			}
 		    
 		} catch (Exception e) {
