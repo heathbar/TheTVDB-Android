@@ -1,5 +1,6 @@
 package com.heath_bar.tvdb.xml.handlers;
 
+import java.net.ConnectException;
 import java.net.URL;
 
 import javax.xml.parsers.SAXParser;
@@ -70,7 +71,9 @@ public class SeriesDatesHandler extends DefaultHandler {
 		    xr.setContentHandler(this);
 		    xr.parse(new InputSource(url.openStream()));
 		    
-		    return new long[]{lastAired, nextAired}; 
+		    return new long[]{lastAired, nextAired};
+	    } catch (ConnectException e){
+	    	return new long[]{-1,-1};
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
 				Log.e("xml.handlers.SeriesDatesHandler", e.toString());

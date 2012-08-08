@@ -14,6 +14,7 @@ public class UpdateService extends IntentService {
 	private static boolean RUNNING = false;
 	public static final String ACTION_UPDATE = "update";
 	public static final String ACTION_COMPLETE = "complete";
+	public static final String CONNECT_EXCEPTION = "except";
 
 	/** 
 	   * A constructor is required, and must call the super IntentService(String)
@@ -60,14 +61,21 @@ public class UpdateService extends IntentService {
 					SeriesDatesHandler tvdb = new SeriesDatesHandler();
 					long[] airDates = tvdb.getDates(seriesId);
 					
-					// update the db with the new dates
-					FavoriteSeriesInfo info = new FavoriteSeriesInfo(seriesId, seriesName, String.valueOf(airDates[0]), String.valueOf(airDates[1]));
-					db.updateFavorite(info);
-					
-					// Tell the UI that something changed
-					Intent broadcastIntent = new Intent();
-					broadcastIntent.setAction(ACTION_UPDATE);
-					sendBroadcast(broadcastIntent);
+					if (airDates[0] == -1){
+						// Tell the UI that there was an error
+						Intent broadcastIntent = new Intent();
+						broadcastIntent.setAction(CONNECT_EXCEPTION);
+						sendBroadcast(broadcastIntent);
+					} else {
+						// update the db with the new dates
+						FavoriteSeriesInfo info = new FavoriteSeriesInfo(seriesId, seriesName, String.valueOf(airDates[0]), String.valueOf(airDates[1]));
+						db.updateFavorite(info);
+						
+						// Tell the UI that something changed
+						Intent broadcastIntent = new Intent();
+						broadcastIntent.setAction(ACTION_UPDATE);
+						sendBroadcast(broadcastIntent);
+					}
 				}
 			} finally {
 				if (!favs.equals(null))

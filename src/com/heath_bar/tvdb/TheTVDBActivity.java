@@ -140,9 +140,8 @@ public class TheTVDBActivity extends SherlockListActivity  {
 			   
 			if (intent.getAction().equals(UpdateService.ACTION_UPDATE)){
 			
-				// TODO: This shouldn't create a new cursor.. that seems wasteful.
 				refreshCursor = db.fetchFavorites();
-		        	
+				
 				String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
 		        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
 		        
@@ -160,6 +159,8 @@ public class TheTVDBActivity extends SherlockListActivity  {
 				// Reset the empty list text
 				TextView emptyList = (TextView)findViewById(android.R.id.empty);
 				emptyList.setText(getResources().getString(R.string.empty_list_favorites));
+			} else if (intent.getAction().equals(UpdateService.CONNECT_EXCEPTION)){
+				Toast.makeText(context, "There was a problem reaching thetvdb.com. Perhaps the site is down", Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
