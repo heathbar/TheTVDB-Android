@@ -11,6 +11,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
@@ -20,7 +23,13 @@ import com.heath_bar.tvdb.util.DateUtil;
 public class EpisodeHandler extends DefaultHandler{
 	private StringBuilder sb;
     private TvEpisode theEpisode;
-
+    private Context context;
+    
+    
+    public EpisodeHandler(Context ctx){
+    	context = ctx;
+    }
+    
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
 	    name = name.trim().toLowerCase();				// format the current element name
@@ -77,8 +86,12 @@ public class EpisodeHandler extends DefaultHandler{
     
 	public TvEpisode getEpisode(long episodeId) {
 	    try {
-			URL url = new URL(AppSettings.EPISODE_FULL_URL + String.valueOf(episodeId) + "/" + AppSettings.LANGUAGE + ".xml");	//http://thetvdb.com/api/0A41C0DEA5531762/episodes/398671/en.xml	
-						
+	    	
+	    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+	    	String languageCode = settings.getString("language", "en");
+	    	
+			URL url = new URL(AppSettings.EPISODE_FULL_URL + String.valueOf(episodeId) + "/" + languageCode + ".xml");	//http://thetvdb.com/api/0A41C0DEA5531762/episodes/398671/en.xml	
+
 		    SAXParserFactory spf = SAXParserFactory.newInstance();
 		    SAXParser sp = spf.newSAXParser();
 		    XMLReader xr = sp.getXMLReader();

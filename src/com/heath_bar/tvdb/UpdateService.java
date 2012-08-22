@@ -59,7 +59,7 @@ public class UpdateService extends IntentService {
 					int seriesId = favs.getInt(favs.getColumnIndex(SeriesDbAdapter.KEY_ID));
 					String seriesName = favs.getString(favs.getColumnIndex(SeriesDbAdapter.KEY_TITLE));
 					
-					SeriesDatesHandler tvdb = new SeriesDatesHandler();
+					SeriesDatesHandler tvdb = new SeriesDatesHandler(getApplicationContext());
 					long[] airDates = tvdb.getDates(seriesId);
 					
 					if (airDates[0] == -1){

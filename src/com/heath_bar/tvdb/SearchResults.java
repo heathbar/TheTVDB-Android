@@ -71,7 +71,7 @@ public class SearchResults extends SherlockListActivity {
 			
 			try {
 				// Search the tvdb API
-				SeriesSearchHandler tvdbApiSearch = new SeriesSearchHandler();
+				SeriesSearchHandler tvdbApiSearch = new SeriesSearchHandler(getApplicationContext());
 				return tvdbApiSearch.searchSeries(query[0]);
 				
 			}catch (Exception e){

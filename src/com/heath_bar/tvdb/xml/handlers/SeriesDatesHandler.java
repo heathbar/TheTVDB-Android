@@ -13,6 +13,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
@@ -24,6 +27,11 @@ public class SeriesDatesHandler extends DefaultHandler {
     private long lastAired = 0;
     private long nextAired = 0;
     private long timeNow;
+    private Context context;
+    
+    public SeriesDatesHandler(Context ctx){
+    	context = ctx;
+    }
     
 
     @Override
@@ -63,7 +71,10 @@ public class SeriesDatesHandler extends DefaultHandler {
     
 	public long[] getDates(long seriesId) {
 	    try {
-			URL url = new URL(AppSettings.SERIES_FULL_URL + String.valueOf(seriesId) + "/all/" + AppSettings.LANGUAGE + ".xml");		//http://thetvdb.com/api/0A41C0DEA5531762/series/<seriesid>/all/en.xml
+	    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+	    	String languageCode = settings.getString("language", "en");
+	    	
+			URL url = new URL(AppSettings.SERIES_FULL_URL + String.valueOf(seriesId) + "/all/" + languageCode + ".xml");		//http://thetvdb.com/api/0A41C0DEA5531762/series/<seriesid>/all/en.xml
 			timeNow = System.currentTimeMillis() / 1000L;
 
 		    SAXParserFactory spf = SAXParserFactory.newInstance();

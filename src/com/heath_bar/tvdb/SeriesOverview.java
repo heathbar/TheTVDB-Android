@@ -79,7 +79,7 @@ public class SeriesOverview extends SherlockActivity {
 			
 			try {
 				// Lookup basic series info
-				SeriesInfoHandler infoQuery = new SeriesInfoHandler();
+				SeriesInfoHandler infoQuery = new SeriesInfoHandler(getApplicationContext());
 	    		seriesInfo = infoQuery.getInfo(id[0]);
 	    		
 	    		// Download banner while we're still in the background thread
@@ -264,7 +264,7 @@ public class SeriesOverview extends SherlockActivity {
 			
 			try {
 				// Lookup Season/Episode listing
-	    		EpisodeListHandler episodeHandler = new EpisodeListHandler();
+	    		EpisodeListHandler episodeHandler = new EpisodeListHandler(getApplicationContext());
 	    		episodeList = episodeHandler.getEpisodes(seriesId);
 			}catch (Exception e){
 				e.printStackTrace();

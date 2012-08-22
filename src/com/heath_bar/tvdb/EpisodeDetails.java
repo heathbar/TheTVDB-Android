@@ -60,7 +60,7 @@ public class EpisodeDetails extends SherlockActivity {
 			
 			try {
 				// Lookup episode info
-				EpisodeHandler episodeQuery = new EpisodeHandler();
+				EpisodeHandler episodeQuery = new EpisodeHandler(getApplicationContext());
 				TvEpisode theEpisode = episodeQuery.getEpisode(id[0]);
 				
 				// Load the image while we're still in the background thread
