@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+     <PreferenceCategory
+	   android:summary="Preferences"
+	   android:title="Application Settings" >
+   
+    <ListPreference
+     android:entries="@array/textSizeOptions"
+     android:entryValues="@array/textSizeValues"
+     android:key="textSize"
+     android:summary="Text Size to use for the app"
+     android:title="Text Size"
+     android:defaultValue="14.0" />
+    
+    <ListPreference
+     android:entries="@array/languageOptions"
+     android:entryValues="@array/languageOptionValues"
+     android:key="language"
+     android:summary="Preferred Language"
+     android:title="Preferred Language"
+     android:defaultValue="en" />
+    
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -2,6 +2,7 @@ package com.heath_bar.tvdb.xml.handlers;
 
 import java.net.ConnectException;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -74,6 +75,8 @@ public class SeriesDatesHandler extends DefaultHandler {
 		    return new long[]{lastAired, nextAired};
 	    } catch (ConnectException e){
 	    	return new long[]{-1,-1};
+	    } catch (UnknownHostException e){
+	    	return new long[]{-1,-2};
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
 				Log.e("xml.handlers.SeriesDatesHandler", e.toString());

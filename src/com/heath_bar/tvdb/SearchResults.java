@@ -4,10 +4,12 @@ import java.util.ArrayList;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -32,6 +34,11 @@ public class SearchResults extends SherlockListActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	    setContentView(R.layout.search_results);
         
+	    // Load Preferences
+	    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+     	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+     	
+     	
 	    // Get the intent, verify the action and get the query
 	    Intent intent = getIntent();
 	    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -41,7 +48,7 @@ public class SearchResults extends SherlockListActivity {
 
 	    	TextView header_text = (TextView) header.findViewById(R.id.text);
 	        header_text.setText("search results for: " + query);
-	        header_text.setTextSize(20);
+	        header_text.setTextSize(textSize);
 	        header_text.setTextColor(Color.WHITE);
 	        header_text.setBackgroundColor(getResources().getColor(R.color.tvdb_green));
 	        header_text.setTypeface(null, Typeface.BOLD);
@@ -50,6 +57,7 @@ public class SearchResults extends SherlockListActivity {
 	        
 	        TextView empty = (TextView)findViewById(android.R.id.empty);
 	        empty.setText(getResources().getString(R.string.loading));
+	        empty.setTextSize(textSize);
 
 			new SearchTask().execute(query);
 	    }

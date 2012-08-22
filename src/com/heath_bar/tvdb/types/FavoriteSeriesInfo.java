@@ -1,4 +1,4 @@
-package com.heath_bar.tvdb;
+package com.heath_bar.tvdb.types;
 
 public class FavoriteSeriesInfo {
 

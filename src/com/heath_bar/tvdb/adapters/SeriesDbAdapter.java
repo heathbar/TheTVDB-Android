@@ -7,7 +7,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
-import com.heath_bar.tvdb.FavoriteSeriesInfo;
+import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 
 public class SeriesDbAdapter {
 

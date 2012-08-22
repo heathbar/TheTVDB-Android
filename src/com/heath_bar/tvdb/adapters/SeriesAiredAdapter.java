@@ -1,7 +1,9 @@
 package com.heath_bar.tvdb.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.widget.TextView;
@@ -11,6 +13,7 @@ public class SeriesAiredAdapter extends SimpleCursorAdapter {
 	public String[] _from;
 	public int[] _to;
 	public int[] _colors;
+	private float _textSize;
 	
     public SeriesAiredAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, int[] colors) throws Exception {
     	super(context, layout, c, from, to, flags);
@@ -20,6 +23,9 @@ public class SeriesAiredAdapter extends SimpleCursorAdapter {
     	_from = from.clone();
     	_to = to;
     	_colors = colors;
+    	
+    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+    	_textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     }
 
 		@Override
@@ -41,11 +47,16 @@ public class SeriesAiredAdapter extends SimpleCursorAdapter {
 	        }
 
 	        holder.textView1.setText(cursor.getString(holder.column1));
+	        holder.textView1.setTextSize(_textSize*1.6f);
+	        
 	        holder.textView2.setText("Last Aired: " + cursor.getString(holder.column2));
+	        holder.textView2.setTextSize(_textSize*0.7f);
+	        
 	        if (cursor.getString(holder.column3).equals("Unknown"))
 	        	holder.textView3.setText("");
 	        else
 	        	holder.textView3.setText("Next Aired: " + cursor.getString(holder.column3));
+	        holder.textView3.setTextSize(_textSize*0.7f);
 	    }
 
 	    static class ViewHolder {

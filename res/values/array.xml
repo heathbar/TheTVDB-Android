@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="textSizeOptions">
+        <item>8pt</item>
+        <item>10pt</item>
+        <item>12pt</item>
+        <item>14pt</item>
+        <item>16pt</item>
+        <item>18pt</item>
+        <item>20pt</item>
+        <item>22pt</item>
+        <item>24pt</item>
+        <item>26pt</item>
+        <item>28pt</item>
+        <item>30pt</item>
+    </string-array>
+    <string-array name="textSizeValues">
+        <item>8.0</item>
+        <item>10.0</item>
+        <item>12.0</item>
+        <item>14.0</item>
+        <item>16.0</item>
+        <item>18.0</item>
+        <item>20.0</item>
+        <item>22.0</item>
+        <item>24.0</item>
+        <item>26.0</item>
+        <item>28.0</item>
+        <item>30.0</item>
+    </string-array>
+    <string-array name="languageOptions">
+        <item>Dansk</item>
+        <item>Deutsch</item>
+        <item>English</item>
+        <item>Español</item>
+        <item>Ελληνικά</item>
+        <item>Français</item>
+        <item>Italiano</item>
+        <item>Nederlands</item>
+        <item>Norsk</item>
+        <item>Polski</item>
+        <item>Português</item>
+        <item>Svenska</item>
+        <item>Suomeksi</item>
+    </string-array>
+    <string-array name="languageOptionValues">
+        <item>da</item>
+        <item>de</item>
+        <item>en</item>
+        <item>es</item>
+        <item>el</item>
+        <item>fr</item>
+        <item>it</item>
+        <item>nl</item>
+        <item>no</item>
+        <item>pl</item>
+        <item>pt</item>
+        <item>sv</item>
+        <item>fi</item>
+    </string-array>
+</resources>

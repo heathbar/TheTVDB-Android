@@ -13,5 +13,6 @@ public final class AppSettings {
 	public static final int DATABASE_VERSION = 1;
 	public static final String LANGUAGE = "en";
 	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
+	public static final String PREFS_NAME = "TheTVDBSettings";
 	
 }

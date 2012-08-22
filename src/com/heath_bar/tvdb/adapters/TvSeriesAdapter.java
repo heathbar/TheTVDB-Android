@@ -3,6 +3,8 @@ package com.heath_bar.tvdb.adapters;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +21,16 @@ public class TvSeriesAdapter extends BaseAdapter
         private ArrayList<TvSeries> _data;
         private static LayoutInflater _inflater = null;
         private int[] _colors;
+        private float _textSize;
        
         public TvSeriesAdapter(Context context, int layout, ArrayList<TvSeries> data, int[] colors){
             _layout = layout;
             _data = data;
             _inflater = LayoutInflater.from(context);
             _colors = colors;
+            
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+         	_textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
         }
         
         @Override
@@ -70,8 +76,10 @@ public class TvSeriesAdapter extends BaseAdapter
            {
                holder = (ViewHolder) convertView.getTag();
            }
-           holder.tvSeriesName.setText(_data.get(position).getName());
-           holder.tvSeriesId.setText(String.valueOf(_data.get(position).getId()));
+            holder.tvSeriesName.setText(_data.get(position).getName());
+            holder.tvSeriesName.setTextSize(_textSize);
+            holder.tvSeriesId.setText(String.valueOf(_data.get(position).getId()));
+            holder.tvSeriesId.setTextSize(_textSize);
            
            convertView.setBackgroundColor(_colors[position % _colors.length]);
            

@@ -2,11 +2,14 @@ package com.heath_bar.tvdb;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
+import android.text.style.AbsoluteSizeSpan;
 import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +27,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
+import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
@@ -40,6 +44,7 @@ public class SeriesOverview extends SherlockActivity {
 	protected TvSeries seriesInfo;
 	protected TvEpisodeList episodeList;
 	protected int numberOfSeasons = 0;
+	protected float textSize;
 		
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +60,12 @@ public class SeriesOverview extends SherlockActivity {
 		    if(extras != null) {
 		    	seriesId = getIntent().getLongExtra("id", 0);
 				
+				ApplyPreferences();
+				
 		    	// Start the asynchronous load process
 		    	setSupportProgressBarIndeterminateVisibility(true);
 				new LoadInfoTask().execute(seriesId);
+				
     		}
 		}catch (Exception e){
 			e.printStackTrace();
@@ -234,7 +242,8 @@ public class SeriesOverview extends SherlockActivity {
 				    		startActivityForResult(myIntent, 0);	
 						}
 					}, start, end, 0);
-					ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);
+					ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
+					ssb.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, ssb.length(), 0);				// Override the text size with the user's preference
 					builtTags.append(ssb);
 					if (text.substring(end + 1).indexOf(delim) >= 0)
 						builtTags.append(", ");
@@ -280,6 +289,7 @@ public class SeriesOverview extends SherlockActivity {
     			
     			TextView text = (TextView)seasonRow.findViewById(R.id.season_text);
     			text.setText("Season " + (i+1));
+    			text.setTextSize(textSize*1.6f);
     			
     			seasonRow.setOnClickListener(new OnClickListener() {
 					@Override
@@ -325,6 +335,7 @@ public class SeriesOverview extends SherlockActivity {
 			int end = start + last.getName().length();
 		    text.setSpan(clickableSpan, start, end, 0);
 		    text.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
+		    text.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, text.length(), 0);
 		    richTextView.setId(last.getId());
 			richTextView.setMovementMethod(LinkMovementMethod.getInstance());
 		}
@@ -351,6 +362,7 @@ public class SeriesOverview extends SherlockActivity {
 				int end = start + next.getName().length();
 			    text.setSpan(clickableSpan, start, end, 0);
 			    text.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
+			    text.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, text.length(), 0);
 				richTextView.setId(next.getId());
 				richTextView.setMovementMethod(LinkMovementMethod.getInstance());
 			}
@@ -381,8 +393,9 @@ public class SeriesOverview extends SherlockActivity {
 					TextView text = (TextView)episodeView.findViewById(R.id.text);
 					String nameText = String.format("%02d", episodeList.get(i).getNumber()) + " " + episodeList.get(i).getName();
 					text.setText(nameText);
+					text.setTextSize(textSize);
 					text.setId(episodeList.get(i).getId());
-					
+										
 					episodeView.setOnClickListener(episodeListener);
 					epLinearLayout.addView(episodeView);
 				}
@@ -451,5 +464,68 @@ public class SeriesOverview extends SherlockActivity {
 	        	 return true;
 	     }
 	     return false;
+	}
+	
+
+	// Apply Preferences
+	private void ApplyPreferences() {
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+    	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+    	
+    	Button b = (Button)findViewById(R.id.btn_add_to_favorites);
+    	b.setTextSize(textSize);
+
+    	TextView textview = (TextView)findViewById(R.id.loading1);
+    	textview.setTextSize(textSize);
+    	
+    	textview = (TextView)findViewById(R.id.loading2);
+    	textview.setTextSize(textSize);
+    	
+    	textview = (TextView)findViewById(R.id.airs_header);
+    	textview.setTextSize(textSize*1.3f);
+    	
+    	textview = (TextView)findViewById(R.id.last_episode);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.next_episode);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.series_air_info);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.starring);
+		textview.setTextSize(textSize*1.3f);
+
+		textview = (TextView)findViewById(R.id.series_actors);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.rating_header);
+		textview.setTextSize(textSize*1.3f);
+
+		textview = (TextView)findViewById(R.id.rating);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.genre_header);
+		textview.setTextSize(textSize*1.3f);
+
+		textview = (TextView)findViewById(R.id.genre);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.runtime_header);
+		textview.setTextSize(textSize*1.3f);
+
+		textview = (TextView)findViewById(R.id.runtime);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.overview_header);
+		textview.setTextSize(textSize*1.3f);
+
+		textview = (TextView)findViewById(R.id.overview);
+		textview.setTextSize(textSize);
+
+		textview = (TextView)findViewById(R.id.seasons_header);
+		textview.setTextSize(textSize*1.3f);
+
+
 	}
 }

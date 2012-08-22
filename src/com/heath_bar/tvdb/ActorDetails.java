@@ -1,7 +1,9 @@
 package com.heath_bar.tvdb;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -42,6 +44,7 @@ public class ActorDetails extends SherlockActivity {
 		    	setSupportProgressBarIndeterminateVisibility(true);
 				new LoadActorDetailsTask().execute(String.valueOf(seriesId), actorName);
 		    	
+				ApplyPreferences();
     		}
 		}catch (Exception e){
 			e.printStackTrace();
@@ -118,5 +121,18 @@ public class ActorDetails extends SherlockActivity {
 	        	 return true;
 	     }
 	     return false;
+	}
+	
+	// Apply Preferences
+	private void ApplyPreferences() {
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+    	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+    	
+		TextView textview = (TextView)findViewById(R.id.title);
+		textview.setTextSize(textSize*1.4f);
+
+		// Set Role
+		textview = (TextView)findViewById(R.id.role);
+		textview.setTextSize(textSize);		
 	}
 }

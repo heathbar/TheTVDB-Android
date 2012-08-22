@@ -4,11 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
@@ -34,8 +36,9 @@ public class TheTVDBActivity extends SherlockListActivity  {
 	private Cursor refreshCursor;
 	private SeriesAiredAdapter adapter;
 	private ResponseReceiver updateReceiver;
-	private boolean showRefreshButton = true;
 	private Intent updater;
+	private boolean isRefreshing = false;
+	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +46,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getSupportActionBar().setHomeButtonEnabled(false);
         setContentView(R.layout.favorites_list);
-        
+
         if (updater == null)
         	updater = new Intent(getApplicationContext(), UpdateService.class);
         
@@ -51,15 +54,37 @@ public class TheTVDBActivity extends SherlockListActivity  {
         View header = getLayoutInflater().inflate(R.layout.text, null);
         TextView header_text = (TextView) header.findViewById(R.id.text);
         header_text.setText("Favorite Shows");        
-        header_text.setTextSize(20);
         header_text.setTextColor(Color.WHITE);
         header_text.setBackgroundColor(getResources().getColor(R.color.tvdb_green));
         header_text.setTypeface(null, Typeface.BOLD);
         getListView().addHeaderView(header, null, false);
+        
+        // Preferences
+        prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+    	  	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        	  	ApplyPreferences();
+    	  	}
+    	};
+    	
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings.registerOnSharedPreferenceChangeListener(prefListener);
+        ApplyPreferences();
 	}	
 			
     
-    // When the task is created, or the user returns, refresh to pick up any new favorites
+    private void ApplyPreferences() {
+    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+    	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+        TextView textview = (TextView)findViewById(android.R.id.empty);
+        textview.setTextSize(textSize);	
+        
+        View header = getLayoutInflater().inflate(R.layout.text, null);
+        TextView header_text = (TextView) header.findViewById(R.id.text);
+        header_text.setTextSize(textSize*1.1f);
+	}
+
+
+	// When the task is created, or the user returns, refresh to pick up any new favorites
     @Override
     protected void onResume(){
     	super.onResume();
@@ -68,10 +93,13 @@ public class TheTVDBActivity extends SherlockListActivity  {
     
 	private void RefreshFavoritesAsync(){
 		
+		if (isRefreshing)
+			return;
+		else 
+			isRefreshing = true;				
+				
 		// Hide refresh button and show Progress animation
 		setSupportProgressBarIndeterminateVisibility(true);
-		showRefreshButton = false;
-		invalidateOptionsMenu();
 				
 		// Set the empty list text
 		TextView emptyList = (TextView)findViewById(android.R.id.empty);
@@ -88,6 +116,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(UpdateService.ACTION_UPDATE);
 		filter.addAction(UpdateService.ACTION_COMPLETE);
+		filter.addAction(UpdateService.CONNECT_EXCEPTION);
         registerReceiver(updateReceiver, filter);
 	}
 	
@@ -153,14 +182,16 @@ public class TheTVDBActivity extends SherlockListActivity  {
 			} else if (intent.getAction().equals(UpdateService.ACTION_COMPLETE)){
 				// Hide the progress animation and show the refresh button
 				setSupportProgressBarIndeterminateVisibility(false);
-				showRefreshButton = true;
-				invalidateOptionsMenu();
-
+				
 				// Reset the empty list text
 				TextView emptyList = (TextView)findViewById(android.R.id.empty);
 				emptyList.setText(getResources().getString(R.string.empty_list_favorites));
+				
+				isRefreshing = false;
+				
 			} else if (intent.getAction().equals(UpdateService.CONNECT_EXCEPTION)){
 				Toast.makeText(context, "There was a problem reaching thetvdb.com. Perhaps the site is down", Toast.LENGTH_SHORT).show();
+				isRefreshing = false;
 			}
 		}
 	}
@@ -213,8 +244,8 @@ public class TheTVDBActivity extends SherlockListActivity  {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-    	if (showRefreshButton){
-	    	menu.add("Refresh")
+    	
+		menu.add("Refresh")
 	    	.setIcon(R.drawable.ic_refresh)
 	    	.setOnMenuItemClickListener(new OnMenuItemClickListener() {
 				
@@ -225,9 +256,8 @@ public class TheTVDBActivity extends SherlockListActivity  {
 				}
 			})
 			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-    	}
-    	menu.add("Search")
-            .setIcon(R.drawable.ic_search)
+
+		menu.add("Search")
             .setOnMenuItemClickListener(new OnMenuItemClickListener() {
 				
 				@Override
@@ -236,8 +266,23 @@ public class TheTVDBActivity extends SherlockListActivity  {
 					return false;
 				}
 			})
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
         
+    	
+    	
+    	menu.add("Preferences")
+    		.setIcon(R.drawable.ic_prefs)
+    		.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					Intent i = new Intent(getApplicationContext(), Preferences.class);
+					startActivity(i);
+					return false;
+				}
+			})
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+    	
     	return true;
     }
     

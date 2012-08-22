@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
+import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.xml.handlers.SeriesDatesHandler;
 
 public class UpdateService extends IntentService {

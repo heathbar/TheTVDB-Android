@@ -8,6 +8,12 @@
 package com.heath_bar.tvdb;
 
 public final class R {
+    public static final class array {
+        public static final int languageOptionValues=0x7f0c0003;
+        public static final int languageOptions=0x7f0c0002;
+        public static final int textSizeOptions=0x7f0c0000;
+        public static final int textSizeValues=0x7f0c0001;
+    }
     public static final class attr {
         /**  Specified if we are forcing an action item overflow menu. 
          <p>Must be a boolean value, either "<code>true</code>" or "<code>false</code>".
@@ -791,12 +797,13 @@ containing a value of this type.
         public static final int arrow_down=0x7f020055;
         public static final int arrow_right=0x7f020056;
         public static final int button_background=0x7f020057;
-        public static final int ic_refresh=0x7f020058;
-        public static final int ic_search=0x7f020059;
-        public static final int icon=0x7f02005a;
-        public static final int plus=0x7f02005b;
-        public static final int tvdb__ab_background=0x7f02005c;
-        public static final int tvdb_logo=0x7f02005d;
+        public static final int ic_prefs=0x7f020058;
+        public static final int ic_refresh=0x7f020059;
+        public static final int ic_search=0x7f02005a;
+        public static final int icon=0x7f02005b;
+        public static final int plus=0x7f02005c;
+        public static final int tvdb__ab_background=0x7f02005d;
+        public static final int tvdb_logo=0x7f02005e;
     }
     public static final class id {
         public static final int abs__action_bar=0x7f050022;
@@ -1065,7 +1072,8 @@ containing a value of this type.
         public static final int episode_link=0x7f0b0058;
     }
     public static final class xml {
-        public static final int searchable=0x7f040000;
+        public static final int preferences=0x7f040000;
+        public static final int searchable=0x7f040001;
     }
     public static final class styleable {
         /**  Attributes used to style the Action Bar. 

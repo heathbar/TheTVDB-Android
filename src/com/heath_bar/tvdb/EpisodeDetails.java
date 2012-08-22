@@ -1,6 +1,8 @@
 package com.heath_bar.tvdb;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,10 +46,12 @@ public class EpisodeDetails extends SherlockActivity {
 		    	setSupportProgressBarIndeterminateVisibility(true);
 				new LoadEpisodeDetailsTask().execute(episodeId);
 		    	
+				ApplyPreferences();
     		}
 		}catch (Exception e){
 			e.printStackTrace();
 		}
+		
 	}
 	
 	private class LoadEpisodeDetailsTask extends AsyncTask<Long, Void, TvEpisode>{
@@ -164,14 +168,61 @@ public class EpisodeDetails extends SherlockActivity {
     }
 	
 	// Home button moves back
-		@Override
-		public boolean onOptionsItemSelected(MenuItem item){
-		     switch (item.getItemId()) {
-		         case android.R.id.home:
-		        	 finish();
-		        	 return true;
-		     }
-		     return false;
-		}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+	     switch (item.getItemId()) {
+	         case android.R.id.home:
+	        	 finish();
+	        	 return true;
+	     }
+	     return false;
+	}
 	
+	// Apply Preferences
+	private void ApplyPreferences() {
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+    	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+    	
+		TextView textview = (TextView)findViewById(R.id.loading1);
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.title);
+		textview.setTextSize(textSize*1.4f);
+
+		textview = (TextView)findViewById(R.id.overview_header);
+		textview.setTextSize(textSize*1.3f);
+		
+		textview = (TextView)findViewById(R.id.overview);
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.director_header);
+		textview.setTextSize(textSize*1.3f);
+		
+		textview = (TextView)findViewById(R.id.director);
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.writer_header);
+		textview.setTextSize(textSize*1.3f);
+		
+		textview = (TextView)findViewById(R.id.writer);
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.rating_header);
+		textview.setTextSize(textSize*1.3f);
+		
+		textview = (TextView)findViewById(R.id.rating);
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.first_aired_header);
+		textview.setTextSize(textSize*1.3f);
+		
+		textview = (TextView)findViewById(R.id.first_aired);
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.guest_stars_header);
+		textview.setTextSize(textSize*1.3f);
+		
+		textview = (TextView)findViewById(R.id.guest_stars);
+		textview.setTextSize(textSize);
+	}
 }
