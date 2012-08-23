@@ -171,12 +171,9 @@ public class TheTVDBActivity extends SherlockListActivity  {
 			
 				refreshCursor = db.fetchFavorites();
 				
-				String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
-		        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
-		        
 		        try {
-			        adapter = new SeriesAiredAdapter(getApplicationContext(), R.layout.show_aired_row, refreshCursor, from, to, 0, AppSettings.listBackgroundColors);
-			        setListAdapter(adapter);
+			        adapter.changeCursor(refreshCursor);
+			        //setListAdapter(adapter);
 		        }catch(Exception e){}
 		        
 			} else if (intent.getAction().equals(UpdateService.ACTION_COMPLETE)){
