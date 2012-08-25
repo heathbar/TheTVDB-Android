@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.heath_bar.tvdb"
     android:installLocation="auto"
-    android:versionCode="3"
-    android:versionName="0.3">
+    android:versionCode="4"
+    android:versionName="0.3.1">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="13"/>
 	<permission android:name="com.heath_bar.tvdb.search"></permission>
 	
