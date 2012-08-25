@@ -363,7 +363,7 @@ public class SeriesOverview extends SherlockActivity {
 		text = null;
 		richTextView = (TextView)findViewById(R.id.next_episode);
 
-		if (!seriesInfo.getStatus().equals("Ended")){
+		if (seriesInfo != null && seriesInfo.getStatus() != null && !seriesInfo.getStatus().equals("Ended")){
 			if (next == null){
 				 text = new SpannableString("Next Episode: unknown");
 			}else{
