@@ -17,13 +17,19 @@
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
 package com.heath_bar.tvdb;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.style.TextAppearanceSpan;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.TextView.BufferType;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
@@ -32,6 +38,7 @@ import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.util.DateUtil;
+import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.xml.handlers.EpisodeHandler;
 
 
@@ -164,8 +171,27 @@ public class EpisodeDetails extends SherlockActivity {
 		textview = (TextView)findViewById(R.id.guest_stars);
 		textview.setVisibility(View.VISIBLE);
 		textview.setText(theEpisode.getGuestStars());
-	}
 		
+		textview = (TextView)findViewById(R.id.imdb_link);
+		textview.setVisibility(View.VISIBLE);
+		
+		final String imdbId = theEpisode.getIMDB();
+		SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.imdb));
+		ssb.setSpan(new NonUnderlinedClickableSpan(getResources().getString(R.string.imdb)) {
+			@Override
+			public void onClick(View v){
+				Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.imdb.com/title/" + imdbId));
+				startActivity(myIntent);	        		
+			}
+		}, 0, ssb.length(), 0);
+		
+		ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
+		textview.setText(ssb, BufferType.SPANNABLE);
+		textview.setMovementMethod(LinkMovementMethod.getInstance());
+	}
+
+	
+	
 	// Show the Search Button in the action bar
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {

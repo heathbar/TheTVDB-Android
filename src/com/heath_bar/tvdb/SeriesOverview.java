@@ -21,6 +21,7 @@ package com.heath_bar.tvdb;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -225,6 +226,24 @@ public class SeriesOverview extends SherlockActivity {
 		// Show Seasons header
 		textview = (TextView)findViewById(R.id.seasons_header);
 		textview.setVisibility(View.VISIBLE);
+		
+		// IMDB Link
+		textview = (TextView)findViewById(R.id.imdb_link);
+		textview.setVisibility(View.VISIBLE);
+		
+		final String imdbId = seriesInfo.getIMDB();
+		SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.imdb));
+		ssb.setSpan(new NonUnderlinedClickableSpan(getResources().getString(R.string.imdb)) {
+			@Override
+			public void onClick(View v){
+				Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.imdb.com/title/" + imdbId));
+				startActivity(myIntent);	        		
+			}
+		}, 0, ssb.length(), 0);
+		
+		ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
+		textview.setText(ssb, BufferType.SPANNABLE);
+		textview.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 	
 	// Make the clickable span for the actors

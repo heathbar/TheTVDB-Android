@@ -94,6 +94,8 @@ public class EpisodeHandler extends DefaultHandler{
 				theEpisode.setRating(sb.toString());
 			} else if (name.equals("gueststars")){
 				theEpisode.setGuestStars(sb.toString());
+			} else if (name.equals("imdb_id")){
+				theEpisode.setIMDB(sb.toString());
 			}
 		    
 		} catch (Exception e) {

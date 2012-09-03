@@ -29,7 +29,6 @@ public class TvSeries {
 	private WebImage image;
 	private String overview;
 	private String firstAired;
-	private String imdb;
 	private String language;
 	private String poster;
 	private String actors;
@@ -40,8 +39,15 @@ public class TvSeries {
 	private String status;
 	private String genre;
 	private String runtime;
+	private String IMDB;
 	
 	
+	public String getIMDB() {
+		return IMDB;
+	}
+	public void setIMDB(String iMDB) {
+		IMDB = iMDB;
+	}
 	public String getRuntime() {
 		return runtime;
 	}
@@ -120,12 +126,6 @@ public class TvSeries {
 	}
 	public void setFirstAired(String firstAired) {
 		this.firstAired = firstAired;
-	}
-	public String getImdb() {
-		return imdb;
-	}
-	public void setImdb(String imdb) {
-		this.imdb = imdb;
 	}
 	public boolean isFavorite(Context ctx) {
 		SeriesDbAdapter db = new SeriesDbAdapter(ctx);

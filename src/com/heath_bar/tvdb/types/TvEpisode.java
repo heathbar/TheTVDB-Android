@@ -36,6 +36,7 @@ public class TvEpisode {
 	private String rating;
 	private WebImage image;
 	private String guestStars;
+	private String IMDB_ID;
 	
 	public String getGuestStars() {
 		return StringUtil.commafy(guestStars);
@@ -44,6 +45,12 @@ public class TvEpisode {
 		this.guestStars = guestStarsList;
 	}
 		
+	public String getIMDB() {
+		return IMDB_ID;
+	}
+	public void setIMDB(String iMDB_ID) {
+		IMDB_ID = iMDB_ID;
+	}
 	public String getDirector() {
 		return director;
 	}

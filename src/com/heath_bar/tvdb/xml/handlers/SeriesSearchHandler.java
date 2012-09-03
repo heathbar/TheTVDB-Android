@@ -86,8 +86,8 @@ public class SeriesSearchHandler extends DefaultHandler {
 				currentSeries.getImage().setUrl(sb.toString());
 			}else if (name.equals("firstAired")){
 				currentSeries.setFirstAired(sb.toString());
-			}else if (name.equals("imdb")){
-				currentSeries.setImdb(sb.toString());
+			}else if (name.equals("imdb_id")){
+				currentSeries.setIMDB(sb.toString());
 			}else if (name.equals("language")){
 				currentSeries.setLanguage(sb.toString());
 			}else if (name.equals("seriesname")){

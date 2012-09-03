@@ -143,6 +143,14 @@
 		    android:layout_marginLeft="5dip"
 		    android:textSize="18dip"
 		    android:visibility="gone" />
+		
+		<TextView
+		    android:id="@+id/imdb_link"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginLeft="5dip"
+		    android:textSize="18dip"
+		    android:visibility="gone" />
 		        
         </LinearLayout>
 </ScrollView>

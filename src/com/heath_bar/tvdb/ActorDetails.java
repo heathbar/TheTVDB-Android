@@ -19,19 +19,26 @@
 
 package com.heath_bar.tvdb;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.style.TextAppearanceSpan;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.types.Actor;
+import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.ActorHandler;
 
@@ -128,6 +135,22 @@ public class ActorDetails extends SherlockActivity {
     		banner.setImageBitmap(theActor.getImage().getBitmap());
     		banner.setVisibility(View.VISIBLE);
 		}
+		
+		textview = (TextView)findViewById(R.id.imdb_link);
+		textview.setVisibility(View.VISIBLE);
+		
+		SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.imdb));
+		ssb.setSpan(new NonUnderlinedClickableSpan(getResources().getString(R.string.imdb)) {
+			@Override
+			public void onClick(View v){
+				Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.imdb.com/find?q=" + actorName.replace(' ', '+') + "&s=all"));
+				startActivity(myIntent);	        		
+			}
+		}, 0, ssb.length(), 0);
+		
+		ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
+		textview.setText(ssb, BufferType.SPANNABLE);
+		textview.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 	
 	
@@ -152,6 +175,9 @@ public class ActorDetails extends SherlockActivity {
 
 		// Set Role
 		textview = (TextView)findViewById(R.id.role);
-		textview.setTextSize(textSize);		
+		textview.setTextSize(textSize);
+		
+		textview = (TextView)findViewById(R.id.imdb_link);
+		textview.setTextSize(textSize);
 	}
 }

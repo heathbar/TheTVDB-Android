@@ -81,7 +81,7 @@ public class SeriesInfoHandler extends DefaultHandler {
 			}else if (name.equals("firstaired")){
 				currentSeries.setFirstAired(sb.toString());
 			}else if (name.equals("imdb_id")){
-				currentSeries.setImdb(sb.toString());
+				currentSeries.setIMDB(sb.toString());
 			}else if (name.equals("language")){
 				currentSeries.setLanguage(sb.toString());
 			}else if (name.equals("seriesname")){

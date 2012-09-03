@@ -18,4 +18,5 @@
     <string name="guest_stars">Guest Stars</string>
     <string name="genre">Genre</string>
     <string name="runtime">Run Time</string>
+    <string name="imdb">View on IMDB</string>
 </resources>
