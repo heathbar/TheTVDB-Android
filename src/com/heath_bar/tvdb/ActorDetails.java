@@ -29,7 +29,7 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
@@ -38,6 +38,8 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.types.Actor;
+import com.heath_bar.tvdb.types.WebImage;
+import com.heath_bar.tvdb.util.ImageUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.ActorHandler;
@@ -88,7 +90,7 @@ public class ActorDetails extends SherlockActivity {
 				Actor theActor = actorQuery.getActor(name[0], name[1]);
 				
 				// Download the image while we're still in the background thread
-				theActor.getImage().Load();
+				theActor.getImage().Load(getApplicationContext());
 				
 				return theActor;
 			}catch (Exception e){
@@ -128,11 +130,46 @@ public class ActorDetails extends SherlockActivity {
 		textview.setText(StringUtil.commafy(theActor.getRole()));
 		
 		// Set Image
-		if (theActor.getImage().getBitmap() == null || theActor.getImage().getUrl().equals("")){
-			// do nothin
-		} else {
-			ImageView banner = (ImageView)findViewById(R.id.actor_image);
+		if (theActor.getImage().getBitmap() != null && !theActor.getImage().getUrl().equals("")){
+		
+			final WebImage image = theActor.getImage();
+			final String filename = theActor.getName().replace(' ', '_') + ".jpg";
+
+			ImageButton banner = (ImageButton)findViewById(R.id.actor_image);
     		banner.setImageBitmap(theActor.getImage().getBitmap());
+    		banner.setOnClickListener(new View.OnClickListener() {   
+    			public void onClick(View v) { 
+    				Intent share = new Intent(Intent.ACTION_SEND);
+    				share.setType("image/jpeg");
+    				   					
+					/*
+					* ALTERNATE WORKING CODE 
+					* This is working code using the MediaStore
+					* I chose not to use the MediaStore since dropbox auto uploads every image added to the MediaStore.  
+					*
+				    FileOutputStream fos = openFileOutput(filename + ".jpg", MODE_WORLD_READABLE);
+				    fos.write(bytes.toByteArray());
+		            fos.close();    				    
+		            File jpg = getFileStreamPath(filename + ".jpg");    				    
+		            String path = MediaStore.Images.Media.insertImage(getApplicationContext().getContentResolver(), jpg.getAbsolutePath(), jpg.getName(), filename);
+		            share.putExtra(Intent.EXTRA_STREAM, Uri.parse(path)); 
+		            */
+					
+										
+					// Clean up old files
+					ImageUtil.emptyShareFolder();
+
+					// Copy the cached version of the file to the publicly accessible Share folder
+					String cachedFilename = ImageUtil.getCachedFileName(getApplicationContext(), image.getUrl());
+					String sharedFileName = ImageUtil.copyToShareFolder(cachedFilename, filename);
+					
+					if (sharedFileName != null){
+    					// share the copy
+    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + sharedFileName));
+    		            startActivity(Intent.createChooser(share, "Share Image"));
+					}
+    			}
+			});
     		banner.setVisibility(View.VISIBLE);
 		}
 		

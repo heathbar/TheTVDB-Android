@@ -18,10 +18,11 @@
  */
 package com.heath_bar.tvdb.types;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 
 import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.util.ImageGetter;
+import com.heath_bar.tvdb.util.ImageUtil;
 
 public class WebImage {
 
@@ -39,11 +40,18 @@ public class WebImage {
 		return b;
 	}
 		
-	public Bitmap Load(boolean... force) {
+	public Bitmap Load(Context ctx, boolean... force) {
 		if (url != null && !url.equals(""))
     		if (b == null || force[0] == true)
-    			b = ImageGetter.LoadImage(AppSettings.SERIES_BANNER_URL + url);
+    			b = ImageUtil.LoadImage(ctx, AppSettings.SERIES_BANNER_URL + url);
 		
+		return b;
+	}
+	
+	public Bitmap Load(Context ctx, int maxWidth, int maxHeight, boolean... force) {
+		if (url != null && !url.equals(""))
+    		if (b == null || force[0] == true)
+    			b = ImageUtil.LoadImage(ctx, AppSettings.SERIES_BANNER_URL + url, maxWidth, maxHeight);
 		return b;
 	}	
 }

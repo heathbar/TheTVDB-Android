@@ -27,7 +27,7 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
 
@@ -37,7 +37,9 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.types.TvEpisode;
+import com.heath_bar.tvdb.types.WebImage;
 import com.heath_bar.tvdb.util.DateUtil;
+import com.heath_bar.tvdb.util.ImageUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.xml.handlers.EpisodeHandler;
 
@@ -89,7 +91,7 @@ public class EpisodeDetails extends SherlockActivity {
 				TvEpisode theEpisode = episodeQuery.getEpisode(id[0]);
 				
 				// Load the image while we're still in the background thread
-				theEpisode.getImage().Load();
+				theEpisode.getImage().Load(getApplicationContext());
 				
 				return theEpisode; 
 			}catch (Exception e){
@@ -122,9 +124,35 @@ public class EpisodeDetails extends SherlockActivity {
 		if (theEpisode.getImage().getBitmap() == null || theEpisode.getImage().getUrl().equals("")){
 			// do nothin
 		} else {
-			ImageView banner = (ImageView)findViewById(R.id.episode_thumb);
+			final WebImage image = theEpisode.getImage();
+			final String filename = theEpisode.getName().replace(' ', '_') + ".jpg";
+			
+			ImageButton banner = (ImageButton)findViewById(R.id.episode_thumb);
     		banner.setImageBitmap(theEpisode.getImage().getBitmap());
     		banner.setVisibility(View.VISIBLE);
+    		banner.setOnClickListener(new View.OnClickListener() {   
+    			public void onClick(View v) { 
+    				Intent share = new Intent(Intent.ACTION_SEND);
+    				share.setType("image/jpeg");
+    				   					
+    				// **
+    				// SEE ActorDetails.java for alternate working code using the MediaStore
+    				// **
+															
+					// Clean up old files
+					ImageUtil.emptyShareFolder();
+
+					// Copy the cached version of the file to the publicly accessible Share folder
+					String cachedFilename = ImageUtil.getCachedFileName(getApplicationContext(), image.getUrl());
+					String sharedFileName = ImageUtil.copyToShareFolder(cachedFilename, filename);
+					
+					if (sharedFileName != null){
+    					// share the copy
+    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + sharedFileName));
+    		            startActivity(Intent.createChooser(share, "Share Image"));
+					}
+    			}
+			});
 		}
 
 		// Overview

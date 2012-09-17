@@ -34,7 +34,7 @@
 		    android:textSize="18dip"
 		    android:visibility="gone" />
         
-        <ImageView
+        <ImageButton
 		    android:id="@+id/actor_image"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"

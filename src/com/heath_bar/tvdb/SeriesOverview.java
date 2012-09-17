@@ -16,6 +16,7 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
+
 package com.heath_bar.tvdb;
 
 import android.content.Context;
@@ -64,7 +65,7 @@ public class SeriesOverview extends SherlockActivity {
 	protected TvEpisodeList episodeList;
 	protected int numberOfSeasons = 0;
 	protected float textSize;
-		
+	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +103,7 @@ public class SeriesOverview extends SherlockActivity {
 	    		seriesInfo = infoQuery.getInfo(id[0]);
 	    		
 	    		// Download banner while we're still in the background thread
-	    		seriesInfo.getImage().Load();
+	    		seriesInfo.getImage().Load(getApplicationContext());
 	    		
 			}catch (Exception e){
 				e.printStackTrace();
@@ -159,6 +160,17 @@ public class SeriesOverview extends SherlockActivity {
 		ImageView imageView = (ImageView)findViewById(R.id.series_banner);
 		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
 		imageView.setVisibility(View.VISIBLE);
+		final String seriesName = seriesInfo.getName();
+		imageView.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(getApplicationContext(), BannerViewer.class);
+				i.putExtra("seriesId", seriesId);
+				i.putExtra("seriesName", seriesName);
+				startActivity(i);				
+			}
+		});
 		
 		// Set air info
 		TextView textview = (TextView)findViewById(R.id.airs_header);
