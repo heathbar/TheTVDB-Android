@@ -16,21 +16,48 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb;
+package com.heath_bar.tvdb.adapters;
+
+import java.util.List;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+
+import com.heath_bar.tvdb.R;
+import com.heath_bar.tvdb.types.WebImage;
+
+public class BannerListAdapter extends ArrayAdapter<WebImage> {
 
 
-public final class AppSettings {
+    public BannerListAdapter(Context context, int layout, List<WebImage> images) throws Exception {
+    	super(context, layout, images);
+    }
+    
+    
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		View v = convertView;
+		if (v == null) {
+			LayoutInflater vi = LayoutInflater.from(getContext());
+			v = vi.inflate(R.layout.image, parent, false);
+		}
+		bindView(position, v);
+		return v;
+	}
 
-	public static final String API_KEY = "0A41C0DEA5531762";
-	public static final String BASE_URL =  "http://thetvdb.com/api/" + API_KEY + "/";
-	public static final String SERIES_BASIC_URL = "http://www.thetvdb.com/api/GetSeries.php?seriesname=";
-	public static final String SERIES_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/series/"; // <seriesid>/all/en.xml
-	public static final String EPISODE_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/episodes/"; // <seriesid>/all/en.xml
-	public static final String SERIES_BANNER_URL = "http://thetvdb.com/banners/";
-	public static final boolean LOG_ENABLED = true;
-	public static final int DATABASE_VERSION = 1;
-	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
-	public static final String PREFS_NAME = "TheTVDBSettings";
-	public static final int THUMBNAIL_SIZE = 100;
-	
+	private void bindView(int position, View v) {
+		WebImage image = super.getItem(position);
+		if (image != null)
+		{
+			ImageView thumb = (ImageView)v.findViewById(R.id.image);
+			if (thumb != null && image.getThumbnail() != null && image.getThumbnail().getBitmap() != null)
+			{
+				thumb.setImageBitmap(image.getThumbnail().getBitmap());
+			}
+		}
+    }
 }

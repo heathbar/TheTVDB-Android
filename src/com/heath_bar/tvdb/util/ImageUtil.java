@@ -158,6 +158,9 @@ public class ImageUtil  {
         	subdir = "actors";
         }
         
+        if (url.contains("_cache"))
+        	subdir = "thumbnail" + File.separator + subdir;
+        
         // This code assumes the URL contains a filename at the end which is prone to cause problems
         int slashIndex = url.lastIndexOf('/');
         String baseName = url.substring(slashIndex + 1); 

@@ -37,7 +37,8 @@ import com.heath_bar.tvdb.types.WebImage;
 
 public class BannerHandler extends DefaultHandler{
 	private StringBuilder sb;
-    private ArrayList<WebImage> imageList;
+	private ArrayList<WebImage> imageList;
+	private WebImage currentImage;
     
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
@@ -62,12 +63,18 @@ public class BannerHandler extends DefaultHandler{
 		try {
 			name = name.trim().toLowerCase();
 			
-			if (name.equals("bannerpath")){
-				WebImage i = new WebImage();
-				i.setUrl(sb.toString());
-				imageList.add(i);
+			if (name.equals("id")){
+				currentImage = new WebImage();
+				currentImage.setId(sb.toString());
+			} else if (name.equals("bannerpath")){
+				currentImage.setUrl(AppSettings.SERIES_BANNER_URL + sb.toString());
+			} else if (name.equals("thumbnailpath")){
+				WebImage thumb = new WebImage();
+				thumb.setUrl(AppSettings.SERIES_BANNER_URL + sb.toString());
+				currentImage.setThumbnail(thumb);
+			} else if (name.equals("banner")){
+				imageList.add(currentImage);
 			}
-		    
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
 				Log.e("xml.handlers.EpisodeHandler", e.toString());
@@ -89,6 +96,26 @@ public class BannerHandler extends DefaultHandler{
 			if (AppSettings.LOG_ENABLED)
 				Log.e("xml.handlers.EpisodeHandler", e.toString());
 			return new ArrayList<WebImage>();
+		}
+	}
+	
+	public String[] getThumbList(String seriesId) {
+	    try {
+	    	ArrayList<WebImage> imageList = getImageList(seriesId);
+	    	
+	    	String[] urls = new String[imageList.size()];
+	    	for (int i=0; i<imageList.size(); i++) {
+	    		if (imageList.get(i).getThumbnail() != null)
+	    			urls[i] = imageList.get(i).getThumbnail().getUrl();
+	    		else
+	    			urls[i] = imageList.get(i).getUrl();
+	    	}
+	    			    
+		    return urls;
+		} catch (Exception e) {
+			if (AppSettings.LOG_ENABLED)
+				Log.e("xml.handlers.EpisodeHandler", e.toString());
+			return new String[0];
 		}
 	}
 }

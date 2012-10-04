@@ -75,7 +75,7 @@ public class SeriesInfoHandler extends DefaultHandler {
 			if (name.equals("id")){
 				currentSeries.setId(sb.toString());
 			}else if (name.equals("banner")){
-				currentSeries.getImage().setUrl(sb.toString());
+				currentSeries.getImage().setUrl(AppSettings.SERIES_BANNER_URL + sb.toString());
 			}else if (name.equals("poster")){
 				currentSeries.setPoster(sb.toString());
 			}else if (name.equals("firstaired")){

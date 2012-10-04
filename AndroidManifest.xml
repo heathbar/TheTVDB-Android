@@ -37,7 +37,11 @@
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
          
-        <activity android:name="com.heath_bar.tvdb.BannerViewer">
+        <activity android:name=".BannerListing">
+            <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
+        </activity>
+        
+        <activity android:name=".BannerViewer">
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
         

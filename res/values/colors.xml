@@ -5,4 +5,5 @@
     <color name="blue1">#002337</color>
     <color name="blue2">#001D2D</color>
     <color name="header_white">#FFFFFF</color>
+    <color name="semi_black_overlay">#99000000</color>
 </resources>

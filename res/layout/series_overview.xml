@@ -44,6 +44,15 @@
 		    android:visibility="gone" />
 
 		<TextView
+		    android:id="@+id/banner_listing_link"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:gravity="right"
+		    android:textSize="18dip"
+		    android:visibility="gone"
+		    android:text="@string/banner_listing_link" />
+		
+		<TextView
 		    android:id="@+id/airs_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"

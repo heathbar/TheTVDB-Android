@@ -93,7 +93,7 @@ public class ActorHandler extends DefaultHandler{
 		    XMLReader xr = sp.getXMLReader();
 		    xr.setContentHandler(this);
 		    xr.parse(new InputSource(url.openStream()));
-		    
+		    		    
 		    return targetActor;
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)

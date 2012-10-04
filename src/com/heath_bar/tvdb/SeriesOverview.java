@@ -51,7 +51,9 @@ import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
+import com.heath_bar.tvdb.types.WebImage;
 import com.heath_bar.tvdb.util.DateUtil;
+import com.heath_bar.tvdb.util.ImageUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
@@ -161,19 +163,50 @@ public class SeriesOverview extends SherlockActivity {
 		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
 		imageView.setVisibility(View.VISIBLE);
 		final String seriesName = seriesInfo.getName();
+		final WebImage image = seriesInfo.getImage();
+		final String filename = seriesInfo.getName().replace(' ', '_') + ".jpg";
+		
 		imageView.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(getApplicationContext(), BannerViewer.class);
+				Intent share = new Intent(Intent.ACTION_SEND);
+				share.setType("image/jpeg");
+														
+				// Clean up old files
+				ImageUtil.emptyShareFolder();
+
+				// Copy the cached version of the file to the publicly accessible Share folder
+				String cachedFilename = ImageUtil.getCachedFileName(getApplicationContext(), image.getUrl());
+				String sharedFileName = ImageUtil.copyToShareFolder(cachedFilename, filename);
+				
+				if (sharedFileName != null){
+					// share the copy
+					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + sharedFileName));
+		            startActivity(Intent.createChooser(share, "Share Image"));
+				}		
+			}
+		});
+		
+		
+		
+		// Set the banner link
+		TextView textview = (TextView)findViewById(R.id.banner_listing_link);
+		textview.setTextColor(getResources().getColor(R.color.tvdb_green));
+		textview.setVisibility(View.VISIBLE);
+		textview.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(getApplicationContext(), BannerListing.class);
 				i.putExtra("seriesId", seriesId);
 				i.putExtra("seriesName", seriesName);
-				startActivity(i);				
+				startActivity(i);
 			}
 		});
 		
 		// Set air info
-		TextView textview = (TextView)findViewById(R.id.airs_header);
+		textview = (TextView)findViewById(R.id.airs_header);
 		textview.setVisibility(View.VISIBLE);
 		textview = (TextView)findViewById(R.id.last_episode);
 		textview.setVisibility(View.VISIBLE);
@@ -530,6 +563,9 @@ public class SeriesOverview extends SherlockActivity {
     	textview = (TextView)findViewById(R.id.loading2);
     	textview.setTextSize(textSize);
     	
+    	textview = (TextView)findViewById(R.id.banner_listing_link);
+    	textview.setTextSize(textSize);
+
     	textview = (TextView)findViewById(R.id.airs_header);
     	textview.setTextSize(textSize*1.3f);
     	

@@ -21,15 +21,21 @@ package com.heath_bar.tvdb.types;
 import android.content.Context;
 import android.graphics.Bitmap;
 
-import com.heath_bar.tvdb.AppSettings;
 import com.heath_bar.tvdb.util.ImageUtil;
 
 public class WebImage {
 
+	private String id;
 	private String url;
-	private Bitmap b;
+	private Bitmap bitmap;
+	private WebImage thumbnail;
 	
-	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getUrl() {
 		return url;
 	}
@@ -37,21 +43,25 @@ public class WebImage {
 		this.url = url;
 	}
 	public Bitmap getBitmap() {
-		return b;
+		return bitmap;
 	}
-		
+	public WebImage getThumbnail() {
+		return thumbnail;
+	}
+	public void setThumbnail(WebImage thumbnail) {
+		this.thumbnail = thumbnail;
+	}
+
 	public Bitmap Load(Context ctx, boolean... force) {
-		if (url != null && !url.equals(""))
-    		if (b == null || force[0] == true)
-    			b = ImageUtil.LoadImage(ctx, AppSettings.SERIES_BANNER_URL + url);
-		
-		return b;
+		return Load(ctx, 0, 0, force);
 	}
 	
 	public Bitmap Load(Context ctx, int maxWidth, int maxHeight, boolean... force) {
-		if (url != null && !url.equals(""))
-    		if (b == null || force[0] == true)
-    			b = ImageUtil.LoadImage(ctx, AppSettings.SERIES_BANNER_URL + url, maxWidth, maxHeight);
-		return b;
-	}	
+		if (url != null && !url.equals("")){
+    		if (bitmap == null || (force.length > 0 && force[0] == true)){
+    			bitmap = ImageUtil.LoadImage(ctx, url, maxWidth, maxHeight);
+    		}
+		}
+		return bitmap;
+	}
 }

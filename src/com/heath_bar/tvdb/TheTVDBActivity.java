@@ -43,7 +43,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.tvdb.adapters.SeriesAiredAdapter;
+import com.heath_bar.tvdb.adapters.SeriesAiredListAdapter;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
 
 public class TheTVDBActivity extends SherlockListActivity  {
@@ -52,7 +52,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
 	private SeriesDbAdapter db;
 	private Cursor cursor;
 	private Cursor refreshCursor;
-	private SeriesAiredAdapter adapter;
+	private SeriesAiredListAdapter adapter;
 	private ResponseReceiver updateReceiver;
 	private Intent updater;
 	private boolean isRefreshing = false;
@@ -164,7 +164,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
 	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
 	      
 	        try{
-		        adapter = new SeriesAiredAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors);
+		        adapter = new SeriesAiredListAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors);
 				setListAdapter(adapter);
 				getListView().setOnItemClickListener(new ItemClickedListener());
 				registerForContextMenu(getListView());
