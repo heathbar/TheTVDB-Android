@@ -22,6 +22,7 @@ package com.heath_bar.tvdb;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -46,14 +47,14 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
+import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.lazylistadapter.BitmapWebUtil;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
-import com.heath_bar.tvdb.types.WebImage;
 import com.heath_bar.tvdb.util.DateUtil;
-import com.heath_bar.tvdb.util.ImageUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
@@ -67,6 +68,7 @@ public class SeriesOverview extends SherlockActivity {
 	protected TvEpisodeList episodeList;
 	protected int numberOfSeasons = 0;
 	protected float textSize;
+	protected long cacheSize;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -95,9 +97,9 @@ public class SeriesOverview extends SherlockActivity {
 	}
 	
 	// Class to load the basic series info asynchronously
-	private class LoadInfoTask extends AsyncTask<Long, Void, Void>{
+	private class LoadInfoTask extends AsyncTask<Long, Void, TvSeries>{
 		@Override
-		protected Void doInBackground(Long... id) {
+		protected TvSeries doInBackground(Long... id) {
 			
 			try {
 				// Lookup basic series info
@@ -105,7 +107,25 @@ public class SeriesOverview extends SherlockActivity {
 	    		seriesInfo = infoQuery.getInfo(id[0]);
 	    		
 	    		// Download banner while we're still in the background thread
-	    		seriesInfo.getImage().Load(getApplicationContext());
+	    		//seriesInfo.getImage().Load(getApplicationContext());
+	    		
+	    		Bitmap bitmap;
+		    	BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
+		    	
+		    	if (fileCache.contains(seriesInfo.getImage().getId())){
+		    		
+		    		bitmap = fileCache.get(seriesInfo.getImage().getId());
+
+		    	}else{
+		    	
+		    		BitmapWebUtil web = new BitmapWebUtil(getApplicationContext());
+		    		bitmap = web.downloadBitmap(seriesInfo.getImage().getUrl());
+					fileCache.put(seriesInfo.getImage().getId(), bitmap);
+				}
+				seriesInfo.getImage().setBitmap(bitmap);
+				
+				return seriesInfo;
+
 	    		
 			}catch (Exception e){
 				e.printStackTrace();
@@ -114,9 +134,9 @@ public class SeriesOverview extends SherlockActivity {
 		}
 		
 		@Override
-		protected void onPostExecute(Void params){
+		protected void onPostExecute(TvSeries info){
 			// Populate the activity with the data we just loaded
-			PopulateStuff(seriesInfo);
+			PopulateStuff(info);
 			
 			// Hide the first loading text, show the second
 			findViewById(R.id.loading1).setVisibility(View.GONE);
@@ -163,28 +183,31 @@ public class SeriesOverview extends SherlockActivity {
 		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
 		imageView.setVisibility(View.VISIBLE);
 		final String seriesName = seriesInfo.getName();
-		final WebImage image = seriesInfo.getImage();
-		final String filename = seriesInfo.getName().replace(' ', '_') + ".jpg";
+		final String imageId = seriesInfo.getImage().getId();
 		
 		imageView.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
+
+				// **
+				// SEE ActorDetails.java for alternate working code using the MediaStore
+				// **
+				
 				Intent share = new Intent(Intent.ACTION_SEND);
 				share.setType("image/jpeg");
-														
-				// Clean up old files
-				ImageUtil.emptyShareFolder();
-
-				// Copy the cached version of the file to the publicly accessible Share folder
-				String cachedFilename = ImageUtil.getCachedFileName(getApplicationContext(), image.getUrl());
-				String sharedFileName = ImageUtil.copyToShareFolder(cachedFilename, filename);
 				
-				if (sharedFileName != null){
-					// share the copy
-					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + sharedFileName));
-		            startActivity(Intent.createChooser(share, "Share Image"));
-				}		
+				BitmapFileCache cache = new BitmapFileCache(getApplicationContext());
+				if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
+					// I'm going to assume the image hasn't been trimmed from the cache...
+					String path = cache.makeJPG(imageId);
+					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
+					startActivity(Intent.createChooser(share, "Share Image"));
+					
+				}else{
+					// Can't share if there is no sdcard... at least not reliably or without using the MediaStore
+					Toast.makeText(getApplicationContext(), "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
+				}
 			}
 		});
 		
@@ -552,6 +575,7 @@ public class SeriesOverview extends SherlockActivity {
 	// Apply Preferences
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
     	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	
     	Button b = (Button)findViewById(R.id.btn_add_to_favorites);

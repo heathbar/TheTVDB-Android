@@ -19,6 +19,7 @@
 package com.heath_bar.tvdb;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,16 +31,17 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
+import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.lazylistadapter.BitmapWebUtil;
 import com.heath_bar.tvdb.types.TvEpisode;
-import com.heath_bar.tvdb.types.WebImage;
 import com.heath_bar.tvdb.util.DateUtil;
-import com.heath_bar.tvdb.util.ImageUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.xml.handlers.EpisodeHandler;
 
@@ -49,6 +51,7 @@ public class EpisodeDetails extends SherlockActivity {
 	protected long episodeId;
 	protected long seriesId;
 	protected TvEpisode myEpisode = null;
+	protected long cacheSize;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -69,14 +72,17 @@ public class EpisodeDetails extends SherlockActivity {
 				// Set title
 				getSupportActionBar().setTitle(seriesName);
 		    	
-		    	// Start the asynchronous load process
+				ApplyPreferences();
+				
+				// Start the asynchronous load process
 		    	setSupportProgressBarIndeterminateVisibility(true);
 				new LoadEpisodeDetailsTask().execute(episodeId);
 		    	
-				ApplyPreferences();
     		}
 		}catch (Exception e){
 			e.printStackTrace();
+			Toast.makeText(this, "Failed to load episode details", Toast.LENGTH_LONG).show();
+			setSupportProgressBarIndeterminateVisibility(false);
 		}
 		
 	}
@@ -90,8 +96,21 @@ public class EpisodeDetails extends SherlockActivity {
 				EpisodeHandler episodeQuery = new EpisodeHandler(getApplicationContext());
 				TvEpisode theEpisode = episodeQuery.getEpisode(id[0]);
 				
-				// Load the image while we're still in the background thread
-				theEpisode.getImage().Load(getApplicationContext());
+				Bitmap bitmap;				
+		    	BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
+		    	
+		    	
+		    	if (fileCache.contains(theEpisode.getImage().getId())){
+		    		
+		    		bitmap = fileCache.get(theEpisode.getImage().getId());
+
+		    	}else{
+		    	
+		    		BitmapWebUtil web = new BitmapWebUtil(getApplicationContext());
+		    		bitmap = web.downloadBitmap(theEpisode.getImage().getUrl());
+					fileCache.put(theEpisode.getImage().getId(), bitmap);
+				}
+		    	theEpisode.getImage().setBitmap(bitmap);
 				
 				return theEpisode; 
 			}catch (Exception e){
@@ -121,36 +140,35 @@ public class EpisodeDetails extends SherlockActivity {
 		textview.setText(theEpisode.getSeason() + "x" + String.format("%02d", theEpisode.getNumber()) + " " + theEpisode.getName());
 
 		// Set Thumb
-		if (theEpisode.getImage().getBitmap() == null || theEpisode.getImage().getUrl().equals("")){
+		if (theEpisode.getImage() != null && (theEpisode.getImage().getBitmap() == null || theEpisode.getImage().getUrl().equals(""))){
 			// do nothin
 		} else {
-			final WebImage image = theEpisode.getImage();
-			final String filename = theEpisode.getName().replace(' ', '_') + ".jpg";
+			final String imageId = theEpisode.getImage().getId();
 			
 			ImageButton banner = (ImageButton)findViewById(R.id.episode_thumb);
     		banner.setImageBitmap(theEpisode.getImage().getBitmap());
     		banner.setVisibility(View.VISIBLE);
     		banner.setOnClickListener(new View.OnClickListener() {   
     			public void onClick(View v) { 
-    				Intent share = new Intent(Intent.ACTION_SEND);
-    				share.setType("image/jpeg");
-    				   					
+
     				// **
     				// SEE ActorDetails.java for alternate working code using the MediaStore
     				// **
 															
-					// Clean up old files
-					ImageUtil.emptyShareFolder();
-
-					// Copy the cached version of the file to the publicly accessible Share folder
-					String cachedFilename = ImageUtil.getCachedFileName(getApplicationContext(), image.getUrl());
-					String sharedFileName = ImageUtil.copyToShareFolder(cachedFilename, filename);
-					
-					if (sharedFileName != null){
-    					// share the copy
-    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + sharedFileName));
-    		            startActivity(Intent.createChooser(share, "Share Image"));
-					}
+    				Intent share = new Intent(Intent.ACTION_SEND);
+    				share.setType("image/jpeg");
+    				
+    				BitmapFileCache cache = new BitmapFileCache(getApplicationContext());
+    				if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
+    					// I'm going to assume the image hasn't been trimmed from the cache...
+    					String path = cache.makeJPG(imageId);
+    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
+    					startActivity(Intent.createChooser(share, "Share Image"));
+    					
+    				}else{
+    					// Can't share if there is no sdcard... at least not reliably or without using the MediaStore
+    					Toast.makeText(getApplicationContext(), "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
+    				}
     			}
 			});
 		}
@@ -253,6 +271,7 @@ public class EpisodeDetails extends SherlockActivity {
 	// Apply Preferences
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
     	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	
 		TextView textview = (TextView)findViewById(R.id.loading1);

@@ -74,10 +74,9 @@ public class SeriesInfoHandler extends DefaultHandler {
 			
 			if (name.equals("id")){
 				currentSeries.setId(sb.toString());
+				currentSeries.getImage().setId("S" + sb.toString());
 			}else if (name.equals("banner")){
-				currentSeries.getImage().setUrl(AppSettings.SERIES_BANNER_URL + sb.toString());
-			}else if (name.equals("poster")){
-				currentSeries.setPoster(sb.toString());
+				currentSeries.getImage().setUrl(AppSettings.BANNER_URL + sb.toString());
 			}else if (name.equals("firstaired")){
 				currentSeries.setFirstAired(sb.toString());
 			}else if (name.equals("imdb_id")){

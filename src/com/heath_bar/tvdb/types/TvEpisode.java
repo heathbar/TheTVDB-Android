@@ -19,7 +19,7 @@
 package com.heath_bar.tvdb.types;
 
 import com.heath_bar.tvdb.util.StringUtil;
-
+import com.heath_bar.lazylistadapter.WebImage;
 
 
 

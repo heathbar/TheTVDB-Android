@@ -26,11 +26,12 @@ public final class AppSettings {
 	public static final String SERIES_BASIC_URL = "http://www.thetvdb.com/api/GetSeries.php?seriesname=";
 	public static final String SERIES_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/series/"; // <seriesid>/all/en.xml
 	public static final String EPISODE_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/episodes/"; // <seriesid>/all/en.xml
-	public static final String SERIES_BANNER_URL = "http://thetvdb.com/banners/";
+	public static final String BANNER_URL = "http://thetvdb.com/banners/";
 	public static final boolean LOG_ENABLED = true;
 	public static final int DATABASE_VERSION = 1;
 	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
 	public static final String PREFS_NAME = "TheTVDBSettings";
 	public static final int THUMBNAIL_SIZE = 100;
+	public static final int DEFAULT_CACHE_SIZE = 50; // 50 MB
 	
 }

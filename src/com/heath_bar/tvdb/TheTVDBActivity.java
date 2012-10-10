@@ -43,6 +43,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
+import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.tvdb.adapters.SeriesAiredListAdapter;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
 
@@ -80,7 +81,14 @@ public class TheTVDBActivity extends SherlockListActivity  {
         // Preferences
         prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
     	  	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        	  	ApplyPreferences();
+
+        	  	if (key.equals("cacheSize")){
+        	  		long cacheSize = prefs.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
+        	  		BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
+        	  		fileCache.trimCache();
+        	  	}else{
+        	  		ApplyPreferences();
+        	  	}
     	  	}
     	};
     	

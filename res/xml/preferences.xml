@@ -20,5 +20,15 @@
      android:title="Preferred Language"
      android:defaultValue="en" />
     
+    <com.heath_bar.tvdb.types.SeekBarPreference
+        android:key="cacheSize"
+        android:title="Cache Size"
+        android:summary="How much space to use for caching"
+        android:dialogMessage="How much space to use for caching"
+        android:defaultValue="50"
+        android:text=" MB"
+        android:max="500"
+        />
+    
     </PreferenceCategory>
 </PreferenceScreen>

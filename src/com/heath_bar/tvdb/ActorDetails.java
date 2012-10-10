@@ -21,6 +21,7 @@ package com.heath_bar.tvdb;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,9 +38,9 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
+import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.lazylistadapter.BitmapWebUtil;
 import com.heath_bar.tvdb.types.Actor;
-import com.heath_bar.tvdb.types.WebImage;
-import com.heath_bar.tvdb.util.ImageUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.ActorHandler;
@@ -48,6 +49,7 @@ public class ActorDetails extends SherlockActivity {
 
 	private long seriesId;
 	private String actorName;
+	protected long cacheSize;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +70,17 @@ public class ActorDetails extends SherlockActivity {
 				// Set title
 				getSupportActionBar().setTitle(seriesName);
 		    	
-		    	// Start the asynchronous load process
+				ApplyPreferences();
+				
+				// Start the asynchronous load process
 		    	setSupportProgressBarIndeterminateVisibility(true);
 				new LoadActorDetailsTask().execute(String.valueOf(seriesId), actorName);
 		    	
-				ApplyPreferences();
     		}
 		}catch (Exception e){
 			e.printStackTrace();
+			Toast.makeText(this, "Failed to load actor details", Toast.LENGTH_LONG).show();
+			setSupportProgressBarIndeterminateVisibility(false);
 		}
 	}
 	
@@ -85,12 +90,24 @@ public class ActorDetails extends SherlockActivity {
 		protected Actor doInBackground(String... name) {
 			
 			try {
-				// Lookup episode info
+				// Lookup Actor info
 				ActorHandler actorQuery = new ActorHandler();
 				Actor theActor = actorQuery.getActor(name[0], name[1]);
 				
-				// Download the image while we're still in the background thread
-				theActor.getImage().Load(getApplicationContext());
+				Bitmap bitmap;
+		    	BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
+		    	
+		    	if (fileCache.contains(theActor.getImage().getId())){
+		    		
+		    		bitmap = fileCache.get(theActor.getImage().getId());
+
+		    	}else{
+		    	
+		    		BitmapWebUtil web = new BitmapWebUtil(getApplicationContext());
+		    		bitmap = web.downloadBitmap(theActor.getImage().getUrl());
+					fileCache.put(theActor.getImage().getId(), bitmap);
+				}
+				theActor.getImage().setBitmap(bitmap);
 				
 				return theActor;
 			}catch (Exception e){
@@ -132,8 +149,7 @@ public class ActorDetails extends SherlockActivity {
 		// Set Image
 		if (theActor.getImage().getBitmap() != null && !theActor.getImage().getUrl().equals("")){
 		
-			final WebImage image = theActor.getImage();
-			final String filename = theActor.getName().replace(' ', '_') + ".jpg";
+			final String imageId = theActor.getImage().getId();
 
 			ImageButton banner = (ImageButton)findViewById(R.id.actor_image);
     		banner.setImageBitmap(theActor.getImage().getBitmap());
@@ -155,19 +171,17 @@ public class ActorDetails extends SherlockActivity {
 		            share.putExtra(Intent.EXTRA_STREAM, Uri.parse(path)); 
 		            */
 					
-										
-					// Clean up old files
-					ImageUtil.emptyShareFolder();
-
-					// Copy the cached version of the file to the publicly accessible Share folder
-					String cachedFilename = ImageUtil.getCachedFileName(getApplicationContext(), image.getUrl());
-					String sharedFileName = ImageUtil.copyToShareFolder(cachedFilename, filename);
-					
-					if (sharedFileName != null){
-    					// share the copy
-    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + sharedFileName));
-    		            startActivity(Intent.createChooser(share, "Share Image"));
-					}
+    				BitmapFileCache cache = new BitmapFileCache(getApplicationContext());
+    				if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
+    					// I'm going to assume the image hasn't been trimmed from the cache...
+    					String path = cache.makeJPG(imageId);
+    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
+    					startActivity(Intent.createChooser(share, "Share Image"));
+    					
+    				}else{
+    					// Can't share if there is no sdcard... at least not reliably or without using the MediaStore
+    					Toast.makeText(getApplicationContext(), "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
+    				}
     			}
 			});
     		banner.setVisibility(View.VISIBLE);
@@ -205,7 +219,9 @@ public class ActorDetails extends SherlockActivity {
 	// Apply Preferences
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-    	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
+		
+		float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	
 		TextView textview = (TextView)findViewById(R.id.title);
 		textview.setTextSize(textSize*1.4f);

@@ -66,8 +66,9 @@ public class ActorHandler extends DefaultHandler{
 			if (targetActor == null){
 				if (name.equals("id")){
 					currentActor.setId(Integer.valueOf(sb.toString()));
+					currentActor.getImage().setId("A" + sb.toString()); 	// IDs are not globally unique. Prefix an A to indicate this ID is an actor
 				} else if (name.equals("image")){
-					currentActor.getImage().setUrl(sb.toString());
+					currentActor.getImage().setUrl(AppSettings.BANNER_URL + sb.toString());
 				} else if (name.equals("name")) {
 					currentActor.setName(sb.toString());
 				} else if (name.equals("role")) {

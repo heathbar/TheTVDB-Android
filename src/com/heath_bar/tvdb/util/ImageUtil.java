@@ -256,7 +256,7 @@ public class ImageUtil  {
 	    FileChannel destination = null;
 
 		try{
-			File newFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "tmp" + File.separator + "thetvdb" + File.separator + newName);
+			File newFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "cache" + File.separator + "TheTVDB" + File.separator + newName);
 			newFile.getParentFile().mkdirs();
 			newFile.createNewFile();
 			sharedFile = newFile.getAbsolutePath();

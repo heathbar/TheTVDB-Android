@@ -18,6 +18,8 @@
  */
 package com.heath_bar.tvdb.types;
 
+import com.heath_bar.lazylistadapter.WebImage;
+
 public class Actor {
 
 	private int id;

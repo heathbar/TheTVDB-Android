@@ -21,6 +21,7 @@ package com.heath_bar.tvdb.types;
 import android.content.Context;
 
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
+import com.heath_bar.lazylistadapter.WebImage;
 
 public class TvSeries {
 

@@ -19,7 +19,6 @@
 package com.heath_bar.tvdb.xml.handlers;
 
 import java.net.URL;
-import java.util.ArrayList;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -32,12 +31,13 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import android.util.Log;
 
+import com.heath_bar.lazylistadapter.WebImage;
+import com.heath_bar.lazylistadapter.WebImageList;
 import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.types.WebImage;
 
 public class BannerHandler extends DefaultHandler{
 	private StringBuilder sb;
-	private ArrayList<WebImage> imageList;
+	private WebImageList imageList;
 	private WebImage currentImage;
     
     @Override
@@ -46,7 +46,9 @@ public class BannerHandler extends DefaultHandler{
 	    sb = new StringBuilder();						// Reset the string builder
 	    
 	    if (name.equals("banners"))
-	    	imageList = new ArrayList<WebImage>();
+	    	imageList = new WebImageList();
+	    else if (name.equals("banner"))
+	    	currentImage = new WebImage();	
     }
     
     // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
@@ -64,14 +66,11 @@ public class BannerHandler extends DefaultHandler{
 			name = name.trim().toLowerCase();
 			
 			if (name.equals("id")){
-				currentImage = new WebImage();
-				currentImage.setId(sb.toString());
+				currentImage.setId("B" + sb.toString());	// IDs are not globally unique. Prefix a "B" to indicate this ID is a banner
 			} else if (name.equals("bannerpath")){
-				currentImage.setUrl(AppSettings.SERIES_BANNER_URL + sb.toString());
+				currentImage.setUrl(AppSettings.BANNER_URL + sb.toString());
 			} else if (name.equals("thumbnailpath")){
-				WebImage thumb = new WebImage();
-				thumb.setUrl(AppSettings.SERIES_BANNER_URL + sb.toString());
-				currentImage.setThumbnail(thumb);
+				currentImage.setThumbUrl(AppSettings.BANNER_URL + sb.toString());
 			} else if (name.equals("banner")){
 				imageList.add(currentImage);
 			}
@@ -81,7 +80,7 @@ public class BannerHandler extends DefaultHandler{
 		}
 	}
     
-	public ArrayList<WebImage> getImageList(String seriesId) {
+	public WebImageList getImageList(String seriesId) {
 	    try {
 			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/banners.xml");	
 						
@@ -95,27 +94,7 @@ public class BannerHandler extends DefaultHandler{
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
 				Log.e("xml.handlers.EpisodeHandler", e.toString());
-			return new ArrayList<WebImage>();
-		}
-	}
-	
-	public String[] getThumbList(String seriesId) {
-	    try {
-	    	ArrayList<WebImage> imageList = getImageList(seriesId);
-	    	
-	    	String[] urls = new String[imageList.size()];
-	    	for (int i=0; i<imageList.size(); i++) {
-	    		if (imageList.get(i).getThumbnail() != null)
-	    			urls[i] = imageList.get(i).getThumbnail().getUrl();
-	    		else
-	    			urls[i] = imageList.get(i).getUrl();
-	    	}
-	    			    
-		    return urls;
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-			return new String[0];
+			return new WebImageList();
 		}
 	}
 }

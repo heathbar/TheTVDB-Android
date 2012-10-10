@@ -19,10 +19,6 @@
 
 package com.heath_bar.tvdb;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -38,17 +34,16 @@ import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.LazyBitmapAdapter;
-import com.heath_bar.tvdb.types.WebImage;
+import com.heath_bar.lazylistadapter.WebImage;
+import com.heath_bar.lazylistadapter.WebImageList;
 import com.heath_bar.tvdb.xml.handlers.BannerHandler;
 
 public class BannerListing extends SherlockListActivity {
 	
 	private long seriesId;
 	private String seriesName;
-	//private ArrayList<WebImage> imageList;
-	private Map<String, String> idUrlList;
 	private LazyBitmapAdapter adapter;
-	private long fileCacheMaxSize = 10485760;	// 10MB 
+	private long cacheSize; 
 
 	// OnCreate... display essentially just a loading screen while we call LoadBannerListTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,18 +63,19 @@ public class BannerListing extends SherlockListActivity {
 				// Set title
 				getSupportActionBar().setTitle(seriesName);
 		    	
-		    	// Start the asynchronous load process
-		    	setSupportProgressBarIndeterminateVisibility(true);
-				new LoadBannerThumbsTask().execute(String.valueOf(seriesId));
-		    	
-				// Apply Preferences
+		    	// Apply Preferences
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+				cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
 				float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-				fileCacheMaxSize = Long.parseLong(settings.getString("fileCacheMaxSize", "10000000"));
-		    	
+						    	
 				TextView textview = (TextView)findViewById(android.R.id.empty);
 				textview.setTextSize(textSize);
 				textview.setText(getResources().getString(R.string.loading));
+				
+				// Start the asynchronous load process
+		    	setSupportProgressBarIndeterminateVisibility(true);
+				new LoadBannerThumbsTask().execute(String.valueOf(seriesId));
+		    	
     		}
 		}catch (Exception e){
 			e.printStackTrace();
@@ -87,20 +83,16 @@ public class BannerListing extends SherlockListActivity {
 	}
 		
 		
-	private class LoadBannerThumbsTask extends AsyncTask<String, Void, Map<String, String>>{
+	private class LoadBannerThumbsTask extends AsyncTask<String, Void, WebImageList>{
 		@Override
-		protected Map<String, String> doInBackground(String... series) {
+		protected WebImageList doInBackground(String... series) {
 			
 			try {
 				// get the urls to the thumbnails
 				BannerHandler bannerQuery = new BannerHandler();
-				ArrayList<WebImage> banners = bannerQuery.getImageList(series[0]);
-				idUrlList = new HashMap<String, String>();
+				WebImageList banners = bannerQuery.getImageList(series[0]);
 				
-				for (int i=0; i<banners.size(); i++)
-					idUrlList.put(banners.get(i).getId(), banners.get(i).getUrl());
-				
-				return idUrlList;
+				return banners;
 			}catch (Exception e){
 				e.printStackTrace();
 			}
@@ -108,16 +100,16 @@ public class BannerListing extends SherlockListActivity {
 		}
 		
 		@Override
-		protected void onPostExecute(Map<String, String> idUrlList){
-			SetupAdapter(idUrlList);
+		protected void onPostExecute(WebImageList banners){
+			SetupAdapter(banners);
 			setSupportProgressBarIndeterminateVisibility(false);
 		}	
 	}
 	
-	protected void SetupAdapter(Map<String, String> idUrlList){
+	protected void SetupAdapter(WebImageList banners){
 		try {
-			adapter = new LazyBitmapAdapter(this, idUrlList, R.layout.image, R.id.image);
-			adapter.setFileCacheMaxSize(fileCacheMaxSize);
+			adapter = new LazyBitmapAdapter(this, banners, R.layout.image, R.id.image);
+			adapter.setFileCacheMaxSize(cacheSize);
 			setListAdapter(adapter);
 			getListView().setOnItemClickListener(new ItemClickedListener());
 		}catch (Exception e){
@@ -133,11 +125,11 @@ public class BannerListing extends SherlockListActivity {
 	    @Override
 	    public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
 
-	    	String imageId = adapter.getItemIdString(position);
+	    	WebImage image = (WebImage)adapter.getItem(position);
 	    	
         	Intent myIntent = new Intent(arg0.getContext(), BannerViewer.class);
-        	myIntent.putExtra("imageId", imageId);
-        	myIntent.putExtra("url", idUrlList.get(imageId));
+        	myIntent.putExtra("imageId", image.getId());
+        	myIntent.putExtra("url", image.getUrl());
         	myIntent.putExtra("seriesName", seriesName);
         	adapter.clearMemoryCache();
     		startActivity(myIntent);

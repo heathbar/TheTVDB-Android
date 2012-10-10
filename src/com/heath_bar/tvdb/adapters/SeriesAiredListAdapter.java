@@ -33,9 +33,10 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	public int[] _colors;
 	private float _textSize;
 	
-    public SeriesAiredListAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, int[] colors) throws Exception {
-    	//super(context, layout, c, from, to, flags);
+    @SuppressWarnings("deprecation")
+	public SeriesAiredListAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, int[] colors) throws Exception {
     	super(context, layout, c, from, to);
+
     	if (to.length != 3 || from.length != 3)
     		throw new Exception("SeriesAiredAdapter requires exactly 3 'to' and 'from' elements.");
     	

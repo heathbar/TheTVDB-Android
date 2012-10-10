@@ -73,6 +73,7 @@ public class EpisodeHandler extends DefaultHandler{
 			
 			if (name.equals("id")){
 				theEpisode.setId(Integer.valueOf(sb.toString()));
+				theEpisode.getImage().setId("E" + sb.toString());
 			} else if (name.equals("episodenumber")){
 				theEpisode.setNumber(Integer.valueOf(sb.toString()));
 			} else if (name.equals("seasonnumber")) {
@@ -89,7 +90,7 @@ public class EpisodeHandler extends DefaultHandler{
 			} else if (name.equals("overview")){
 				theEpisode.setOverview(sb.toString());
 			} else if (name.equals("filename")){
-				theEpisode.getImage().setUrl(sb.toString());
+				theEpisode.getImage().setUrl(AppSettings.BANNER_URL + sb.toString());	// IDs are not globally unique. Prefix an "E" to indicate this ID is an episode
 			} else if (name.equals("rating")){
 				theEpisode.setRating(sb.toString());
 			} else if (name.equals("gueststars")){
