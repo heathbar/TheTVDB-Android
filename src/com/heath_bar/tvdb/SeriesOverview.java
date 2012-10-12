@@ -45,6 +45,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
@@ -56,6 +57,7 @@ import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
 import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
+import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
 import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
@@ -147,7 +149,7 @@ public class SeriesOverview extends SherlockActivity {
 		}
 		
 	}
-	// Populate the interface with the data pulled from the webz
+	/** Populate the interface with the data pulled from the webz */
 	private void PopulateStuff(TvSeries seriesInfo){
 		
 		if (seriesInfo == null)
@@ -183,31 +185,11 @@ public class SeriesOverview extends SherlockActivity {
 		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
 		imageView.setVisibility(View.VISIBLE);
 		final String seriesName = seriesInfo.getName();
-		final String imageId = seriesInfo.getImage().getId();
 		
 		imageView.setOnClickListener(new OnClickListener() {
-			
 			@Override
 			public void onClick(View v) {
-
-				// **
-				// SEE ActorDetails.java for alternate working code using the MediaStore
-				// **
-				
-				Intent share = new Intent(Intent.ACTION_SEND);
-				share.setType("image/jpeg");
-				
-				BitmapFileCache cache = new BitmapFileCache(getApplicationContext());
-				if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
-					// I'm going to assume the image hasn't been trimmed from the cache...
-					String path = cache.makeJPG(imageId);
-					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
-					startActivity(Intent.createChooser(share, "Share Image"));
-					
-				}else{
-					// Can't share if there is no sdcard... at least not reliably or without using the MediaStore
-					Toast.makeText(getApplicationContext(), "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
-				}
+				shareImage();
 			}
 		});
 		
@@ -413,7 +395,7 @@ public class SeriesOverview extends SherlockActivity {
 		}
 	}
 	
-	// Populate the next/last episodes
+	/** Populate the GUI with the episode information */
 	private void PopulateStuffPartTwo(){
 		
 		// Populate the next/last episodes
@@ -541,24 +523,87 @@ public class SeriesOverview extends SherlockActivity {
 		db.createFavoriteSeries(info);
 		db.close();
 	}
+
+	/** Launch the share menu for the series banner */
+	public void shareImage(){
+		try{
+			Intent i = ShareUtil.makeIntent(getApplicationContext(), seriesInfo.getImage().getId());
+			if (i != null)
+				startActivity(i);
+		}catch (Exception e){
+			Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	
+	
+	
+	
+	
+	// ACTIONBAR MENU ////////////////////////////////////////////////
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        menu.add("Search")
-            .setIcon(R.drawable.ic_search)
-            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-				
+		// SHARE Sub Menu ///////////////////////////
+		
+		SubMenu subMenu1 = menu.addSubMenu("Share");
+		subMenu1
+    		.add("TheTVDB Link")
+    		.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+    			@Override
+    			public boolean onMenuItemClick(MenuItem item) {
+    				try{
+    					startActivity(ShareUtil.makeIntent(getApplicationContext(), seriesInfo.getName(), "http://thetvdb.com/?tab=series&id=" + seriesId));
+    				}catch (Exception e){
+    					Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
+    				}
+    				return false;
+    			}
+    		});
+			subMenu1
+			.add("IMDB Link")
+			.setOnMenuItemClickListener(new OnMenuItemClickListener() {
 				@Override
 				public boolean onMenuItemClick(MenuItem item) {
-					onSearchRequested();
+					try{
+						startActivity(ShareUtil.makeIntent(getApplicationContext(), seriesInfo.getName(), "http://www.imdb.com/title/" + seriesInfo.getIMDB()));
+					}catch (Exception e){
+						Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
+					}
 					return false;
 				}
-			})
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+			});
+			subMenu1
+			.add("Series Banner")
+			.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					shareImage();
+					return false;
+				}
+			});
+		
+        MenuItem subMenu1Item = subMenu1.getItem();
+        subMenu1Item.setIcon(R.drawable.ic_share);
+        subMenu1Item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+		
+		menu.add("Search")
+        .setIcon(R.drawable.ic_search)
+        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+			
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				onSearchRequested();
+				return false;
+			}
+		})
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
         return true;
     }
+	
 	
 	// Home button moves back
 	@Override

@@ -20,7 +20,6 @@ package com.heath_bar.tvdb;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -29,12 +28,17 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
 import com.heath_bar.lazylistadapter.WebImage;
+import com.heath_bar.tvdb.util.ShareUtil;
 
 public class BannerViewer extends SherlockActivity {
 
+	protected WebImage webImage;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadImageTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +104,8 @@ public class BannerViewer extends SherlockActivity {
 		@Override
 		protected void onPostExecute(WebImage wi){
 
-			final String imageId = wi.getId();
+			// Save for sharing later
+			webImage = wi;
 			
 			ImageView image = (ImageView)findViewById(R.id.image);
 			image.setImageBitmap(wi.getBitmap());
@@ -108,25 +113,7 @@ public class BannerViewer extends SherlockActivity {
 				
 				@Override
 				public void onClick(View v) {
-					// **
-    				// SEE ActorDetails.java for alternate working code using the MediaStore
-    				// **
-															
-    				Intent share = new Intent(Intent.ACTION_SEND);
-    				share.setType("image/jpeg");
-    				
-    				BitmapFileCache cache = new BitmapFileCache(getApplicationContext());
-    				if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
-    					// I'm going to assume the image hasn't been trimmed from the cache...
-    					String path = cache.makeJPG(imageId);
-    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
-    					startActivity(Intent.createChooser(share, "Share Image"));
-    					
-    				}else{
-    					// Can't share if there is no sdcard... at least not reliably or without using the MediaStore
-    					Toast.makeText(getApplicationContext(), "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
-    				}	
-					
+					shareImage();
 				}
 			});
 			
@@ -136,6 +123,64 @@ public class BannerViewer extends SherlockActivity {
 		}
 		
 		
+	}
+	
+	/** Launch the share menu */
+	public void shareImage(){
+		try {
+			Intent i = ShareUtil.makeIntent(getApplicationContext(), webImage.getId());
+			if (i != null)
+				startActivity(i);
+		}catch (Exception e){
+			Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	// ACTIONBAR MENU
+	
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+    	
+		menu.add("Share")
+	    	.setIcon(R.drawable.ic_share)
+	    	.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					shareImage();
+					return false;
+				}
+			})
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+		menu.add("Search")
+			.setIcon(R.drawable.ic_search)
+            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					onSearchRequested();
+					return false;
+				}
+			})
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+        
+    	
+	   	return true;
+    }
+    
+    
+
+	// Home button moves back
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+	     switch (item.getItemId()) {
+	         case android.R.id.home:
+	        	 finish();
+	        	 return true;
+	     }
+	     return false;
 	}
 
 }

@@ -36,19 +36,24 @@ import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
+import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
 import com.heath_bar.tvdb.types.Actor;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
+import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.ActorHandler;
 
 public class ActorDetails extends SherlockActivity {
 
-	private long seriesId;
-	private String actorName;
+	protected long seriesId;
+	protected Actor actor;
+	protected String imageId;
 	protected long cacheSize;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
@@ -64,7 +69,10 @@ public class ActorDetails extends SherlockActivity {
 			Bundle extras = getIntent().getExtras();
 		    if(extras != null) {
 		    	seriesId = getIntent().getLongExtra("seriesId", 0);
-		    	actorName = getIntent().getStringExtra("ActorName");
+		    	
+		    	actor = new Actor();		    	
+		    	actor.setName(getIntent().getStringExtra("ActorName"));
+		    	
 		    	String seriesName = getIntent().getStringExtra("seriesName");
 		    	
 				// Set title
@@ -74,7 +82,7 @@ public class ActorDetails extends SherlockActivity {
 				
 				// Start the asynchronous load process
 		    	setSupportProgressBarIndeterminateVisibility(true);
-				new LoadActorDetailsTask().execute(String.valueOf(seriesId), actorName);
+				new LoadActorDetailsTask().execute(String.valueOf(seriesId), actor.getName());
 		    	
     		}
 		}catch (Exception e){
@@ -119,6 +127,9 @@ public class ActorDetails extends SherlockActivity {
 		@Override
 		protected void onPostExecute(Actor theActor){
 
+			// Save the actor for sharing later
+			actor = theActor;
+			
 			// Populate the activity with the data we just found
 			PopulateStuff(theActor);
 			
@@ -128,6 +139,7 @@ public class ActorDetails extends SherlockActivity {
 		}
 	}
 	
+	/** Populate the GUI with the data we've obtained */
 	private void PopulateStuff(Actor theActor){
 		
 		if (theActor == null){
@@ -149,39 +161,13 @@ public class ActorDetails extends SherlockActivity {
 		// Set Image
 		if (theActor.getImage().getBitmap() != null && !theActor.getImage().getUrl().equals("")){
 		
-			final String imageId = theActor.getImage().getId();
+			imageId = theActor.getImage().getId();
 
 			ImageButton banner = (ImageButton)findViewById(R.id.actor_image);
     		banner.setImageBitmap(theActor.getImage().getBitmap());
     		banner.setOnClickListener(new View.OnClickListener() {   
     			public void onClick(View v) { 
-    				Intent share = new Intent(Intent.ACTION_SEND);
-    				share.setType("image/jpeg");
-    				   					
-					/*
-					* ALTERNATE WORKING CODE 
-					* This is working code using the MediaStore
-					* I chose not to use the MediaStore since dropbox auto uploads every image added to the MediaStore.  
-					*
-				    FileOutputStream fos = openFileOutput(filename + ".jpg", MODE_WORLD_READABLE);
-				    fos.write(bytes.toByteArray());
-		            fos.close();    				    
-		            File jpg = getFileStreamPath(filename + ".jpg");    				    
-		            String path = MediaStore.Images.Media.insertImage(getApplicationContext().getContentResolver(), jpg.getAbsolutePath(), jpg.getName(), filename);
-		            share.putExtra(Intent.EXTRA_STREAM, Uri.parse(path)); 
-		            */
-					
-    				BitmapFileCache cache = new BitmapFileCache(getApplicationContext());
-    				if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
-    					// I'm going to assume the image hasn't been trimmed from the cache...
-    					String path = cache.makeJPG(imageId);
-    					share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
-    					startActivity(Intent.createChooser(share, "Share Image"));
-    					
-    				}else{
-    					// Can't share if there is no sdcard... at least not reliably or without using the MediaStore
-    					Toast.makeText(getApplicationContext(), "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
-    				}
+    				shareImage();
     			}
 			});
     		banner.setVisibility(View.VISIBLE);
@@ -194,7 +180,7 @@ public class ActorDetails extends SherlockActivity {
 		ssb.setSpan(new NonUnderlinedClickableSpan(getResources().getString(R.string.imdb)) {
 			@Override
 			public void onClick(View v){
-				Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.imdb.com/find?q=" + actorName.replace(' ', '+') + "&s=all"));
+				Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.imdb.com/find?q=" + actor.getName().replace(' ', '+') + "&s=all"));
 				startActivity(myIntent);	        		
 			}
 		}, 0, ssb.length(), 0);
@@ -203,8 +189,73 @@ public class ActorDetails extends SherlockActivity {
 		textview.setText(ssb, BufferType.SPANNABLE);
 		textview.setMovementMethod(LinkMovementMethod.getInstance());
 	}
+
+
 	
 	
+	
+	/** Launch the share menu for the actor image */
+    public void shareImage(){
+    	try {
+			Intent i = ShareUtil.makeIntent(getApplicationContext(), actor.getImage().getId());
+			if (i != null)
+				startActivity(i);
+		}catch (Exception e){
+			Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
+		}
+    }
+    
+    
+	// ACTIONBAR MENU
+	
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+    	SubMenu subMenu1 = menu.addSubMenu("Share");
+
+	        subMenu1
+	        	.add("IMDB Link")
+	        	.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					try{
+						startActivity(ShareUtil.makeIntent(getApplicationContext(), actor.getName(), "http://www.imdb.com/find?q=" + actor.getName().replace(' ', '+')));				
+					}catch (Exception e){
+						Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
+					}
+					return false;
+				}
+			});
+	        subMenu1
+	        	.add("Actor Image")
+	        	.setOnMenuItemClickListener(new OnMenuItemClickListener() {				
+					@Override
+					public boolean onMenuItemClick(MenuItem item) {
+						shareImage();
+						return false;
+					}
+				});
+
+        MenuItem subMenu1Item = subMenu1.getItem();
+        subMenu1Item.setIcon(R.drawable.ic_share);
+        subMenu1Item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+		menu.add("Search")
+			.setIcon(R.drawable.ic_search)
+            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					onSearchRequested();
+					return false;
+				}
+			})
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+    	
+    	return true;
+    }
+    
+    
 	// Home button moves back
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
@@ -216,7 +267,7 @@ public class ActorDetails extends SherlockActivity {
 	     return false;
 	}
 	
-	// Apply Preferences
+	/** Apply Preferences */
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
@@ -233,4 +284,7 @@ public class ActorDetails extends SherlockActivity {
 		textview = (TextView)findViewById(R.id.imdb_link);
 		textview.setTextSize(textSize);
 	}
+	
+	
+	
 }

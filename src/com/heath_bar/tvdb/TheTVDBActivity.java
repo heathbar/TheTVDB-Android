@@ -278,9 +278,10 @@ public class TheTVDBActivity extends SherlockListActivity  {
 					return false;
 				}
 			})
-			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
 		menu.add("Search")
+			.setIcon(R.drawable.ic_search)
             .setOnMenuItemClickListener(new OnMenuItemClickListener() {
 				
 				@Override
@@ -304,7 +305,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
 					return false;
 				}
 			})
-			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
     	
     	return true;
     }
