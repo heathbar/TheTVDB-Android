@@ -274,7 +274,10 @@ public class EpisodeDetails extends SherlockActivity {
 				@Override
 				public boolean onMenuItemClick(MenuItem item) {
 					try{
-						startActivity(ShareUtil.makeIntent(getApplicationContext(), myEpisode.getName(), "http://www.imdb.com/title/" + myEpisode.getIMDB()));
+						if (!myEpisode.getIMDB().equals(""))
+							startActivity(ShareUtil.makeIntent(getApplicationContext(), myEpisode.getName(), "http://www.imdb.com/title/" + myEpisode.getIMDB()));
+						else
+							Toast.makeText(getApplicationContext(), "IMDB link could not be found.", Toast.LENGTH_SHORT).show();
 					}catch (Exception e){
 						Toast.makeText(getApplicationContext(), "There was a problem sharing the content.", Toast.LENGTH_SHORT).show();
 					}
