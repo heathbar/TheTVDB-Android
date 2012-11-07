@@ -30,5 +30,11 @@
         android:max="500"
         />
     
+    <EditTextPreference android:key="accountId"
+        android:title="Account Identifier"
+        android:summary="A unique identifier assigned to you. This identifier can be found by visiting the account settings page on thetvdb.com and is required to publish ratings."
+        android:defaultValue="" 
+        />
+    
     </PreferenceCategory>
 </PreferenceScreen>

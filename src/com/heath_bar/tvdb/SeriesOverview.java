@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -42,11 +43,11 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
+import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
@@ -60,10 +61,12 @@ import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
+import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
+import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter.RatingType;
 import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
 
 
-public class SeriesOverview extends SherlockActivity {
+public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
 
 	protected long seriesId;
 	protected TvSeries seriesInfo;
@@ -71,6 +74,7 @@ public class SeriesOverview extends SherlockActivity {
 	protected int numberOfSeasons = 0;
 	protected float textSize;
 	protected long cacheSize;
+	protected String userAccountId;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -244,8 +248,15 @@ public class SeriesOverview extends SherlockActivity {
 		
 		textview = (TextView)findViewById(R.id.rating);
 		textview.setText(seriesInfo.getRating() + " / 10");
+		textview.setClickable(true);
+		textview.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				showRatingDialog();				
+			}
+		});
 		textview.setVisibility(View.VISIBLE);
-				
+		
 		
 		// Set genre
 		textview = (TextView)findViewById(R.id.genre_header);
@@ -341,6 +352,8 @@ public class SeriesOverview extends SherlockActivity {
 
 		return builtTags;
 	}
+	
+	
 	
 	
 	
@@ -498,8 +511,6 @@ public class SeriesOverview extends SherlockActivity {
 		}
 		
 	}
-
-	
 	
 	// Handle episode clicks
 	final OnClickListener episodeListener = new OnClickListener() {
@@ -514,7 +525,6 @@ public class SeriesOverview extends SherlockActivity {
     		startActivityForResult(myIntent, 0);		
 		}
 	};
-			
 	
 	public void addToFavorites(){
 		FavoriteSeriesInfo info = new FavoriteSeriesInfo(Integer.valueOf(seriesInfo.getId()), seriesInfo.getName(), "0", "0");
@@ -538,6 +548,56 @@ public class SeriesOverview extends SherlockActivity {
 	
 	
 	
+	// Rating Functions ////////////////////////////////////////////////////////
+	
+	private void showRatingDialog(){
+		if (userAccountId.equals("")){
+			Toast.makeText(this, "You must specify your account identifier in the application settings before you can set ratings.", Toast.LENGTH_LONG).show();
+		}else{
+			RatingFragment dialog = new RatingFragment();
+			dialog.setTitle(seriesInfo.getName());
+			dialog.show(getSupportFragmentManager(), "RatingFragment");
+		}
+	}
+	
+	// Called when the user clicks Rate from the dialog 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        TextView valueText = (TextView)dialog.getDialog().findViewById(R.id.value);
+        new UpdateRatingTask().execute(userAccountId, String.valueOf(seriesId), valueText.getText().toString());
+    }
+    
+    // Called when the user clicks Cancel from the dialog
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // Do nothing
+    }
+    
+    // Update the rating asynchronously
+ 	private class UpdateRatingTask extends AsyncTask<String, Void, Boolean>{
+ 		@Override
+ 		protected Boolean doInBackground(String... params) {
+ 			try {
+ 				SetRatingAdapter ra = new SetRatingAdapter();
+ 		        return ra.updateRating(params[0], RatingType.SERIES, params[1], Integer.valueOf(params[2]));
+ 			}catch (Exception e){
+ 				e.printStackTrace();
+ 				return false;
+ 			} 			
+ 		}
+ 		
+ 		@Override
+ 		protected void onPostExecute(Boolean result){
+ 			if (result)
+ 				Toast.makeText(getApplicationContext(), "Your rating has been saved", Toast.LENGTH_SHORT).show();
+ 			else
+ 				Toast.makeText(getApplicationContext(), "A problem was encountered while trying to save your rating", Toast.LENGTH_SHORT).show();
+ 		}
+
+ 	}
+ 	
+ 	
+ 	
 	
 	
 	// ACTIONBAR MENU ////////////////////////////////////////////////
@@ -624,6 +684,7 @@ public class SeriesOverview extends SherlockActivity {
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
+		userAccountId = settings.getString("accountId", "");
     	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	
     	Button b = (Button)findViewById(R.id.btn_add_to_favorites);
@@ -660,6 +721,7 @@ public class SeriesOverview extends SherlockActivity {
 		textview.setTextSize(textSize*1.3f);
 
 		textview = (TextView)findViewById(R.id.rating);
+		textview.setTextAppearance(this, R.style.episode_link);
 		textview.setTextSize(textSize);
 
 		textview = (TextView)findViewById(R.id.genre_header);

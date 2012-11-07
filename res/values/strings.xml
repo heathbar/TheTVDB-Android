@@ -20,4 +20,9 @@
     <string name="genre">Genre</string>
     <string name="runtime">Run Time</string>
     <string name="imdb">\nView on IMDB</string>
+    <string name="rate">Rate</string>
+    <string name="cancel">Cancel</string>
+    <string name="plus">+</string>
+    <string name="minus">-</string>
+    <string name="stars">stars</string>
 </resources>

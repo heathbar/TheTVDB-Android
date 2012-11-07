@@ -112,7 +112,7 @@
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/rating" />
-		
+        
 		<TextView
 		    android:id="@+id/rating"
 		    android:layout_width="fill_parent"

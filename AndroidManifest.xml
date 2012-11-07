@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.heath_bar.tvdb"
     android:installLocation="auto"
-    android:versionCode="4"
-    android:versionName="0.3.1">
+    android:versionCode="5"
+    android:versionName="0.4.0">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="13"/>
 	<permission android:name="com.heath_bar.tvdb.search"></permission>
 	
@@ -29,6 +29,9 @@
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
         
+        
+        
+        
         <activity android:name="com.heath_bar.tvdb.EpisodeDetails">
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
@@ -52,8 +55,10 @@
 	        <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
         </activity>
                
-        <service  android:name="com.heath_bar.tvdb.UpdateService" android:enabled="true"></service>
+        <activity android:label="Rating Dialog" android:name=".RatingFragment" android:theme="@style/Theme.Sherlock.Dialog"></activity>
         <activity android:name="com.heath_bar.tvdb.Preferences"></activity>
+        
+        <service  android:name="com.heath_bar.tvdb.UpdateService" android:enabled="true"></service>
         
         
     </application>

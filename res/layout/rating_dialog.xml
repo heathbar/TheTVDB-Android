@@ -1,4 +1,55 @@
-/*
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+	<LinearLayout
+	    android:id="@+id/layout2"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:gravity="center"
+	    android:orientation="horizontal" >
+
+		<Button
+		    android:id="@+id/btn_minus"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:height="40dip"
+		    android:width="40dip"
+		    android:text="@string/minus" />
+	    
+	    <TextView
+	        android:id="@+id/value"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginLeft="20dip"
+	        android:layout_marginRight="20dip"
+	        android:gravity="center"
+	        android:textSize="40dip" />
+	
+	    <Button
+	        android:id="@+id/btn_plus"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:height="40dip"
+		    android:width="40dip"
+	        android:text="@string/plus" />        
+	</LinearLayout>
+
+	<TextView
+	        android:id="@+id/stars_text"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:gravity="center_horizontal"
+	        android:width="120dip"
+	        android:text="@string/stars" />
+</LinearLayout>
+
+<!-- 
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
 │                                                  TERMS OF USE: MIT License                                                   │
 │                                                  Copyright © 2012 Heath Paddock                                              │
@@ -15,25 +66,4 @@
 │COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,   │
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
- */
-package com.heath_bar.tvdb;
-
-
-public final class AppSettings {
-
-	public static final String API_KEY = "0A41C0DEA5531762";
-	public static final String BASE_URL =  "http://thetvdb.com/api/" + API_KEY + "/";
-	public static final String SERIES_BASIC_URL = "http://www.thetvdb.com/api/GetSeries.php?seriesname=";
-	public static final String SERIES_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/series/"; // <seriesid>/all/en.xml
-	public static final String EPISODE_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/episodes/"; // <seriesid>/all/en.xml
-	public static final String GET_RATING_URL = "http://thetvdb.com/api/User_Rating.php?";
-	public static final String SET_RATING_URL = "http://thetvdb.com/api/GetRatingsForUser.php?apikey= " + API_KEY + "&";
-	public static final String BANNER_URL = "http://thetvdb.com/banners/";
-	public static final boolean LOG_ENABLED = true;
-	public static final int DATABASE_VERSION = 1;
-	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
-	public static final String PREFS_NAME = "TheTVDBSettings";
-	public static final int THUMBNAIL_SIZE = 100;
-	public static final int DEFAULT_CACHE_SIZE = 50; // 50 MB
-	
-}
+-->
