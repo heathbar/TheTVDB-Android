@@ -36,5 +36,12 @@
         android:defaultValue="" 
         />
     
+    <CheckBoxPreference
+        android:key="syncFavorites"
+        android:title="Sync Favorites"
+        android:summaryOn="You're favorites are being sync'ed with your account on thetvdb.com"
+        android:summaryOff="Sync your favorite shows with thetvdb.com. This feature requires you to have an account setup on thetvdb.com and to enter your account ID above."
+        />
+            
     </PreferenceCategory>
 </PreferenceScreen>

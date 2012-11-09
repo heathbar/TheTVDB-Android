@@ -63,8 +63,9 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	            holder.column3 = cursor.getColumnIndexOrThrow(_from[2]);
 	            
 	            view.setTag(holder);
-	            view.setBackgroundColor(_colors[cursor.getPosition() % _colors.length]);
+	            
 	        }
+	        view.setBackgroundColor(_colors[cursor.getPosition() % _colors.length]);
 
 	        holder.textView1.setText(cursor.getString(holder.column1));
 	        holder.textView1.setTextSize(_textSize*1.6f);
@@ -78,6 +79,8 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	        	holder.textView3.setText("Next Aired: " + cursor.getString(holder.column3));
 	        holder.textView3.setTextSize(_textSize*0.7f);
 	    }
+		
+		
 
 	    static class ViewHolder {
 	        TextView textView1;

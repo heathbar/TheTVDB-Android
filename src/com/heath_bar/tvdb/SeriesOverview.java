@@ -53,17 +53,20 @@ import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
+import com.heath_bar.tvdb.types.Rating;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
+import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
+import com.heath_bar.tvdb.xml.handlers.GetRatingAdapter;
+import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
 import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
 import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter.RatingType;
-import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
 
 
 public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
@@ -111,10 +114,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				// Lookup basic series info
 				SeriesInfoHandler infoQuery = new SeriesInfoHandler(getApplicationContext());
 	    		seriesInfo = infoQuery.getInfo(id[0]);
-	    		
-	    		// Download banner while we're still in the background thread
-	    		//seriesInfo.getImage().Load(getApplicationContext());
-	    		
+	    			    		
 	    		Bitmap bitmap;
 		    	BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
 		    	
@@ -148,7 +148,11 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			findViewById(R.id.loading1).setVisibility(View.GONE);
 			findViewById(R.id.loading2).setVisibility(View.VISIBLE);
 			
-			// Load series 
+			
+			// Load Rating
+			new LoadRatingTask().execute();
+
+			// Load episodes 
 			new LoadEpisodesTask().execute();
 		}
 		
@@ -248,13 +252,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		
 		textview = (TextView)findViewById(R.id.rating);
 		textview.setText(seriesInfo.getRating() + " / 10");
-		textview.setClickable(true);
-		textview.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				showRatingDialog();				
-			}
-		});
 		textview.setVisibility(View.VISIBLE);
 		
 		
@@ -341,7 +338,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 						}
 					}, start, end, 0);
 					ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
-					ssb.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, ssb.length(), 0);				// Override the text size with the user's preference
+					//ssb.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, ssb.length(), 0);				// Override the text size with the user's preference
 					builtTags.append(ssb);
 					if (text.substring(end + 1).indexOf(delim) >= 0)
 						builtTags.append(", ");
@@ -353,6 +350,36 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		return builtTags;
 	}
 	
+	
+	// Load the user's rating asynchronously
+	private class LoadRatingTask extends AsyncTask<String, Void, Integer>{
+		
+		private Exception e;
+		
+		@Override
+		protected Integer doInBackground(String... params) {
+			
+			try {
+	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
+	    		Rating r = ratingAdapter.getSeriesRating(userAccountId, seriesId);
+	    		return Integer.valueOf(r.getUserRating());
+			}catch (RatingNotFoundException e){
+				return 0;
+			}catch (Exception e){
+				this.e = e;
+				e.printStackTrace();
+			}
+			return 0;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer rating){
+			if (e != null)
+				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+			else
+				setUserRatingTextView(rating);
+		}
+	}
 	
 	
 	
@@ -550,6 +577,35 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	
 	// Rating Functions ////////////////////////////////////////////////////////
 	
+ 	/** Update the GUI with the specified rating */
+ 	private void setUserRatingTextView(int rating){
+ 		
+ 		TextView ratingTextView = (TextView)findViewById(R.id.rating);
+		String communityRatingText = seriesInfo.getRating() + " / 10";
+		
+		String ratingTextA = communityRatingText + "  (";
+		String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
+		String ratingTextC = ")";
+		
+		int start = ratingTextA.length();
+		int end = ratingTextA.length() + ratingTextB.length();
+				
+		SpannableStringBuilder ssb = new SpannableStringBuilder(ratingTextA + ratingTextB + ratingTextC);
+		
+		ssb.setSpan(new NonUnderlinedClickableSpan() {
+			@Override
+			public void onClick(View v){
+				showRatingDialog();		        		
+			}
+		}, start, end, 0);
+		
+		ssb.setSpan(new TextAppearanceSpan(getApplicationContext(), R.style.episode_link), start, end, 0);	// Set the style of the text
+		ratingTextView.setText(ssb, BufferType.SPANNABLE);
+		ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+ 	}
+ 	
+ 	
+ 	/** Display the rating dialog to the user */
 	private void showRatingDialog(){
 		if (userAccountId.equals("")){
 			Toast.makeText(this, "You must specify your account identifier in the application settings before you can set ratings.", Toast.LENGTH_LONG).show();
@@ -581,21 +637,21 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
  				SetRatingAdapter ra = new SetRatingAdapter();
  		        return ra.updateRating(params[0], RatingType.SERIES, params[1], Integer.valueOf(params[2]));
  			}catch (Exception e){
- 				e.printStackTrace();
  				return false;
  			} 			
  		}
  		
  		@Override
  		protected void onPostExecute(Boolean result){
- 			if (result)
+ 			if (result){
+ 				new LoadRatingTask().execute();
  				Toast.makeText(getApplicationContext(), "Your rating has been saved", Toast.LENGTH_SHORT).show();
- 			else
+ 			}else{
  				Toast.makeText(getApplicationContext(), "A problem was encountered while trying to save your rating", Toast.LENGTH_SHORT).show();
+ 			}
  		}
 
  	}
- 	
  	
  	
 	
@@ -721,7 +777,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		textview.setTextSize(textSize*1.3f);
 
 		textview = (TextView)findViewById(R.id.rating);
-		textview.setTextAppearance(this, R.style.episode_link);
 		textview.setTextSize(textSize);
 
 		textview = (TextView)findViewById(R.id.genre_header);

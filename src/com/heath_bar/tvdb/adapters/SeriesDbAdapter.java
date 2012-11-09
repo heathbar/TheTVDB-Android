@@ -79,7 +79,15 @@ public class SeriesDbAdapter {
      * @return
      */
     public Cursor fetchFavorites() {
-
+    	return fetchFavorites(KEY_TITLE);
+    }
+    
+    
+    /**
+     * Fetch the entire favorites table
+     * @return
+     */
+    public Cursor fetchFavorites(String sortBy){
         return mDb.query(FAVORITES_TABLE, 
         		new String[] {
         			KEY_ID, 
@@ -87,8 +95,10 @@ public class SeriesDbAdapter {
         			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch')) END AS " + KEY_LAST_AIRED,
         			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch')) END AS " + KEY_NEXT_AIRED
     			},
-                null, null, null, null, KEY_TITLE);
+                null, null, null, null, sortBy);
     }
+    
+    
     
     
     public void updateFavorite(FavoriteSeriesInfo info){

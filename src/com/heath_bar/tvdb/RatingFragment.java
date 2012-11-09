@@ -30,23 +30,22 @@ public class RatingFragment extends DialogFragment {
 	    
 	    // Inflate and set the layout for the dialog
 	    // Pass null as the parent view because its going in the dialog layout
-	    builder.setView(inflater.inflate(R.layout.rating_dialog, null))
-	    // Add action buttons
-	    	.setTitle(title)
-	        .setPositiveButton(R.string.rate, new DialogInterface.OnClickListener() {
-	        	@Override
-	             public void onClick(DialogInterface dialog, int id) {
-	                 mListener.onDialogPositiveClick(RatingFragment.this);
-	             }
-	         })
-	         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					mListener.onDialogNegativeClick(RatingFragment.this);
-				}
-			});
+	    builder.setView(inflater.inflate(R.layout.rating_dialog, null));
+    	builder.setTitle(title);
+    	builder.setPositiveButton(R.string.rate, new DialogInterface.OnClickListener() {
+        	@Override
+             public void onClick(DialogInterface dialog, int id) {
+                 mListener.onDialogPositiveClick(RatingFragment.this);
+             }
+         });
+         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				mListener.onDialogNegativeClick(RatingFragment.this);
+			}
+		});
 
-	    return builder.create(); 
+	    return builder.create();
 	}
 	
 	

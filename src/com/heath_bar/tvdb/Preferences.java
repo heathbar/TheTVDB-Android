@@ -21,6 +21,7 @@ package com.heath_bar.tvdb;
 import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
+import com.actionbarsherlock.view.MenuItem;
 
 public class Preferences extends SherlockPreferenceActivity {
 	
@@ -28,6 +29,23 @@ public class Preferences extends SherlockPreferenceActivity {
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        
         addPreferencesFromResource(R.xml.preferences);
 	}
+	
+	
+	
+	
+	// Home button moves back
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item){
+		     switch (item.getItemId()) {
+		         case android.R.id.home:
+		        	 finish();
+		        	 return true;
+		     }
+		     return false;
+		}
 }

@@ -18,6 +18,7 @@
  */
 package com.heath_bar.tvdb.xml.handlers;
 
+import java.io.IOException;
 import java.net.URL;
 
 import javax.xml.parsers.SAXParser;
@@ -33,18 +34,23 @@ import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
 import com.heath_bar.tvdb.types.Rating;
+import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 
 public class GetRatingAdapter extends DefaultHandler{
 		private StringBuilder sb;
 	    private long episodeId = -1;
 	    private Rating currentRating;
 	    private Rating resultRating;
+	    private String errorMessage;
 	    
 	    
 	    @Override
 		public void startElement(String uri, String name, String qName, Attributes atts) {
 		    sb = new StringBuilder();						// Reset the string builder
-		    currentRating = new Rating();
+		    
+		    name = name.trim().toLowerCase();
+		    if (name.equals("series") || name.equals("episode"))
+		    	currentRating = new Rating();
 	    }
 	    
 	    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
@@ -61,30 +67,35 @@ public class GetRatingAdapter extends DefaultHandler{
 
 				name = name.trim().toLowerCase();
 				
-				if (name.equals("seriesid") || name.equals("id"))
-					currentRating.setId(sb.toString());
-				else if (name.equals("userrating"))
-					currentRating.setUserRating(sb.toString());
-				else if (name.equals("communityrating"))
-					currentRating.setCommunityRating(sb.toString());	
-				
-				
-				// If we hit the end of a series tag and we aren't looking for an episode rating, the current rating is our response
-				else if (name.equals("series") && episodeId == -1)
-					resultRating = currentRating;
-				
-
-				// if we hit the end of an episode tag and the id matches our episode id, the current rating is our response
-				else if (name.equals("episode") && currentRating.getId().equals(String.valueOf(episodeId)))
+				if (errorMessage == null){
+					
+					if (name.equals("error"))
+						errorMessage = sb.toString();
+					else if (name.equals("seriesid") || name.equals("id"))
+						currentRating.setId(sb.toString());
+					else if (name.equals("userrating"))
+						currentRating.setUserRating(sb.toString());
+					else if (name.equals("communityrating"))
+						currentRating.setCommunityRating(sb.toString());	
+					
+					
+					// If we hit the end of a series tag and we aren't looking for an episode rating, the current rating is our response
+					else if (name.equals("series") && episodeId == -1)
 						resultRating = currentRating;
+					
+	
+					// if we hit the end of an episode tag and the id matches our episode id, the current rating is our response
+					else if (name.equals("episode") && currentRating.getId().equals(String.valueOf(episodeId)))
+							resultRating = currentRating;
+				}
 
 			} catch (Exception e) {
 				if (AppSettings.LOG_ENABLED)
-					Log.e("xml.handlers.RatingAdapter", e.toString());
+					Log.e("xml.handlers.RatingAdapter", e.toString());				
 			}
 		}
 	    
-	    public Rating getSeriesRating(String accountId, long seriesId) {
+	    public Rating getSeriesRating(String accountId, long seriesId) throws Exception {
 		    try {
 				URL url = new URL(AppSettings.SET_RATING_URL + "accountid=" + accountId + "&seriesid=" + seriesId);	
 								
@@ -93,13 +104,21 @@ public class GetRatingAdapter extends DefaultHandler{
 			    XMLReader xr = sp.getXMLReader();
 			    xr.setContentHandler(this);
 			    xr.parse(new InputSource(url.openStream()));
-			    		    
+
+			    if (errorMessage != null){
+			    	if (errorMessage.startsWith("The seriesid") && errorMessage.endsWith("had no results"))
+			    		throw new RatingNotFoundException();
+			    	else
+			    		throw new Exception(errorMessage);
+			    }
+			    
 			    return resultRating;
-			} catch (Exception e) {
-				if (AppSettings.LOG_ENABLED)
-					Log.e("xml.handlers.RatingAdapter", e.toString());
-				return new Rating();
-			}
+		    } catch (IOException e){
+		    	logError(e.getMessage());
+		    }catch (SAXException e){
+		    	logError(e.getMessage());
+		    }
+		    return null;
 		}
 	    
 	    public Rating getEpisodeRating(String accountId, long seriesId, long episodeId) {
@@ -120,6 +139,12 @@ public class GetRatingAdapter extends DefaultHandler{
 				return new Rating();
 			}
 		}
+	    
+	    
+	    private void logError(String e){
+	    	if (AppSettings.LOG_ENABLED)
+				Log.e("xml.handlers.RatingAdapter", e.toString());
+	    }
 	}
 
 

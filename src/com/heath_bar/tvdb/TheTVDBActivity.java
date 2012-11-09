@@ -24,8 +24,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -39,25 +37,31 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.internal.widget.IcsListPopupWindow;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.tvdb.adapters.PopupMenuAdapter;
 import com.heath_bar.tvdb.adapters.SeriesAiredListAdapter;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
 
-public class TheTVDBActivity extends SherlockListActivity  {
+public class TheTVDBActivity extends SherlockListActivity implements OnItemClickListener   {
 	
 	
-	private SeriesDbAdapter db;
-	private Cursor cursor;
-	private Cursor refreshCursor;
-	private SeriesAiredListAdapter adapter;
-	private ResponseReceiver updateReceiver;
-	private Intent updater;
+	private SeriesDbAdapter db;							// db where favorites are stored... should replace this with an API
+	private Cursor cursor;								// cursor to hold the favorites from the db
+	private Cursor refreshCursor;						// replacement cursor
+	private SeriesAiredListAdapter adapter;				// adapter to lookup air times
+	private ResponseReceiver updateReceiver;			// listener for updates from the adapter
+	private Intent airedDatesUpdater;
 	private boolean isRefreshing = false;
 	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
+	
+	private IcsListPopupWindow sortPopupMenu;			// define a popup menu for the sort button to show
+	private String sortBy = SeriesDbAdapter.KEY_TITLE;  // Sort by show title by default
+	
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,22 +70,25 @@ public class TheTVDBActivity extends SherlockListActivity  {
         getSupportActionBar().setHomeButtonEnabled(false);
         setContentView(R.layout.favorites_list);
 
-        if (updater == null)
-        	updater = new Intent(getApplicationContext(), UpdateService.class);
+        if (airedDatesUpdater == null)
+        	airedDatesUpdater = new Intent(getApplicationContext(), UpdateService.class);
         
         // Setup the ListView header
-        View header = getLayoutInflater().inflate(R.layout.text, null);
-        TextView header_text = (TextView) header.findViewById(R.id.text);
-        header_text.setText("Favorite Shows");        
-        header_text.setTextColor(Color.WHITE);
-        header_text.setBackgroundColor(getResources().getColor(R.color.tvdb_green));
-        header_text.setTypeface(null, Typeface.BOLD);
+        View header = getLayoutInflater().inflate(R.layout.favorites_header, null);
         getListView().addHeaderView(header, null, false);
+
+        // Setup the sort menu
+        PopupMenuAdapter adapter = new PopupMenuAdapter(this, com.actionbarsherlock.R.layout.sherlock_spinner_dropdown_item, getResources().getStringArray(R.array.sortOptions));
+        sortPopupMenu = new IcsListPopupWindow(this);
+        sortPopupMenu.setAdapter(adapter);
+        sortPopupMenu.setModal(true);
+        sortPopupMenu.setOnItemClickListener(this);
         
-        // Preferences
+        
+        
+        // Listen for Preference changes
         prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
     	  	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-
         	  	if (key.equals("cacheSize")){
         	  		long cacheSize = prefs.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
         	  		BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
@@ -92,6 +99,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
     	  	}
     	};
     	
+    	// Apply Preferences
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         settings.registerOnSharedPreferenceChangeListener(prefListener);
         ApplyPreferences();
@@ -144,20 +152,23 @@ public class TheTVDBActivity extends SherlockListActivity  {
 		filter.addAction(UpdateService.ACTION_COMPLETE);
 		filter.addAction(UpdateService.CONNECT_EXCEPTION);
         registerReceiver(updateReceiver, filter);
+        
+        // Launch the update service to lookup the aired dates in the background
+     	startService(airedDatesUpdater);
 	}
 	
-	private class QueryDatabaseTask extends AsyncTask<Void, Void, Void>{
+	private class QueryDatabaseTask extends AsyncTask<Void, Void, Cursor>{
 	
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Cursor doInBackground(Void... params) {
 			
 			try {
 		        db = new SeriesDbAdapter(getApplicationContext());
 		        db.open();
 
 		        // Get all of the favorite shows (sans aired dates)
-		        cursor = db.fetchFavorites();
-				
+		        return db.fetchFavorites(sortBy);
+		        
 			}catch (Exception e){
 				e.printStackTrace();
 			}
@@ -165,7 +176,9 @@ public class TheTVDBActivity extends SherlockListActivity  {
 		}
 		
 		@Override
-		protected void onPostExecute(Void params){
+		protected void onPostExecute(Cursor c){
+			
+			cursor = c;
 			
 			// Apply the cursor to the ListView
 			String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
@@ -180,10 +193,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
 	        	if(AppSettings.LOG_ENABLED)
 	        		Log.e("TheTVDBActivity","Failed to set the cursor");
 	        	Toast.makeText(getApplicationContext(), "There was a problem loading your favorite shows from the database", Toast.LENGTH_SHORT).show();
-	        }
-	        
-			// Launch the update service to lookup the aired dates in the background
-			startService(updater);
+	        }			
 		}
 	}
 	
@@ -195,7 +205,7 @@ public class TheTVDBActivity extends SherlockListActivity  {
 			   
 			if (intent.getAction().equals(UpdateService.ACTION_UPDATE)){
 			
-				refreshCursor = db.fetchFavorites();
+				refreshCursor = db.fetchFavorites(sortBy);
 				
 		        try {
 			        adapter.changeCursor(refreshCursor);
@@ -259,7 +269,12 @@ public class TheTVDBActivity extends SherlockListActivity  {
         return true;
     }
 	
-		
+	@SuppressWarnings("deprecation")
+	public void showSortPopupMenu(View v){
+		sortPopupMenu.setContentWidth(getWindowManager().getDefaultDisplay().getWidth()/2);
+		sortPopupMenu.setAnchorView(v);
+		sortPopupMenu.show();
+	}
 	
 	
 	// ACTIONBAR MENU
@@ -324,5 +339,20 @@ public class TheTVDBActivity extends SherlockListActivity  {
             db.close();
 	    
 	    unregisterReceiver(updateReceiver);
+	}
+
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		switch (position){
+		case 0:
+			sortBy = SeriesDbAdapter.KEY_TITLE;
+			break;
+		case 1:
+			sortBy = SeriesDbAdapter.KEY_NEXT_AIRED;
+			break;
+		}
+		sortPopupMenu.dismiss();
+		new QueryDatabaseTask().execute();		
 	}
 }
