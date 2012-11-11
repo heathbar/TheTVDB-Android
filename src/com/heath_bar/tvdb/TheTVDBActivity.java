@@ -351,6 +351,9 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		case 1:
 			sortBy = SeriesDbAdapter.KEY_NEXT_AIRED;
 			break;
+		case 2:
+			sortBy = SeriesDbAdapter.KEY_LAST_AIRED;
+			break;
 		}
 		sortPopupMenu.dismiss();
 		new QueryDatabaseTask().execute();		

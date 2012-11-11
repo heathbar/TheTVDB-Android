@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.TextAppearanceSpan;
@@ -33,7 +34,7 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
@@ -41,20 +42,26 @@ import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
+import com.heath_bar.tvdb.types.Rating;
 import com.heath_bar.tvdb.types.TvEpisode;
+import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeHandler;
+import com.heath_bar.tvdb.xml.handlers.GetRatingAdapter;
+import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
+import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter.RatingType;
 
 
-public class EpisodeDetails extends SherlockActivity {
+public class EpisodeDetails extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
 
 	protected long episodeId;
 	protected long seriesId;
 	protected String imageId;
 	protected TvEpisode myEpisode = null;
 	protected long cacheSize;
+	protected String userAccountId;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +143,10 @@ public class EpisodeDetails extends SherlockActivity {
 			
 			// Populate the activity with the data we just found
 			PopulateStuff(theEpisode);
+			
+			// Load Rating
+			if (!userAccountId.equals(""))
+				new LoadRatingTask().execute();
 			
 			// Hide the loading text
 			findViewById(R.id.loading1).setVisibility(View.GONE);
@@ -235,6 +246,123 @@ public class EpisodeDetails extends SherlockActivity {
 	
 	
 	
+	
+	// User Rating Functions ////////////////////////////////////////////////////////
+	
+	
+	// Load the user's rating asynchronously
+	private class LoadRatingTask extends AsyncTask<Void, Void, Integer>{
+		
+		private Exception e;
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			
+			try {
+	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
+	    		Rating r = ratingAdapter.getEpisodeRating(userAccountId, seriesId, episodeId);
+	    		return Integer.valueOf(r.getUserRating());
+			}catch (RatingNotFoundException e){
+				return 0;
+			}catch (Exception e){
+				this.e = e;
+				e.printStackTrace();
+			}
+			return 0;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer rating){
+			if (e != null)
+				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+			
+			setUserRatingTextView(rating);
+		}
+	}
+	
+
+ 	/** Update the GUI with the specified rating */
+ 	private void setUserRatingTextView(int rating){
+ 		
+ 		TextView ratingTextView = (TextView)findViewById(R.id.rating);
+		String communityRatingText = myEpisode.getRating() + " / 10";
+		
+		String ratingTextA = communityRatingText + "  (";
+		String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
+		String ratingTextC = ")";
+		
+		int start = ratingTextA.length();
+		int end = ratingTextA.length() + ratingTextB.length();
+				
+		SpannableStringBuilder ssb = new SpannableStringBuilder(ratingTextA + ratingTextB + ratingTextC);
+		
+		ssb.setSpan(new NonUnderlinedClickableSpan() {
+			@Override
+			public void onClick(View v){
+				showRatingDialog();		        		
+			}
+		}, start, end, 0);
+		
+		ssb.setSpan(new TextAppearanceSpan(getApplicationContext(), R.style.episode_link), start, end, 0);	// Set the style of the text
+		ratingTextView.setText(ssb, BufferType.SPANNABLE);
+		ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+ 	}
+ 	
+ 	
+ 	/** Display the rating dialog to the user */
+	private void showRatingDialog(){
+		if (userAccountId.equals("")){
+			Toast.makeText(this, "You must specify your account identifier in the application settings before you can set ratings.", Toast.LENGTH_LONG).show();
+		}else{
+			RatingFragment dialog = new RatingFragment();
+			dialog.setTitle(myEpisode.getName());
+			dialog.show(getSupportFragmentManager(), "RatingFragment");
+		}
+	}
+	
+	// Called when the user clicks Rate from the dialog 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        TextView valueText = (TextView)dialog.getDialog().findViewById(R.id.value);
+        new UpdateRatingTask().execute(userAccountId, String.valueOf(episodeId), valueText.getText().toString());
+    }
+    
+    // Called when the user clicks Cancel from the dialog
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // Do nothing
+    }
+    
+    // Update the rating asynchronously
+ 	private class UpdateRatingTask extends AsyncTask<String, Void, Boolean>{
+ 		@Override
+ 		protected Boolean doInBackground(String... params) {
+ 			try {
+ 				SetRatingAdapter ra = new SetRatingAdapter();
+ 		        return ra.updateRating(params[0], RatingType.EPISODE, params[1], Integer.valueOf(params[2]));
+ 			}catch (Exception e){
+ 				return false;
+ 			}
+ 		}
+ 		
+ 		@Override
+ 		protected void onPostExecute(Boolean result){
+ 			if (result){
+ 				new LoadRatingTask().execute();
+ 				Toast.makeText(getApplicationContext(), "Your rating has been saved", Toast.LENGTH_SHORT).show();
+ 			}else{
+ 				Toast.makeText(getApplicationContext(), "A problem was encountered while trying to save your rating", Toast.LENGTH_SHORT).show();
+ 			}
+ 		}
+
+ 	}
+ 	
+
+	
+	
+	
+	
+	
 	/** Launch the share menu for the episode image */
 	public void shareImage(){
 		try{
@@ -330,6 +458,7 @@ public class EpisodeDetails extends SherlockActivity {
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
+		userAccountId = settings.getString("accountId", "").trim();
     	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	
 		TextView textview = (TextView)findViewById(R.id.loading1);

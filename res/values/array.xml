@@ -61,5 +61,6 @@
     <string-array name="sortOptions">
         <item>Name</item>
         <item>Next Aired</item>
+        <item>Last Aired</item>
     </string-array>
 </resources>

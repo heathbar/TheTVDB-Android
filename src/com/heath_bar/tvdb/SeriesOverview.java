@@ -149,9 +149,11 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			findViewById(R.id.loading2).setVisibility(View.VISIBLE);
 			
 			
+			
 			// Load Rating
-			new LoadRatingTask().execute();
-
+			if (!userAccountId.equals(""))
+				new LoadRatingTask().execute();
+			
 			// Load episodes 
 			new LoadEpisodesTask().execute();
 		}
@@ -352,12 +354,12 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	
 	
 	// Load the user's rating asynchronously
-	private class LoadRatingTask extends AsyncTask<String, Void, Integer>{
+	private class LoadRatingTask extends AsyncTask<Void, Void, Integer>{
 		
 		private Exception e;
 		
 		@Override
-		protected Integer doInBackground(String... params) {
+		protected Integer doInBackground(Void... params) {
 			
 			try {
 	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
@@ -367,7 +369,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				return 0;
 			}catch (Exception e){
 				this.e = e;
-				e.printStackTrace();
 			}
 			return 0;
 		}
@@ -376,8 +377,8 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		protected void onPostExecute(Integer rating){
 			if (e != null)
 				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-			else
-				setUserRatingTextView(rating);
+			
+			setUserRatingTextView(rating);
 		}
 	}
 	
@@ -575,7 +576,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	
 	
 	
-	// Rating Functions ////////////////////////////////////////////////////////
+	// User Rating Functions ////////////////////////////////////////////////////////
 	
  	/** Update the GUI with the specified rating */
  	private void setUserRatingTextView(int rating){
@@ -740,7 +741,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	private void ApplyPreferences() {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-		userAccountId = settings.getString("accountId", "");
+		userAccountId = settings.getString("accountId", "").trim();
     	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	
     	Button b = (Button)findViewById(R.id.btn_add_to_favorites);

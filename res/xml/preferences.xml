@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-     <PreferenceCategory
-	   android:summary="Preferences"
-	   android:title="Application Settings" >
+     <PreferenceCategory android:title="Application Settings" >
    
     <ListPreference
      android:entries="@array/textSizeOptions"
@@ -30,9 +28,12 @@
         android:max="500"
         />
     
+    </PreferenceCategory>
+    <PreferenceCategory android:title="TheTVDB.com Account Integration" >
+	   
     <EditTextPreference android:key="accountId"
         android:title="Account Identifier"
-        android:summary="A unique identifier assigned to you. This identifier can be found by visiting the account settings page on thetvdb.com and is required to publish ratings."
+        android:summary="Specify your account identifier here to sync with your thetvdb.com account. Your identifier can be found on the account page on thetvdb.com"  
         android:defaultValue="" 
         />
     
@@ -40,7 +41,7 @@
         android:key="syncFavorites"
         android:title="Sync Favorites"
         android:summaryOn="You're favorites are being sync'ed with your account on thetvdb.com"
-        android:summaryOff="Sync your favorite shows with thetvdb.com. This feature requires you to have an account setup on thetvdb.com and to enter your account ID above."
+        android:summaryOff="Sync your favorite shows with your account on thetvdb.com. This feature requires you to enter your account identifier above."
         />
             
     </PreferenceCategory>

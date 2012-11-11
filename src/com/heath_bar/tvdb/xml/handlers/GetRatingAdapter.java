@@ -21,6 +21,7 @@ package com.heath_bar.tvdb.xml.handlers;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -34,6 +35,7 @@ import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
 import com.heath_bar.tvdb.types.Rating;
+import com.heath_bar.tvdb.types.exceptions.InvalidAccountIdException;
 import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 
 public class GetRatingAdapter extends DefaultHandler{
@@ -105,23 +107,27 @@ public class GetRatingAdapter extends DefaultHandler{
 			    xr.setContentHandler(this);
 			    xr.parse(new InputSource(url.openStream()));
 
-			    if (errorMessage != null){
-			    	if (errorMessage.startsWith("The seriesid") && errorMessage.endsWith("had no results"))
+			    // Handle errors
+			    if (errorMessage != null)
+			    	if (errorMessage.startsWith("The Account Identifier") && errorMessage.endsWith("is not valid"))
+			    		throw new InvalidAccountIdException(errorMessage);
+			    	else if (errorMessage.startsWith("The seriesid") && errorMessage.endsWith("had no results"))
 			    		throw new RatingNotFoundException();
 			    	else
 			    		throw new Exception(errorMessage);
-			    }
 			    
 			    return resultRating;
 		    } catch (IOException e){
 		    	logError(e.getMessage());
-		    }catch (SAXException e){
+		    } catch (SAXException e){
 		    	logError(e.getMessage());
-		    }
+		    } catch (ParserConfigurationException e){
+				logError(e.getMessage());
+			}
 		    return null;
 		}
 	    
-	    public Rating getEpisodeRating(String accountId, long seriesId, long episodeId) {
+	    public Rating getEpisodeRating(String accountId, long seriesId, long episodeId) throws Exception {
 		    try {
 				URL url = new URL(AppSettings.SET_RATING_URL + "accountid=" + accountId + "&seriesid=" + seriesId);	
 				this.episodeId = episodeId;
@@ -131,13 +137,29 @@ public class GetRatingAdapter extends DefaultHandler{
 			    XMLReader xr = sp.getXMLReader();
 			    xr.setContentHandler(this);
 			    xr.parse(new InputSource(url.openStream()));
-			    		    
-			    return resultRating;
-			} catch (Exception e) {
-				if (AppSettings.LOG_ENABLED)
-					Log.e("xml.handlers.RatingAdapter", e.toString());
-				return new Rating();
+
+			    
+			    // Handle Errors
+			    if (errorMessage != null)
+			    	if (errorMessage.startsWith("The Account Identifier") && errorMessage.endsWith("is not valid"))
+			    		throw new InvalidAccountIdException(errorMessage);
+			    	else
+			    		throw new Exception(errorMessage);
+			    
+			    // if the episode wasn't found, throw an appropriate exception, else return the rating
+			    if (resultRating == null)
+			    	throw new RatingNotFoundException();
+			    else 
+			    	return resultRating;
+			    
+			} catch (IOException e) {
+				logError(e.getMessage());
+			} catch (SAXException e){
+				logError(e.getMessage());
+			} catch (ParserConfigurationException e){
+				logError(e.getMessage());
 			}
+		    return null;
 		}
 	    
 	    
