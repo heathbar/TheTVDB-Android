@@ -45,6 +45,8 @@ public class SeriesDbAdapter {
     	mCtx = ctx;
     }
     
+    
+    
     public SeriesDbAdapter open() throws SQLException {
         mDbHelper = new DbHelper(mCtx);
         mDb = mDbHelper.getWritableDatabase();

@@ -143,6 +143,8 @@ public class GetRatingAdapter extends DefaultHandler{
 			    if (errorMessage != null)
 			    	if (errorMessage.startsWith("The Account Identifier") && errorMessage.endsWith("is not valid"))
 			    		throw new InvalidAccountIdException(errorMessage);
+			    	else if (errorMessage.startsWith("The seriesid") && errorMessage.endsWith("had no results"))
+			    		throw new RatingNotFoundException();
 			    	else
 			    		throw new Exception(errorMessage);
 			    

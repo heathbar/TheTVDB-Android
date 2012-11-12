@@ -32,6 +32,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
+import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 
 public class SetRatingAdapter extends DefaultHandler{
 		private StringBuilder sb;
@@ -65,19 +66,46 @@ public class SetRatingAdapter extends DefaultHandler{
 			}
 		}
 	    
-		public boolean updateRating(String accountId, RatingType type, String itemId, int rating) {
+	    public boolean setSeriesRating(String accountId, String seriesId, int rating) {
+	    	return setRating(accountId, RatingType.SERIES, seriesId, null, rating);
+	    }
+	    
+	    public boolean setEpisodeRating(String accountId, String seriesId, String episodeId, int rating) {
+	    	return setRating(accountId, RatingType.EPISODE, seriesId, episodeId, rating);
+	    }
+	    
+	    private boolean setRating(String accountId, RatingType type, String seriesId, String episodeId, int rating) {
 		    try {
-
+		    	
+	    		String itemId = "";
 		    	String sType = "";
-		    	if (type == RatingType.EPISODE)
+		    	if (type == RatingType.EPISODE){
 		    		sType = "episode";
-		    	else if (type == RatingType.SERIES)
+		    		itemId = episodeId;
+		    	}else if (type == RatingType.SERIES){
 		    		sType = "series";
-		    	else
+		    		itemId = seriesId;
+		    	}else{
 		    		return false;
+		    	}
 		    	
 		    	if (rating < 0 || rating > 10)
 		    		return false;
+		    	
+		    	
+		    	
+		    	// API BUG
+		    	// If no series rating is set, you can't retrieve any episode ratings, so we make sure the series always has a rating
+		    	
+		    	if (type == RatingType.EPISODE){
+		    		try {
+		    			new GetRatingAdapter().getSeriesRating(accountId, Long.valueOf(seriesId));
+		    		}catch(RatingNotFoundException e){
+		    			new SetRatingAdapter().setSeriesRating(accountId, seriesId, rating);
+		    		}
+		    	}
+		    	
+		    	
 		    			    	
 				URL url = new URL(AppSettings.GET_RATING_URL + "accountid=" + accountId + "&itemtype=" + sType + "&itemid=" + itemId + "&rating=" + rating);	
 								

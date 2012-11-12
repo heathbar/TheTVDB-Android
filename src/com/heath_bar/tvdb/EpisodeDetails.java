@@ -51,7 +51,6 @@ import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.xml.handlers.EpisodeHandler;
 import com.heath_bar.tvdb.xml.handlers.GetRatingAdapter;
 import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
-import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter.RatingType;
 
 
 public class EpisodeDetails extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
@@ -147,6 +146,8 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 			// Load Rating
 			if (!userAccountId.equals(""))
 				new LoadRatingTask().execute();
+			else
+				setUserRatingTextView(0);
 			
 			// Hide the loading text
 			findViewById(R.id.loading1).setVisibility(View.GONE);
@@ -324,7 +325,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         TextView valueText = (TextView)dialog.getDialog().findViewById(R.id.value);
-        new UpdateRatingTask().execute(userAccountId, String.valueOf(episodeId), valueText.getText().toString());
+        new UpdateRatingTask().execute(userAccountId, String.valueOf(seriesId), String.valueOf(episodeId), valueText.getText().toString());
     }
     
     // Called when the user clicks Cancel from the dialog
@@ -339,7 +340,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
  		protected Boolean doInBackground(String... params) {
  			try {
  				SetRatingAdapter ra = new SetRatingAdapter();
- 		        return ra.updateRating(params[0], RatingType.EPISODE, params[1], Integer.valueOf(params[2]));
+ 		        return ra.setEpisodeRating(params[0], params[1], params[2], Integer.valueOf(params[3]));
  			}catch (Exception e){
  				return false;
  			}

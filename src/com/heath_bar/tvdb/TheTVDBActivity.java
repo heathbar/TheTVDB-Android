@@ -70,6 +70,10 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         getSupportActionBar().setHomeButtonEnabled(false);
         setContentView(R.layout.favorites_list);
 
+        // Setup Datbase
+        db = new SeriesDbAdapter(getApplicationContext());
+        db.open();
+
         if (airedDatesUpdater == null)
         	airedDatesUpdater = new Intent(getApplicationContext(), UpdateService.class);
         
@@ -163,9 +167,6 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		protected Cursor doInBackground(Void... params) {
 			
 			try {
-		        db = new SeriesDbAdapter(getApplicationContext());
-		        db.open();
-
 		        // Get all of the favorite shows (sans aired dates)
 		        return db.fetchFavorites(sortBy);
 		        

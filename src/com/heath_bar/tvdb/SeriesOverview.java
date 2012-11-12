@@ -66,7 +66,6 @@ import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
 import com.heath_bar.tvdb.xml.handlers.GetRatingAdapter;
 import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
 import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
-import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter.RatingType;
 
 
 public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
@@ -153,6 +152,8 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			// Load Rating
 			if (!userAccountId.equals(""))
 				new LoadRatingTask().execute();
+			else
+				setUserRatingTextView(0);
 			
 			// Load episodes 
 			new LoadEpisodesTask().execute();
@@ -353,36 +354,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	}
 	
 	
-	// Load the user's rating asynchronously
-	private class LoadRatingTask extends AsyncTask<Void, Void, Integer>{
-		
-		private Exception e;
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			
-			try {
-	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
-	    		Rating r = ratingAdapter.getSeriesRating(userAccountId, seriesId);
-	    		return Integer.valueOf(r.getUserRating());
-			}catch (RatingNotFoundException e){
-				return 0;
-			}catch (Exception e){
-				this.e = e;
-			}
-			return 0;
-		}
-		
-		@Override
-		protected void onPostExecute(Integer rating){
-			if (e != null)
-				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-			
-			setUserRatingTextView(rating);
-		}
-	}
-	
-	
 	
 	
 	// Load the episode info asynchronously
@@ -578,6 +549,36 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	
 	// User Rating Functions ////////////////////////////////////////////////////////
 	
+	
+	// Load the user's rating asynchronously
+	private class LoadRatingTask extends AsyncTask<Void, Void, Integer>{
+		
+		private Exception e;
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			
+			try {
+	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
+	    		Rating r = ratingAdapter.getSeriesRating(userAccountId, seriesId);
+	    		return Integer.valueOf(r.getUserRating());
+			}catch (RatingNotFoundException e){
+				return 0;
+			}catch (Exception e){
+				this.e = e;
+			}
+			return 0;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer rating){
+			if (e != null)
+				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+			
+			setUserRatingTextView(rating);
+		}
+	}
+	
  	/** Update the GUI with the specified rating */
  	private void setUserRatingTextView(int rating){
  		
@@ -636,7 +637,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
  		protected Boolean doInBackground(String... params) {
  			try {
  				SetRatingAdapter ra = new SetRatingAdapter();
- 		        return ra.updateRating(params[0], RatingType.SERIES, params[1], Integer.valueOf(params[2]));
+ 		        return ra.setSeriesRating(params[0], params[1], Integer.valueOf(params[2]));
  			}catch (Exception e){
  				return false;
  			} 			
