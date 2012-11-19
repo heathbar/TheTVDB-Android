@@ -27,4 +27,8 @@
     <string name="plus">+</string>
     <string name="minus">-</string>
     <string name="stars">stars</string>
+    <string name="on">ON</string>
+    <string name="off">OFF</string>
+    <string name="syncFavsSummaryOn">You\'re favorites are being sync\'ed with your account on thetvdb.com</string>
+    <string name="syncFavsSummaryOff">Sync your favorite shows with your account on thetvdb.com. This feature requires you to enter your account identifier above.</string>
 </resources>

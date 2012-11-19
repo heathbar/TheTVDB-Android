@@ -103,7 +103,8 @@ public class EpisodeListHandler extends DefaultHandler {
 	    	String languageCode = settings.getString("language", "en");
 	    	
 			URL url = new URL(AppSettings.SERIES_FULL_URL + String.valueOf(seriesId) + "/all/" + languageCode + ".xml");		//http://thetvdb.com/api/0A41C0DEA5531762/series/<seriesid>/all/en.xml
-			
+			Log.d("EpisodeListHandler", url.toString());
+
 			episodeList = new TvEpisodeList();
 			
 		    SAXParserFactory spf = SAXParserFactory.newInstance();

@@ -72,16 +72,26 @@ public class TvEpisodeList extends ArrayList<TvEpisode> {
 		return maxSeasonNo;
 	}
 	
-
-	public int getNumberOfEpisodesPerSeason(int seasonNumber) {
-		int maxSeasonNo = 0;
+	public ArrayList<Integer> getSeasonList(){
+		ArrayList<Integer> seasons = new ArrayList<Integer>();
 		
 		for (Iterator<TvEpisode> i = this.iterator(); i.hasNext();){
 			 int seasonNo = i.next().getSeason();
-			
-			if (seasonNo > maxSeasonNo)
-				maxSeasonNo = seasonNo;
+			 
+			 if (!seasons.contains(seasonNo))
+				 seasons.add(seasonNo);
 		}
-		return maxSeasonNo;
+		return seasons;		
+	}
+	
+
+	public int getNumberOfEpisodesInSeason(int seasonNumber) {
+		int count = 0;
+		
+		for (Iterator<TvEpisode> i = this.iterator(); i.hasNext();){
+			 if (i.next().getSeason() == seasonNumber)
+				count++;
+		}
+		return count;
 	}
 }

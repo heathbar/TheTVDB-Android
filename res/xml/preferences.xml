@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
      <PreferenceCategory android:title="Application Settings" >
    
     <ListPreference
@@ -37,14 +37,14 @@
         android:defaultValue="" 
         />
     
-    <!--
     <CheckBoxPreference
         android:key="syncFavorites"
         android:title="Sync Favorites"
-        android:summaryOn="You're favorites are being sync'ed with your account on thetvdb.com"
-        android:summaryOff="Sync your favorite shows with your account on thetvdb.com. This feature requires you to enter your account identifier above."
-        />
-    -->
-            
+        android:switchTextOff="@string/off"
+        android:switchTextOn="@string/on"
+        android:summaryOn="@string/syncFavsSummaryOn"
+     	android:summaryOff="@string/syncFavsSummaryOff"
+		/>
+        
     </PreferenceCategory>
 </PreferenceScreen>

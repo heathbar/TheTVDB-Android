@@ -12,7 +12,8 @@
 		    android:textSize="30sp"
 		    android:textColor="@color/white"
 		    android:paddingTop="8dip"
-		    android:paddingBottom="4dip" />
+		    android:paddingBottom="4dip"
+		    android:paddingLeft="5dip" />
     </TableRow>
     <TableRow>
     	<TextView android:id="@+id/last_aired"
@@ -21,7 +22,8 @@
 		    android:layout_height="fill_parent"
 		    android:textSize="14sp"
 		    android:paddingTop="0dip"
-		    android:paddingBottom="4dip" />
+		    android:paddingBottom="4dip" 
+		    android:paddingLeft="5dip"/>
 		<TextView android:id="@+id/next_aired"
 		    xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="wrap_content"
@@ -29,6 +31,7 @@
 		    android:textSize="14sp"
 		    android:paddingTop="0dip"
 		    android:paddingBottom="4dip"
+		    android:paddingRight="5dip"
 		    android:gravity="right" />
 	</TableRow>
 </TableLayout>

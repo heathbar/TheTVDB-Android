@@ -19,6 +19,8 @@
 
 package com.heath_bar.tvdb;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,6 +35,7 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.TextAppearanceSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -73,7 +76,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	protected long seriesId;
 	protected TvSeries seriesInfo;
 	protected TvEpisodeList episodeList;
-	protected int numberOfSeasons = 0;
 	protected float textSize;
 	protected long cacheSize;
 	protected String userAccountId;
@@ -378,17 +380,26 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			PopulateStuffPartTwo();
 			
     		// Append the Season info at the bottom of the View
-    		numberOfSeasons = episodeList.getNumberOfSeasons();
+    		ArrayList<Integer> seasonList = episodeList.getSeasonList();
     		LinearLayout mainLayout = (LinearLayout)findViewById(R.id.series_overview_linear_layout);
     		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    		for (int i=0; i<numberOfSeasons; i++) {
+    		for (int i=0; i<seasonList.size(); i++) {
 
+    			int seasonNo = seasonList.get(i);
+    			
     			View seasonRow = inflater.inflate(R.layout.season_row, mainLayout, false);
     			seasonRow.setBackgroundColor(AppSettings.listBackgroundColors[i % AppSettings.listBackgroundColors.length]);
     			
     			TextView text = (TextView)seasonRow.findViewById(R.id.season_text);
-    			text.setText("Season " + (i+1));
+    			//text.setId(seasonNo);
     			text.setTextSize(textSize*1.6f);
+
+    			if (seasonNo == 0)
+    				text.setText("Specials");
+    			else
+    				text.setText("Season " + seasonNo);
+    			
+    			seasonRow.setId(seasonNo);
     			
     			seasonRow.setOnClickListener(new OnClickListener() {
 					@Override
@@ -399,6 +410,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				});
     			
     			mainLayout.addView(seasonRow);
+    			
     		}
 
     		// Hide the progress animation and loading text
@@ -484,7 +496,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			
 			for (int i=0; i<episodeList.size(); i++){
-				if (seasonText.getText().toString().substring(7).equals(String.valueOf(episodeList.get(i).getSeason()))){
+				if (seasonRow.getId() == episodeList.get(i).getSeason()){
 					View episodeView = inflater.inflate(R.layout.episode_text_row, epLinearLayout, false);
 					
 					episodeView.setBackgroundColor(AppSettings.listBackgroundColors[i % AppSettings.listBackgroundColors.length]);
@@ -582,28 +594,33 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
  	/** Update the GUI with the specified rating */
  	private void setUserRatingTextView(int rating){
  		
- 		TextView ratingTextView = (TextView)findViewById(R.id.rating);
-		String communityRatingText = seriesInfo.getRating() + " / 10";
-		
-		String ratingTextA = communityRatingText + "  (";
-		String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
-		String ratingTextC = ")";
-		
-		int start = ratingTextA.length();
-		int end = ratingTextA.length() + ratingTextB.length();
-				
-		SpannableStringBuilder ssb = new SpannableStringBuilder(ratingTextA + ratingTextB + ratingTextC);
-		
-		ssb.setSpan(new NonUnderlinedClickableSpan() {
-			@Override
-			public void onClick(View v){
-				showRatingDialog();		        		
-			}
-		}, start, end, 0);
-		
-		ssb.setSpan(new TextAppearanceSpan(getApplicationContext(), R.style.episode_link), start, end, 0);	// Set the style of the text
-		ratingTextView.setText(ssb, BufferType.SPANNABLE);
-		ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+ 		try {
+	 		TextView ratingTextView = (TextView)findViewById(R.id.rating);
+			String communityRating = (seriesInfo == null) ? "?" : seriesInfo.getRating(); 
+	 		String communityRatingText = communityRating + " / 10";
+			
+			String ratingTextA = communityRatingText + "  (";
+			String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
+			String ratingTextC = ")";
+			
+			int start = ratingTextA.length();
+			int end = ratingTextA.length() + ratingTextB.length();
+					
+			SpannableStringBuilder ssb = new SpannableStringBuilder(ratingTextA + ratingTextB + ratingTextC);
+			
+			ssb.setSpan(new NonUnderlinedClickableSpan() {
+				@Override
+				public void onClick(View v){
+					showRatingDialog();		        		
+				}
+			}, start, end, 0);
+			
+			ssb.setSpan(new TextAppearanceSpan(getApplicationContext(), R.style.episode_link), start, end, 0);	// Set the style of the text
+			ratingTextView.setText(ssb, BufferType.SPANNABLE);
+			ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+ 		}catch (Exception e){
+ 			Log.e("SeriesOverview", "Failed to setUserRatingTextView: " + e.getMessage());
+ 		}
  	}
  	
  	
@@ -628,7 +645,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
     // Called when the user clicks Cancel from the dialog
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-        // Do nothing
+        // Do nothing	
     }
     
     // Update the rating asynchronously
