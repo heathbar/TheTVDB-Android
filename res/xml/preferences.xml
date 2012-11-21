@@ -44,6 +44,7 @@
         android:switchTextOn="@string/on"
         android:summaryOn="@string/syncFavsSummaryOn"
      	android:summaryOff="@string/syncFavsSummaryOff"
+     	android:dependency="accountId"
 		/>
         
     </PreferenceCategory>

@@ -42,7 +42,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.tvdb.adapters.PopupMenuAdapter;
 import com.heath_bar.tvdb.adapters.SeriesAiredListAdapter;
 import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
@@ -58,6 +57,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	private Intent airedDatesUpdater;
 	private boolean isRefreshing = false;
 	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
+	private boolean useLocalFavs = true;
 	
 	private IcsListPopupWindow sortPopupMenu;			// define a popup menu for the sort button to show
 	private String sortBy = SeriesDbAdapter.KEY_TITLE;  // Sort by show title by default
@@ -93,13 +93,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         // Listen for Preference changes
         prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
     	  	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        	  	if (key.equals("cacheSize")){
-        	  		long cacheSize = prefs.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-        	  		BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
-        	  		fileCache.trimCache();
-        	  	}else{
-        	  		ApplyPreferences();
-        	  	}
+        		ApplyPreferences();
     	  	}
     	};
     	
@@ -119,6 +113,9 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         View header = getLayoutInflater().inflate(R.layout.text, null);
         TextView header_text = (TextView) header.findViewById(R.id.text);
         header_text.setTextSize(textSize*1.1f);
+        
+        useLocalFavs = !settings.getBoolean("syncFavorites", false);
+        // TODO: Cancel current refresh and force a new one.
 	}
 
 
@@ -143,8 +140,11 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		TextView emptyList = (TextView)findViewById(android.R.id.empty);
 		emptyList.setText(getResources().getString(R.string.loading));
 		
-		// Get favorite shows from the database in an AsyncTask 
-		new QueryDatabaseTask().execute();
+		// Get favorite shows from the database in an AsyncTask
+		if (useLocalFavs)
+			new QueryDatabaseTask().execute();
+		else
+			new QueryTVDBFavsTask().execute();
 		
 		// Register for responses from the update service
 		if (updateReceiver != null)
@@ -198,6 +198,42 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		}
 	}
 	
+	private class QueryTVDBFavsTask extends AsyncTask<Void, Void, Cursor>{
+		
+		@Override
+		protected Cursor doInBackground(Void... params) {
+			
+			try {
+		        // Get all of the favorite shows (sans aired dates)
+		        return db.fetchFavorites(sortBy);
+		        
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Cursor c){
+			
+			cursor = c;
+			
+			// Apply the cursor to the ListView
+			String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
+	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
+	      
+	        try{
+		        adapter = new SeriesAiredListAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors);
+				setListAdapter(adapter);
+				getListView().setOnItemClickListener(new ItemClickedListener());
+				registerForContextMenu(getListView());
+	        }catch (Exception e){
+	        	if(AppSettings.LOG_ENABLED)
+	        		Log.e("TheTVDBActivity","Failed to set the cursor");
+	        	Toast.makeText(getApplicationContext(), "There was a problem loading your favorite shows from the database", Toast.LENGTH_SHORT).show();
+	        }			
+		}
+	}
 	
 	private class ResponseReceiver extends BroadcastReceiver {
 		 
