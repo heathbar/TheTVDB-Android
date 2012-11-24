@@ -16,25 +16,87 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb;
+package com.heath_bar.tvdb.data.xmlhandlers;
+
+import java.net.URL;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+import android.util.Log;
+
+import com.heath_bar.lazylistadapter.WebImage;
+import com.heath_bar.lazylistadapter.WebImageList;
+import com.heath_bar.tvdb.AppSettings;
+
+public class BannerHandler extends DefaultHandler{
+	private StringBuilder sb;
+	private WebImageList imageList;
+	private WebImage currentImage;
+    
+    @Override
+	public void startElement(String uri, String name, String qName, Attributes atts) {
+	    name = name.trim().toLowerCase();				// format the current element name
+	    sb = new StringBuilder();						// Reset the string builder
+	    
+	    if (name.equals("banners"))
+	    	imageList = new WebImageList();
+	    else if (name.equals("banner"))
+	    	currentImage = new WebImage();	
+    }
+    
+    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
+    // Therefore we must aggregate the data here, and set it in endElement() function
+	@Override
+	public void characters(char ch[], int start, int length) {
+		String chars = (new String(ch).substring(start, start + length));
+		sb.append(chars);
+	}
 
 
-public final class AppSettings {
-
-	public static final String API_KEY = "0A41C0DEA5531762";
-	public static final String BASE_URL =  "http://thetvdb.com/api/" + API_KEY + "/";
-	public static final String SERIES_BASIC_URL = "http://www.thetvdb.com/api/GetSeries.php?seriesname=";
-	public static final String SERIES_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/series/"; // <seriesid>/all/en.xml
-	public static final String EPISODE_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/episodes/"; // <seriesid>/all/en.xml
-	public static final String GET_RATING_URL = "http://thetvdb.com/api/User_Rating.php?";
-	public static final String SET_RATING_URL = "http://thetvdb.com/api/GetRatingsForUser.php?apikey=" + API_KEY + "&";
-	public static final String FAVORITES_URL = "http://thetvdb.com/api/User_Favorites.php?";
-	public static final String BANNER_URL = "http://thetvdb.com/banners/";
-	public static final boolean LOG_ENABLED = true;
-	public static final int DATABASE_VERSION = 1;
-	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
-	public static final String PREFS_NAME = "TheTVDBSettings";
-	public static final int THUMBNAIL_SIZE = 100;
-	public static final int DEFAULT_CACHE_SIZE = 50; // 50 MB
-	
+    @Override
+	public void endElement(String uri, String name, String qName) throws SAXException {
+		try {
+			name = name.trim().toLowerCase();
+			
+			if (name.equals("id")){
+				currentImage.setId("B" + sb.toString());	// IDs are not globally unique. Prefix a "B" to indicate this ID is a banner
+			} else if (name.equals("bannerpath")){
+				currentImage.setUrl(AppSettings.BANNER_URL + sb.toString());
+			} else if (name.equals("thumbnailpath")){
+				currentImage.setThumbUrl(AppSettings.BANNER_URL + sb.toString());
+			} else if (name.equals("banner")){
+				imageList.add(currentImage);
+			}
+		} catch (Exception e) {
+			if (AppSettings.LOG_ENABLED)
+				Log.e("xml.handlers.EpisodeHandler", e.toString());
+		}
+	}
+    
+	public WebImageList getImageList(String seriesId) {
+	    try {
+			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/banners.xml");	
+						
+		    SAXParserFactory spf = SAXParserFactory.newInstance();
+		    SAXParser sp = spf.newSAXParser();
+		    XMLReader xr = sp.getXMLReader();
+		    xr.setContentHandler(this);
+		    xr.parse(new InputSource(url.openStream()));
+		    
+		    return imageList;
+		} catch (Exception e) {
+			if (AppSettings.LOG_ENABLED)
+				Log.e("xml.handlers.EpisodeHandler", e.toString());
+			return new WebImageList();
+		}
+	}
 }
+
+

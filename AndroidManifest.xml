@@ -56,9 +56,9 @@
         </activity>
                
         <activity android:label="Rating Dialog" android:name=".RatingFragment" android:theme="@style/Theme.Sherlock.Dialog"></activity>
-        <activity android:name="com.heath_bar.tvdb.Preferences"></activity>
+        <activity android:name=".Preferences"></activity>
         
-        <service  android:name="com.heath_bar.tvdb.UpdateService" android:enabled="true"></service>
+        <service  android:name=".UpdateService" android:enabled="true"></service>
         
         
     </application>

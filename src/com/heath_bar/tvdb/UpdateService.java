@@ -19,21 +19,22 @@
 package com.heath_bar.tvdb;
 
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
+import com.heath_bar.tvdb.data.FavoritesData;
+import com.heath_bar.tvdb.data.adapters.SeriesDbAdapter;
+import com.heath_bar.tvdb.data.xmlhandlers.FavoritesDetailsHandler;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
-import com.heath_bar.tvdb.xml.handlers.SeriesDatesHandler;
 
 public class UpdateService extends IntentService {
 
 	private static boolean RUNNING = false;
 	public static final String ACTION_UPDATE = "update";
 	public static final String ACTION_COMPLETE = "complete";
-	public static final String CONNECT_EXCEPTION = "except";
 
 	/** 
 	   * A constructor is required, and must call the super IntentService(String)
@@ -48,58 +49,55 @@ public class UpdateService extends IntentService {
 	   * the intent that started the service. When this method returns, IntentService
 	   * stops the service, as appropriate.
 	   */
-	
 	@Override
 	protected void onHandleIntent (Intent intent){
 	
-		if (AppSettings.LOG_ENABLED)
-			Log.d("UpdateService", "Service Handle Intent");
-
-		RefreshAirDates(this);
-		
-	}
-	
-	private void RefreshAirDates(Context ctx){
 		if (!RUNNING){
 			RUNNING = true;
+
+			// Lookup which pieces we need to run
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+	    	boolean syncFavsTVDB = preferences.getBoolean("syncFavsTVDB", false);
+	    	boolean syncFavsXBMC = preferences.getBoolean("syncFavsXBMC", false);
+	
+	    	// Connect to the data store
+	    	FavoritesData favorites = new FavoritesData(this);
 			
-			SeriesDbAdapter db = new SeriesDbAdapter(ctx);
+	    	if (syncFavsTVDB)
+				favorites.importFavoritesFromTVDB();
+		
+			if (syncFavsXBMC)
+				favorites.importFavoritesFromXBMC();
+		
+			
+			FavoritesDetailsHandler tvdb = new FavoritesDetailsHandler(getApplicationContext());
 			Cursor favs = null;
 			
 			try {
 				// Get the list of favorite shows from the database
-				db.open();
-				favs = db.fetchFavorites();
+				favs = favorites.fetchAllFavorites();
 				
 				// Loop through each show
 				while (favs.moveToNext())
 				{
-					int seriesId = favs.getInt(favs.getColumnIndex(SeriesDbAdapter.KEY_ID));
-					String seriesName = favs.getString(favs.getColumnIndex(SeriesDbAdapter.KEY_TITLE));
+					long seriesId = favs.getLong(favs.getColumnIndex(SeriesDbAdapter.KEY_ID));
+					FavoriteSeriesInfo info = tvdb.getInfo(seriesId);
+									
+					// update the db with the new info
+					favorites.updateFavorite(info);
 					
-					SeriesDatesHandler tvdb = new SeriesDatesHandler(getApplicationContext());
-					long[] airDates = tvdb.getDates(seriesId);
+					// Tell the UI that something changed
+					Intent broadcastIntent = new Intent();
+					broadcastIntent.setAction(ACTION_UPDATE);
+					sendBroadcast(broadcastIntent);
 					
-					if (airDates[0] == -1){
-						// Tell the UI that there was an error
-						Intent broadcastIntent = new Intent();
-						broadcastIntent.setAction(CONNECT_EXCEPTION);
-						sendBroadcast(broadcastIntent);
-					} else {
-						// update the db with the new dates
-						FavoriteSeriesInfo info = new FavoriteSeriesInfo(seriesId, seriesName, String.valueOf(airDates[0]), String.valueOf(airDates[1]));
-						db.updateFavorite(info);
-						
-						// Tell the UI that something changed
-						Intent broadcastIntent = new Intent();
-						broadcastIntent.setAction(ACTION_UPDATE);
-						sendBroadcast(broadcastIntent);
-					}
 				}
-			} finally {
-				if (!favs.equals(null))
+			}catch (Exception e){
+				Log.e("Update Service", "Crash! " + e.getMessage());				
+			}finally {
+				if (favs != null)
 					favs.close();
-				db.close();
+				favorites.close();
 			}
 			
 			// Tell the UI that we're done
@@ -109,6 +107,13 @@ public class UpdateService extends IntentService {
 			
 	        RUNNING = false;
 		}
-    }
+	}
+	
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		RUNNING = false;
+	}
 	
 }

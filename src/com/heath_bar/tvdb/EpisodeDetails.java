@@ -42,15 +42,15 @@ import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
+import com.heath_bar.tvdb.data.xmlhandlers.EpisodeHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.GetRatingHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.SetRatingHandler;
 import com.heath_bar.tvdb.types.Rating;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
-import com.heath_bar.tvdb.xml.handlers.EpisodeHandler;
-import com.heath_bar.tvdb.xml.handlers.GetRatingAdapter;
-import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
 
 
 public class EpisodeDetails extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
@@ -260,7 +260,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		protected Integer doInBackground(Void... params) {
 			
 			try {
-	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
+	    		GetRatingHandler ratingAdapter = new GetRatingHandler();
 	    		Rating r = ratingAdapter.getEpisodeRating(userAccountId, seriesId, episodeId);
 	    		return Integer.valueOf(r.getUserRating());
 			}catch (RatingNotFoundException e){
@@ -339,7 +339,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
  		@Override
  		protected Boolean doInBackground(String... params) {
  			try {
- 				SetRatingAdapter ra = new SetRatingAdapter();
+ 				SetRatingHandler ra = new SetRatingHandler();
  		        return ra.setEpisodeRating(params[0], params[1], params[2], Integer.valueOf(params[3]));
  			}catch (Exception e){
  				return false;

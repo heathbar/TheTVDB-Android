@@ -54,7 +54,11 @@ import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
-import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
+import com.heath_bar.tvdb.data.FavoritesData;
+import com.heath_bar.tvdb.data.xmlhandlers.EpisodeListHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.GetRatingHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.SeriesDetailsHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.SetRatingHandler;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.Rating;
 import com.heath_bar.tvdb.types.TvEpisode;
@@ -65,14 +69,11 @@ import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
-import com.heath_bar.tvdb.xml.handlers.EpisodeListHandler;
-import com.heath_bar.tvdb.xml.handlers.GetRatingAdapter;
-import com.heath_bar.tvdb.xml.handlers.SeriesInfoHandler;
-import com.heath_bar.tvdb.xml.handlers.SetRatingAdapter;
 
 
 public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
 
+	
 	protected long seriesId;
 	protected TvSeries seriesInfo;
 	protected TvEpisodeList episodeList;
@@ -113,7 +114,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			
 			try {
 				// Lookup basic series info
-				SeriesInfoHandler infoQuery = new SeriesInfoHandler(getApplicationContext());
+				SeriesDetailsHandler infoQuery = new SeriesDetailsHandler(getApplicationContext());
 	    		seriesInfo = infoQuery.getInfo(id[0]);
 	    			    		
 	    		Bitmap bitmap;
@@ -185,10 +186,9 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
     		b.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					addToFavorites();
-					Toast.makeText(getApplicationContext(), "This show will now appear in your favorites list.", Toast.LENGTH_SHORT).show();
 					Button b = (Button)findViewById(R.id.btn_add_to_favorites);
 					b.setVisibility(View.GONE);
+					addToFavorites();
 				}
 			});
 		}
@@ -537,13 +537,28 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		}
 	};
 	
+
 	public void addToFavorites(){
-		FavoriteSeriesInfo info = new FavoriteSeriesInfo(Integer.valueOf(seriesInfo.getId()), seriesInfo.getName(), "0", "0");
-		SeriesDbAdapter db = new SeriesDbAdapter(getApplicationContext());
-		db.open();
-		db.createFavoriteSeries(info);
-		db.close();
+		new AddFavoriteTask().execute(seriesInfo);		
 	}
+	
+	private class AddFavoriteTask extends AsyncTask<TvSeries, Void, Void>{
+		@Override
+		protected Void doInBackground(TvSeries... params) {
+			FavoriteSeriesInfo info = new FavoriteSeriesInfo(Long.valueOf(params[0].getId()), params[0].getName(), 0, 0);
+			FavoritesData favorites = new FavoritesData(getApplicationContext());
+			favorites.createFavoriteSeries(info);
+			favorites.close();
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void v) {
+			Toast.makeText(getApplicationContext(), "This show will now appear in your favorites list.", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	
 
 	/** Launch the share menu for the series banner */
 	public void shareImage(){
@@ -571,7 +586,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		protected Integer doInBackground(Void... params) {
 			
 			try {
-	    		GetRatingAdapter ratingAdapter = new GetRatingAdapter();
+	    		GetRatingHandler ratingAdapter = new GetRatingHandler();
 	    		Rating r = ratingAdapter.getSeriesRating(userAccountId, seriesId);
 	    		return Integer.valueOf(r.getUserRating());
 			}catch (RatingNotFoundException e){
@@ -653,7 +668,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
  		@Override
  		protected Boolean doInBackground(String... params) {
  			try {
- 				SetRatingAdapter ra = new SetRatingAdapter();
+ 				SetRatingHandler ra = new SetRatingHandler();
  		        return ra.setSeriesRating(params[0], params[1], Integer.valueOf(params[2]));
  			}catch (Exception e){
  				return false;

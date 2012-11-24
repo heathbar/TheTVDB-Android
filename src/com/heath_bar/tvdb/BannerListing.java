@@ -36,7 +36,7 @@ import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.LazyBitmapAdapter;
 import com.heath_bar.lazylistadapter.WebImage;
 import com.heath_bar.lazylistadapter.WebImageList;
-import com.heath_bar.tvdb.xml.handlers.BannerHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.BannerHandler;
 
 public class BannerListing extends SherlockListActivity {
 	

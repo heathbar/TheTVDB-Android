@@ -16,25 +16,38 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb;
+package com.heath_bar.tvdb.data.adapters;
 
 
-public final class AppSettings {
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
-	public static final String API_KEY = "0A41C0DEA5531762";
-	public static final String BASE_URL =  "http://thetvdb.com/api/" + API_KEY + "/";
-	public static final String SERIES_BASIC_URL = "http://www.thetvdb.com/api/GetSeries.php?seriesname=";
-	public static final String SERIES_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/series/"; // <seriesid>/all/en.xml
-	public static final String EPISODE_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/episodes/"; // <seriesid>/all/en.xml
-	public static final String GET_RATING_URL = "http://thetvdb.com/api/User_Rating.php?";
-	public static final String SET_RATING_URL = "http://thetvdb.com/api/GetRatingsForUser.php?apikey=" + API_KEY + "&";
-	public static final String FAVORITES_URL = "http://thetvdb.com/api/User_Favorites.php?";
-	public static final String BANNER_URL = "http://thetvdb.com/banners/";
-	public static final boolean LOG_ENABLED = true;
-	public static final int DATABASE_VERSION = 1;
-	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
-	public static final String PREFS_NAME = "TheTVDBSettings";
-	public static final int THUMBNAIL_SIZE = 100;
-	public static final int DEFAULT_CACHE_SIZE = 50; // 50 MB
+import com.heath_bar.tvdb.AppSettings;
+
+public class DbHelper extends SQLiteOpenHelper {
+
+	private static final String DATABASE_NAME = "tvdb_data";
 	
+    public DbHelper(Context context) {
+        super(context, DATABASE_NAME, null, AppSettings.DATABASE_VERSION);
+    }
+	
+
+	@Override
+	public void onCreate(SQLiteDatabase db) {
+        String DATABASE_CREATE =
+                "create table " + SeriesDbAdapter.FAVORITES_TABLE + " ("
+            	+ SeriesDbAdapter.KEY_ID + " integer primary key, "
+                + SeriesDbAdapter.KEY_TITLE + " text not null, "
+                + SeriesDbAdapter.KEY_LAST_AIRED + " integer, "
+                + SeriesDbAdapter.KEY_NEXT_AIRED + " integer);";
+            db.execSQL(DATABASE_CREATE);
+	}
+
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		
+	}
+
 }

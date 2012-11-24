@@ -37,13 +37,13 @@ import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
-import com.heath_bar.tvdb.adapters.TvSeriesAdapter;
+import com.heath_bar.tvdb.data.adapters.TvSeriesListAdapter;
+import com.heath_bar.tvdb.data.xmlhandlers.SeriesSearchHandler;
 import com.heath_bar.tvdb.types.TvSeries;
-import com.heath_bar.tvdb.xml.handlers.SeriesSearchHandler;
 
 public class SearchResults extends SherlockListActivity {
 	
-	private TvSeriesAdapter adapter;
+	private TvSeriesListAdapter adapter;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -102,7 +102,7 @@ public class SearchResults extends SherlockListActivity {
 		protected void onPostExecute(ArrayList<TvSeries> results){
 			
 			// Setup the list adapter with the data from the web call
-			adapter = new TvSeriesAdapter(getApplicationContext(), R.layout.text_row_with_id, results, AppSettings.listBackgroundColors);
+			adapter = new TvSeriesListAdapter(getApplicationContext(), R.layout.text_row_with_id, results, AppSettings.listBackgroundColors);
 	        
 	        setListAdapter(adapter);
 	        getListView().setOnItemClickListener(new ItemClickedListener());

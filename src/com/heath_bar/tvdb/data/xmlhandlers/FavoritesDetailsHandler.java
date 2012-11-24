@@ -16,69 +16,98 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb;
+package com.heath_bar.tvdb.data.xmlhandlers;
 
+import java.net.URL;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
-import com.actionbarsherlock.view.MenuItem;
-import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.tvdb.AppSettings;
+import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
+import com.heath_bar.tvdb.util.DateUtil;
 
-public class Preferences extends SherlockPreferenceActivity {
-	
-	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
-	
-	
-	@SuppressWarnings("deprecation")
+
+public class FavoritesDetailsHandler extends DefaultHandler {
+	private StringBuilder sb;
+    private FavoriteSeriesInfo info;
+    private long timeNow;
+    private Context context;
+    
+    public FavoritesDetailsHandler(Context ctx){
+    	context = ctx;
+    }
+    
+
+    @Override
+	public void startElement(String uri, String name, String qName, Attributes atts) {
+	    sb = new StringBuilder();						// Reset the string builder
+	    
+    }
+    
+    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
+    // Therefore we must aggregate the data here, and set it in endElement() function
 	@Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        
-        addPreferencesFromResource(R.xml.preferences);
-        
-        
-        // Handle all of the preference changes/dependencies
-        prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-    	  	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-    	  		
-    	  		if (key.equals("accountId")){
-    	  			
-    	  			// If accountId is blanked, we can't sync favorites
-    	  			if (prefs.getString("accountId", "").trim().equals("")){
-    	  				CheckBoxPreference cbp = (CheckBoxPreference)findPreference("syncFavsTVDB");
-    	  				cbp.setChecked(false);
-    	  			}
-
-    	  			
-    	  		}else if (key.equals("cacheSize")){
-
-    	  			// Trim the cache as needed
-        	  		long cacheSize = prefs.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-        	  		BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
-        	  		fileCache.trimCache();
-    	  		}
-    	  	}
-        };
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        settings.registerOnSharedPreferenceChangeListener(prefListener);
+	public void characters(char ch[], int start, int length) {
+		String chars = (new String(ch).substring(start, start + length));
+		sb.append(chars);
 	}
-	
-	
-	
-	
-	// Home button moves back
-		@Override
-		public boolean onOptionsItemSelected(MenuItem item){
-		     switch (item.getItemId()) {
-		         case android.R.id.home:
-		        	 finish();
-		        	 return true;
-		     }
-		     return false;
+
+
+    @Override
+	public void endElement(String uri, String name, String qName) throws SAXException {
+		try {
+			name = name.trim().toLowerCase();
+			
+			if (name.equals("seriesname")){
+				info.setSeriesName(sb.toString());
+			}else if (name.equals("firstaired") && !sb.toString().equals("")){
+				long airedDate = DateUtil.parseDate(sb.toString()).getTime()/1000L;
+				
+				if (airedDate > info.getLastAired() && airedDate < timeNow)
+					info.setLastAired(airedDate);
+				
+				if (airedDate > timeNow && (info.getNextAired() == 0 || airedDate < info.getNextAired()))
+					info.setNextAired(airedDate);
+			}
+		    
+		} catch (Exception e) {
+			if (AppSettings.LOG_ENABLED)
+				Log.e("xml.handlers.SeriesDatesHandler", e.toString());
 		}
+	}
+    
+	public FavoriteSeriesInfo getInfo(long seriesId) {
+	    try {
+	    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+	    	String languageCode = settings.getString("language", "en");
+	    	
+			URL url = new URL(AppSettings.SERIES_FULL_URL + String.valueOf(seriesId) + "/all/" + languageCode + ".xml");		//http://thetvdb.com/api/0A41C0DEA5531762/series/<seriesid>/all/en.xml
+			timeNow = System.currentTimeMillis() / 1000L;
+
+			info = new FavoriteSeriesInfo(seriesId, "", 0, 0);
+			
+		    SAXParserFactory spf = SAXParserFactory.newInstance();
+		    SAXParser sp = spf.newSAXParser();
+		    XMLReader xr = sp.getXMLReader();
+		    xr.setContentHandler(this);
+		    xr.parse(new InputSource(url.openStream()));
+		    
+		    return info;
+	    } catch (Exception e) {
+	    	return null;
+	    }
+	    
+	}
 }

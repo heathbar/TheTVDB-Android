@@ -43,11 +43,11 @@ import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.lazylistadapter.BitmapFileCache;
 import com.heath_bar.lazylistadapter.BitmapWebUtil;
+import com.heath_bar.tvdb.data.xmlhandlers.ActorHandler;
 import com.heath_bar.tvdb.types.Actor;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
-import com.heath_bar.tvdb.xml.handlers.ActorHandler;
 
 public class ActorDetails extends SherlockActivity {
 

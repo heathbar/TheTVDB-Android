@@ -42,22 +42,25 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.tvdb.adapters.PopupMenuAdapter;
-import com.heath_bar.tvdb.adapters.SeriesAiredListAdapter;
-import com.heath_bar.tvdb.adapters.SeriesDbAdapter;
+import com.heath_bar.tvdb.data.FavoritesData;
+import com.heath_bar.tvdb.data.adapters.PopupMenuAdapter;
+import com.heath_bar.tvdb.data.adapters.SeriesAiredListAdapter;
+import com.heath_bar.tvdb.data.adapters.SeriesDbAdapter;
 
 public class TheTVDBActivity extends SherlockListActivity implements OnItemClickListener   {
 	
-	
-	private SeriesDbAdapter db;							// db where favorites are stored... should replace this with an API
+
+	private FavoritesData favorites;
 	private Cursor cursor;								// cursor to hold the favorites from the db
 	private Cursor refreshCursor;						// replacement cursor
 	private SeriesAiredListAdapter adapter;				// adapter to lookup air times
 	private ResponseReceiver updateReceiver;			// listener for updates from the adapter
-	private Intent airedDatesUpdater;
+	private Intent favoritesUpdater;
 	private boolean isRefreshing = false;
 	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
-	private boolean useLocalFavs = true;
+	private boolean syncFavsTVDB;
+	private boolean importFavsXBMC;
+	
 	
 	private IcsListPopupWindow sortPopupMenu;			// define a popup menu for the sort button to show
 	private String sortBy = SeriesDbAdapter.KEY_TITLE;  // Sort by show title by default
@@ -70,12 +73,11 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         getSupportActionBar().setHomeButtonEnabled(false);
         setContentView(R.layout.favorites_list);
 
-        // Setup Datbase
-        db = new SeriesDbAdapter(getApplicationContext());
-        db.open();
+        // Connect to database
+        favorites = new FavoritesData(this);
 
-        if (airedDatesUpdater == null)
-        	airedDatesUpdater = new Intent(getApplicationContext(), UpdateService.class);
+        if (favoritesUpdater == null)
+        	favoritesUpdater = new Intent(getApplicationContext(), UpdateService.class);
         
         // Setup the ListView header
         View header = getLayoutInflater().inflate(R.layout.favorites_header, null);
@@ -88,48 +90,33 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         sortPopupMenu.setModal(true);
         sortPopupMenu.setOnItemClickListener(this);
         
-        
-        
-        // Listen for Preference changes
+        // Listen for future Preference changes
         prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
     	  	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        		ApplyPreferences();
+    	  		ApplyPreferences(key);
     	  	}
     	};
-    	
-    	// Apply Preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        settings.registerOnSharedPreferenceChangeListener(prefListener);
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(prefListener);
+        
+        // Apply preferences now
         ApplyPreferences();
 	}	
-			
+
     
-    private void ApplyPreferences() {
-    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-    	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-        TextView textview = (TextView)findViewById(android.R.id.empty);
-        textview.setTextSize(textSize);	
-        
-        View header = getLayoutInflater().inflate(R.layout.text, null);
-        TextView header_text = (TextView) header.findViewById(R.id.text);
-        header_text.setTextSize(textSize*1.1f);
-        
-        useLocalFavs = !settings.getBoolean("syncFavorites", false);
-        // TODO: Cancel current refresh and force a new one.
-	}
-
-
-	// When the task is created, or the user returns, refresh to pick up any new favorites
+    /** When the task is created, or the user returns, refresh to pick up any new favorites */
     @Override
-    protected void onResume(){
-    	super.onResume();
+    protected void onStart(){
+    	super.onStart();
     	RefreshFavoritesAsync();
 	}
     
 	private void RefreshFavoritesAsync(){
 		
+		// Refresh from the db 
+		new QueryDatabaseTask().execute();
+		
 		if (isRefreshing)
-			return;
+			return; 
 		else 
 			isRefreshing = true;				
 				
@@ -139,26 +126,19 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		// Set the empty list text
 		TextView emptyList = (TextView)findViewById(android.R.id.empty);
 		emptyList.setText(getResources().getString(R.string.loading));
-		
-		// Get favorite shows from the database in an AsyncTask
-		if (useLocalFavs)
-			new QueryDatabaseTask().execute();
-		else
-			new QueryTVDBFavsTask().execute();
-		
+						
 		// Register for responses from the update service
 		if (updateReceiver != null)
 			unregisterReceiver(updateReceiver);
-		
+				
 		updateReceiver = new ResponseReceiver();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(UpdateService.ACTION_UPDATE);
 		filter.addAction(UpdateService.ACTION_COMPLETE);
-		filter.addAction(UpdateService.CONNECT_EXCEPTION);
         registerReceiver(updateReceiver, filter);
         
-        // Launch the update service to lookup the aired dates in the background
-     	startService(airedDatesUpdater);
+        // Launch the update service to sync the local favorites database with everything else
+        startService(favoritesUpdater);
 	}
 	
 	private class QueryDatabaseTask extends AsyncTask<Void, Void, Cursor>{
@@ -167,8 +147,8 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		protected Cursor doInBackground(Void... params) {
 			
 			try {
-		        // Get all of the favorite shows (sans aired dates)
-		        return db.fetchFavorites(sortBy);
+		        // Get the favorite shows from the database
+		        return favorites.fetchNamedFavorites(sortBy);
 		        
 			}catch (Exception e){
 				e.printStackTrace();
@@ -197,43 +177,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	        }			
 		}
 	}
-	
-	private class QueryTVDBFavsTask extends AsyncTask<Void, Void, Cursor>{
 		
-		@Override
-		protected Cursor doInBackground(Void... params) {
-			
-			try {
-		        // Get all of the favorite shows (sans aired dates)
-		        return db.fetchFavorites(sortBy);
-		        
-			}catch (Exception e){
-				e.printStackTrace();
-			}
-			return null;
-		}
-		
-		@Override
-		protected void onPostExecute(Cursor c){
-			
-			cursor = c;
-			
-			// Apply the cursor to the ListView
-			String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
-	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
-	      
-	        try{
-		        adapter = new SeriesAiredListAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors);
-				setListAdapter(adapter);
-				getListView().setOnItemClickListener(new ItemClickedListener());
-				registerForContextMenu(getListView());
-	        }catch (Exception e){
-	        	if(AppSettings.LOG_ENABLED)
-	        		Log.e("TheTVDBActivity","Failed to set the cursor");
-	        	Toast.makeText(getApplicationContext(), "There was a problem loading your favorite shows from the database", Toast.LENGTH_SHORT).show();
-	        }			
-		}
-	}
 	
 	private class ResponseReceiver extends BroadcastReceiver {
 		 
@@ -242,7 +186,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 			   
 			if (intent.getAction().equals(UpdateService.ACTION_UPDATE)){
 			
-				refreshCursor = db.fetchFavorites(sortBy);
+				refreshCursor = favorites.fetchNamedFavorites(sortBy);
 				
 		        try {
 			        adapter.changeCursor(refreshCursor);
@@ -258,15 +202,11 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 				emptyList.setText(getResources().getString(R.string.empty_list_favorites));
 				
 				isRefreshing = false;
-				
-			} else if (intent.getAction().equals(UpdateService.CONNECT_EXCEPTION)){
-				Toast.makeText(context, "There was a problem reaching thetvdb.com. Perhaps the site is down", Toast.LENGTH_SHORT).show();
-				isRefreshing = false;
 			}
 		}
 	}
 	
-	// Handle Clicks
+	/** Handle clicks on the TV shows */
 	private class ItemClickedListener implements OnItemClickListener {
 		
 	    @Override
@@ -279,6 +219,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	    }
 	}
 		
+	/** Handle long clicks on TV shows */
 	@Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         if (v.getId() == android.R.id.list) {
@@ -291,21 +232,32 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         }
     }
 	
+	
 	@Override
     public boolean onContextItemSelected(android.view.MenuItem item) {
+		// Delete the show in the background
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		new RemoveFavoriteTask().execute(info.id);
 
-		boolean success = db.removeFavoriteSeries(info.id);
-		RefreshFavoritesAsync();
-		if (success)
-			Toast.makeText(this, "The show has been removed from your favorites.", Toast.LENGTH_SHORT).show();
-		else 
-			Toast.makeText(this, "Something bad happened: nothing was deleted.", Toast.LENGTH_SHORT).show();
-		
-		
-        return true;
+		return true;
     }
 	
+	private class RemoveFavoriteTask extends AsyncTask<Long, Void, Boolean>{
+		@Override
+		protected Boolean doInBackground(Long... params) {
+			return favorites.removeSeries(params[0]);
+		}
+		
+		@Override
+		protected void onPostExecute(Boolean result) {
+			Toast.makeText(getApplicationContext(), "The show has been removed from your favorites.", Toast.LENGTH_SHORT).show();
+			new QueryDatabaseTask().execute();
+		}
+	}
+	
+	
+	
+	/** Show the popup menu when the user clicks the sort button */
 	@SuppressWarnings("deprecation")
 	public void showSortPopupMenu(View v){
 		sortPopupMenu.setContentWidth(getWindowManager().getDefaultDisplay().getWidth()/2);
@@ -313,6 +265,61 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		sortPopupMenu.show();
 	}
 	
+	/** Handle clicks on the sort popup menu */
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		switch (position){
+		case 0:
+			sortBy = SeriesDbAdapter.KEY_TITLE;
+			break;
+		case 1:
+			sortBy = SeriesDbAdapter.KEY_NEXT_AIRED;
+			break;
+		case 2:
+			sortBy = SeriesDbAdapter.KEY_LAST_AIRED;
+			break;
+		}
+		sortPopupMenu.dismiss();
+		new QueryDatabaseTask().execute();		
+	}
+	
+	
+	
+	/** Apply all preferences */
+    private void ApplyPreferences() {
+    	ApplyPreferences(null);
+    }
+    
+    /** Apply a particular preference */
+    private void ApplyPreferences(String key) {
+    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+    	
+    	if (key == null || key.equals("syncFavsTVDB")){
+    		syncFavsTVDB = settings.getBoolean(key, false); 
+  			if (syncFavsTVDB){
+				favorites.uploadLocalFavoritesToTheTVDB();
+				
+  				// TODO: cancel current refresh
+  				// TODO: start a new refresh
+  			} 
+  		}
+    	if (key == null || key.equals("importFavsXBMC")){
+  			importFavsXBMC = settings.getBoolean(key, false);
+  			if (importFavsXBMC){
+  				favorites.importFavoritesFromXBMC();		// TODO: Cancel current refresh and force a new one.
+  			}
+  		}
+    	if (key == null || key.equals("textSize")){
+	    	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+	        TextView textview = (TextView)findViewById(android.R.id.empty);
+	        textview.setTextSize(textSize);	
+	        
+	        View header = getLayoutInflater().inflate(R.layout.text, null);
+	        TextView header_text = (TextView) header.findViewById(R.id.text);
+	        header_text.setTextSize(textSize*1.1f);
+  		}
+	}
+    
 	
 	// ACTIONBAR MENU
 	
@@ -362,37 +369,18 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
     	return true;
     }
     
-
-	
 	/** Close the database, we're done. */
-	@Override
-	protected void onDestroy() {
-	    super.onDestroy();
-	    if (cursor != null)
+    @Override
+    protected void onDestroy(){
+    	super.onDestroy();
+    	if (cursor != null)
 	    	cursor.close();
 	    if (refreshCursor != null)
 	    	refreshCursor.close();
-	    if (db != null)
-            db.close();
+	    if (favorites != null)
+            favorites.close();
 	    
-	    unregisterReceiver(updateReceiver);
-	}
-
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		switch (position){
-		case 0:
-			sortBy = SeriesDbAdapter.KEY_TITLE;
-			break;
-		case 1:
-			sortBy = SeriesDbAdapter.KEY_NEXT_AIRED;
-			break;
-		case 2:
-			sortBy = SeriesDbAdapter.KEY_LAST_AIRED;
-			break;
-		}
-		sortPopupMenu.dismiss();
-		new QueryDatabaseTask().execute();		
-	}
+	    if (updateReceiver != null)
+	    	unregisterReceiver(updateReceiver);
+    }
 }

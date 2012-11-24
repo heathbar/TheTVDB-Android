@@ -16,25 +16,76 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb;
+package com.heath_bar.tvdb.data.xmlhandlers;
+
+import java.net.URL;
+import java.util.ArrayList;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+import android.util.Log;
+
+import com.heath_bar.tvdb.AppSettings;
+
+public class GetXBMCFavoritesHandler extends DefaultHandler{
+		private StringBuilder sb;
+	    private ArrayList<String> showsList;
+	    
+	    @Override
+		public void startElement(String uri, String name, String qName, Attributes atts) {
+		    sb = new StringBuilder();						// Reset the string builder
+		    
+		    name = name.trim().toLowerCase();
+		    if (name.equals("???"))
+		    	showsList = new ArrayList<String>();
+	    }
+	    
+	    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
+	    // Therefore we must aggregate the data here, and set it in endElement() function
+		@Override
+		public void characters(char ch[], int start, int length) {
+			String chars = (new String(ch).substring(start, start + length));
+			sb.append(chars);
+		}
+
+	    @Override
+		public void endElement(String uri, String name, String qName) throws SAXException {
+			try {
+
+				name = name.trim().toLowerCase();
+				// TODO: parse XML file
+
+			} catch (Exception e) {
+				if (AppSettings.LOG_ENABLED)
+					Log.e("GetXBMCFavoritesAdapter", e.toString());				
+			}
+		}
+	    
+	    public ArrayList<String> getFavorites(String accountId){
+		    try {
+				URL url = new URL("xbmc:8080");	
+								
+				SAXParserFactory spf = SAXParserFactory.newInstance();
+			    SAXParser sp = spf.newSAXParser();
+			    XMLReader xr = sp.getXMLReader();
+			    xr.setContentHandler(this);
+			    xr.parse(new InputSource(url.openStream()));
+
+			    return showsList;
+			    
+		    } catch (Exception e){
+		    	if (AppSettings.LOG_ENABLED)
+					Log.e("GetXBMCFavoritesAdapter", e.toString());
+			}
+		    return null;
+		}
+	}
 
 
-public final class AppSettings {
-
-	public static final String API_KEY = "0A41C0DEA5531762";
-	public static final String BASE_URL =  "http://thetvdb.com/api/" + API_KEY + "/";
-	public static final String SERIES_BASIC_URL = "http://www.thetvdb.com/api/GetSeries.php?seriesname=";
-	public static final String SERIES_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/series/"; // <seriesid>/all/en.xml
-	public static final String EPISODE_FULL_URL = "http://thetvdb.com/api/" + API_KEY + "/episodes/"; // <seriesid>/all/en.xml
-	public static final String GET_RATING_URL = "http://thetvdb.com/api/User_Rating.php?";
-	public static final String SET_RATING_URL = "http://thetvdb.com/api/GetRatingsForUser.php?apikey=" + API_KEY + "&";
-	public static final String FAVORITES_URL = "http://thetvdb.com/api/User_Favorites.php?";
-	public static final String BANNER_URL = "http://thetvdb.com/banners/";
-	public static final boolean LOG_ENABLED = true;
-	public static final int DATABASE_VERSION = 1;
-	public static final int[] listBackgroundColors = new int[]{0xff002337, 0xff001d2d};	// R.color.blue1 & R.color.blue2
-	public static final String PREFS_NAME = "TheTVDBSettings";
-	public static final int THUMBNAIL_SIZE = 100;
-	public static final int DEFAULT_CACHE_SIZE = 50; // 50 MB
-	
-}
