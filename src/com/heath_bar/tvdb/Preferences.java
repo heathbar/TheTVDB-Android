@@ -25,7 +25,7 @@ import android.preference.PreferenceManager;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
 
 public class Preferences extends SherlockPreferenceActivity {
 	

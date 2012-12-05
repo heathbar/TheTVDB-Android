@@ -18,9 +18,8 @@
  */
 package com.heath_bar.tvdb.types;
 
+import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
 import com.heath_bar.tvdb.util.StringUtil;
-import com.heath_bar.lazylistadapter.WebImage;
-
 
 
 public class TvEpisode {

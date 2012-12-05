@@ -16,87 +16,60 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb.data.xmlhandlers;
+package com.heath_bar.tvdb.data.adapters.lazylist;
 
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+public class BitmapWebUtil {
 
-import android.util.Log;
-
-import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
-
-public class BannerHandler extends DefaultHandler{
-	private StringBuilder sb;
-	private WebImageList imageList;
-	private WebImage currentImage;
-    
-    @Override
-	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
-	    sb = new StringBuilder();						// Reset the string builder
-	    
-	    if (name.equals("banners"))
-	    	imageList = new WebImageList();
-	    else if (name.equals("banner"))
-	    	currentImage = new WebImage();	
+	Context context;
+	
+	public BitmapWebUtil(Context ctx){
+		context = ctx;
+	}
+	
+	/** This function creates the HTTP request and saves the image to the application's cache folder 
+	 * @throws IOException */
+	public Bitmap downloadBitmap(String url) throws IOException {
+    	 
+	     URL bitmapUrl = new URL(url);
+	     HttpURLConnection conn = (HttpURLConnection)bitmapUrl.openConnection();
+	     conn.setConnectTimeout(10000);
+	     conn.setReadTimeout(30000);
+	     conn.setInstanceFollowRedirects(true);
+	     
+	     InputStream iStream = conn.getInputStream();
+	     PatchedInputStream pStream = new PatchedInputStream(iStream);
+	
+	     return BitmapFactory.decodeStream(pStream);
+         
     }
-    
-    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
-    // Therefore we must aggregate the data here, and set it in endElement() function
-	@Override
-	public void characters(char ch[], int start, int length) {
-		String chars = (new String(ch).substring(start, start + length));
-		sb.append(chars);
-	}
-
-
-    @Override
-	public void endElement(String uri, String name, String qName) throws SAXException {
-		try {
-			name = name.trim().toLowerCase();
-			
-			if (name.equals("id")){
-				currentImage.setId("B" + sb.toString());	// IDs are not globally unique. Prefix a "B" to indicate this ID is a banner
-			} else if (name.equals("bannerpath")){
-				currentImage.setUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("thumbnailpath")){
-				currentImage.setThumbUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("banner")){
-				imageList.add(currentImage);
-			}
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-		}
-	}
-    
-	public WebImageList getImageList(String seriesId) {
-	    try {
-			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/banners.xml");	
-						
-		    SAXParserFactory spf = SAXParserFactory.newInstance();
-		    SAXParser sp = spf.newSAXParser();
-		    XMLReader xr = sp.getXMLReader();
-		    xr.setContentHandler(this);
-		    xr.parse(new InputSource(url.openStream()));
-		    
-		    return imageList;
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-			return new WebImageList();
-		}
+	
+	
+	 
+	
+	
+	/* This fixes the issue outlined here: http://code.google.com/p/android/issues/detail?id=6066 */
+	public static class PatchedInputStream extends FilterInputStream {
+	  public PatchedInputStream(InputStream in) {
+	    super(in);
+	  }
+	  public long skip(long n) throws IOException {
+	    long m = 0L;
+	    while (m < n) {
+	      long _m = in.skip(n-m);
+	      if (_m == 0L) break;
+	      m += _m;
+	    }
+	    return m;
+	  }
 	}
 }
-
-

@@ -33,9 +33,9 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.lazylistadapter.LazyBitmapAdapter;
-import com.heath_bar.lazylistadapter.WebImage;
-import com.heath_bar.lazylistadapter.WebImageList;
+import com.heath_bar.tvdb.data.adapters.lazylist.LazyBitmapAdapter;
+import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
+import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
 import com.heath_bar.tvdb.data.xmlhandlers.BannerHandler;
 
 public class BannerListing extends SherlockListActivity {

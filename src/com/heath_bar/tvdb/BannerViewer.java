@@ -31,9 +31,9 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
-import com.heath_bar.lazylistadapter.BitmapFileCache;
-import com.heath_bar.lazylistadapter.BitmapWebUtil;
-import com.heath_bar.lazylistadapter.WebImage;
+import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
+import com.heath_bar.tvdb.data.adapters.lazylist.BitmapWebUtil;
+import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
 import com.heath_bar.tvdb.util.ShareUtil;
 
 public class BannerViewer extends SherlockActivity {

@@ -16,87 +16,98 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb.data.xmlhandlers;
+package com.heath_bar.tvdb.data.adapters.lazylist;
 
-import java.net.URL;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import android.graphics.Bitmap;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+public class BitmapMemoryCache {
 
-import android.util.Log;
+	private Map<String, Bitmap> cache = Collections.synchronizedMap(new LinkedHashMap<String, Bitmap>(25, 1.5f, true));
+    private long current_size = 0;
+    private long maxSize = 1; 
 
-import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
-
-public class BannerHandler extends DefaultHandler{
-	private StringBuilder sb;
-	private WebImageList imageList;
-	private WebImage currentImage;
-    
-    @Override
-	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
-	    sb = new StringBuilder();						// Reset the string builder
-	    
-	    if (name.equals("banners"))
-	    	imageList = new WebImageList();
-	    else if (name.equals("banner"))
-	    	currentImage = new WebImage();	
+    /** Constructor: By default limit the cache to 25% of the heap */
+    public BitmapMemoryCache(){
+        maxSize = Runtime.getRuntime().maxMemory()/4;
     }
     
-    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
-    // Therefore we must aggregate the data here, and set it in endElement() function
-	@Override
-	public void characters(char ch[], int start, int length) {
-		String chars = (new String(ch).substring(start, start + length));
-		sb.append(chars);
-	}
+    /** Set the max size of the cache 
+     * Note: This can be in bytes/bits/inches/light years. It all depends on what your getSize functions returns 
+     * By default the maxSize is set to 25% of the heap (in bytes) */
+    public void setMaxSize(long maxSize){
+        this.maxSize = maxSize;
+    }
 
+    /** Retrieve a item from the cache */
+    public Bitmap get(String id){
+        try{
+            if(!cache.containsKey(id))
+                return null;
+            else
+            	return cache.get(id);
+        }catch(NullPointerException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-    @Override
-	public void endElement(String uri, String name, String qName) throws SAXException {
-		try {
-			name = name.trim().toLowerCase();
-			
-			if (name.equals("id")){
-				currentImage.setId("B" + sb.toString());	// IDs are not globally unique. Prefix a "B" to indicate this ID is a banner
-			} else if (name.equals("bannerpath")){
-				currentImage.setUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("thumbnailpath")){
-				currentImage.setThumbUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("banner")){
-				imageList.add(currentImage);
-			}
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-		}
+    /** Add an item to the cache */
+    public void put(String id, Bitmap item){
+        try{
+        	// If the cache contains the key already, remove it's size, then re-add it
+            if(cache.containsKey(id))
+            	current_size -= getSize(cache.get(id));
+                        
+            cache.put(id, item);
+            current_size += getSize(item);
+            trimCache();
+        }catch(Throwable th){
+            th.printStackTrace();
+        }
+    }
+    
+    /** Trim the cache to maxSize */
+    private void trimCache() {
+        if(current_size > maxSize){
+
+        	// Iterate over the cache; order by oldest accessed items first
+            Iterator<Entry<String, Bitmap>> iter = cache.entrySet().iterator();  
+            while(iter.hasNext()){
+                Entry<String, Bitmap> entry = iter.next();
+                current_size -= getSize(entry.getValue());
+                iter.remove();
+                if(current_size <= maxSize)
+                    break;
+            }
+        }
+    }
+    
+    protected long getSize(Bitmap item){
+    	if (item != null)
+    		return item.getRowBytes() * item.getHeight();
+		else
+			return 0;
+    }
+
+    /** Get the current size of the cache in MB. This is mostly for debugging */
+    public long getSizeMB() {
+		return current_size / 1024 / 1024;
 	}
     
-	public WebImageList getImageList(String seriesId) {
-	    try {
-			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/banners.xml");	
-						
-		    SAXParserFactory spf = SAXParserFactory.newInstance();
-		    SAXParser sp = spf.newSAXParser();
-		    XMLReader xr = sp.getXMLReader();
-		    xr.setContentHandler(this);
-		    xr.parse(new InputSource(url.openStream()));
-		    
-		    return imageList;
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-			return new WebImageList();
-		}
-	}
+    /** Empty the cache */
+    public void clear() {
+        try{
+            cache.clear();
+            current_size = 0;
+        }catch(NullPointerException ex){
+            ex.printStackTrace();
+        }
+    }
+   
 }
-
-

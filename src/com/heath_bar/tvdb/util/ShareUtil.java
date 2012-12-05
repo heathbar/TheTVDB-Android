@@ -7,7 +7,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.Toast;
 
-import com.heath_bar.lazylistadapter.BitmapFileCache;
+import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
+
 
 public class ShareUtil {
 

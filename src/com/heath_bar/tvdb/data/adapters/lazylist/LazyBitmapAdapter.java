@@ -16,87 +16,69 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb.data.xmlhandlers;
+package com.heath_bar.tvdb.data.adapters.lazylist;
 
-import java.net.URL;
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+public class LazyBitmapAdapter extends BaseAdapter {
 
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+	private int layout;
+    private int imageview;    
+    private BitmapLoader loader;
+    private	 static LayoutInflater inflater = null;
+ 
+    public LazyBitmapAdapter(Activity activity, WebImageList banners, int layout, int imageview){
+	
+    	this.layout = layout;
+    	this.imageview = imageview;
 
-import android.util.Log;
-
-import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
-
-public class BannerHandler extends DefaultHandler{
-	private StringBuilder sb;
-	private WebImageList imageList;
-	private WebImage currentImage;
-    
-    @Override
-	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
-	    sb = new StringBuilder();						// Reset the string builder
-	    
-	    if (name.equals("banners"))
-	    	imageList = new WebImageList();
-	    else if (name.equals("banner"))
-	    	currentImage = new WebImage();	
+        inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        loader = new BitmapLoader(activity.getApplicationContext(), banners, true);
     }
     
-    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
-    // Therefore we must aggregate the data here, and set it in endElement() function
 	@Override
-	public void characters(char ch[], int start, int length) {
-		String chars = (new String(ch).substring(start, start + length));
-		sb.append(chars);
+	public int getCount() {
+		if (loader.getWebImageList() != null)
+			return loader.getWebImageList().size();
+		else
+			return 0;
 	}
 
-
-    @Override
-	public void endElement(String uri, String name, String qName) throws SAXException {
-		try {
-			name = name.trim().toLowerCase();
-			
-			if (name.equals("id")){
-				currentImage.setId("B" + sb.toString());	// IDs are not globally unique. Prefix a "B" to indicate this ID is a banner
-			} else if (name.equals("bannerpath")){
-				currentImage.setUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("thumbnailpath")){
-				currentImage.setThumbUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("banner")){
-				imageList.add(currentImage);
-			}
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-		}
+	@Override
+	public Object getItem(int position) {
+		if (loader.getWebImageList() != null)
+			return loader.getWebImageList().get(position);
+		else
+			return null;
 	}
-    
-	public WebImageList getImageList(String seriesId) {
-	    try {
-			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/banners.xml");	
-						
-		    SAXParserFactory spf = SAXParserFactory.newInstance();
-		    SAXParser sp = spf.newSAXParser();
-		    XMLReader xr = sp.getXMLReader();
-		    xr.setContentHandler(this);
-		    xr.parse(new InputSource(url.openStream()));
-		    
-		    return imageList;
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-			return new WebImageList();
-		}
+
+	@Override
+	public long getItemId(int position) {
+		return 0;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+        if(convertView == null)
+        	convertView = inflater.inflate(layout, null);
+
+        ImageView image = (ImageView)convertView.findViewById(imageview);
+        loader.Load(position, image);
+
+        return convertView;
+	}
+
+	public void clearMemoryCache(){
+		loader.clearMemoryCache();
+	}
+	
+	public void setFileCacheMaxSize(long maxSize){
+		loader.setFileCacheMaxSize(maxSize);
 	}
 }
-
-

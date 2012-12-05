@@ -16,87 +16,61 @@
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
-package com.heath_bar.tvdb.data.xmlhandlers;
+package com.heath_bar.tvdb.data.adapters.lazylist;
 
-import java.net.URL;
+import android.graphics.Bitmap;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+public class WebImage {
 
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-
-import android.util.Log;
-
-import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
-import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
-
-public class BannerHandler extends DefaultHandler{
-	private StringBuilder sb;
-	private WebImageList imageList;
-	private WebImage currentImage;
-    
-    @Override
-	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
-	    sb = new StringBuilder();						// Reset the string builder
-	    
-	    if (name.equals("banners"))
-	    	imageList = new WebImageList();
-	    else if (name.equals("banner"))
-	    	currentImage = new WebImage();	
-    }
-    
-    // SAX parsers may return all contiguous character data in a single chunk, or they may split it into several chunks
-    // Therefore we must aggregate the data here, and set it in endElement() function
-	@Override
-	public void characters(char ch[], int start, int length) {
-		String chars = (new String(ch).substring(start, start + length));
-		sb.append(chars);
+	private String id;
+	private String url;
+	private String thumbUrl;
+	Bitmap bitmap;
+	
+	
+	public String getId() {
+		return id;
 	}
-
-
-    @Override
-	public void endElement(String uri, String name, String qName) throws SAXException {
-		try {
-			name = name.trim().toLowerCase();
-			
-			if (name.equals("id")){
-				currentImage.setId("B" + sb.toString());	// IDs are not globally unique. Prefix a "B" to indicate this ID is a banner
-			} else if (name.equals("bannerpath")){
-				currentImage.setUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("thumbnailpath")){
-				currentImage.setThumbUrl(AppSettings.BANNER_URL + sb.toString());
-			} else if (name.equals("banner")){
-				imageList.add(currentImage);
-			}
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-		}
+	public void setId(String id) {
+		this.id = id;
 	}
-    
-	public WebImageList getImageList(String seriesId) {
-	    try {
-			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/banners.xml");	
-						
-		    SAXParserFactory spf = SAXParserFactory.newInstance();
-		    SAXParser sp = spf.newSAXParser();
-		    XMLReader xr = sp.getXMLReader();
-		    xr.setContentHandler(this);
-		    xr.parse(new InputSource(url.openStream()));
-		    
-		    return imageList;
-		} catch (Exception e) {
-			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
-			return new WebImageList();
-		}
+	public String getUrl() {
+		return url;
 	}
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	public String getThumbUrl() {
+		if (HasThumb())
+			return thumbUrl;
+		else
+			return url;
+	}
+	public void setThumbUrl(String thumbUrl) {
+		this.thumbUrl = thumbUrl;
+	}
+	public Bitmap getBitmap() {
+		return bitmap;
+	}
+	public void setBitmap(Bitmap bitmap) {
+		this.bitmap = bitmap;
+	}
+	
+	
+	public WebImage(){}
+	
+	public WebImage(String id, String url, String thumbUrl){
+		this.id = id;
+		this.url = url;
+		this.thumbUrl = thumbUrl;
+	}
+	
+	public boolean HasThumb(){
+		if (thumbUrl == null || thumbUrl.equals(""))
+			return false;
+		else
+			return true;
+	}
+	
+	
 }
-
-
