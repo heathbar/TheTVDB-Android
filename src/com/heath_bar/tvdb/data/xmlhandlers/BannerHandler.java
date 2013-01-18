@@ -76,7 +76,7 @@ public class BannerHandler extends DefaultHandler{
 			}
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 		}
 	}
     
@@ -93,7 +93,7 @@ public class BannerHandler extends DefaultHandler{
 		    return imageList;
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 			return new WebImageList();
 		}
 	}

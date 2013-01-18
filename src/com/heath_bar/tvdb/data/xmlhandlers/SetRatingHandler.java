@@ -62,7 +62,7 @@ public class SetRatingHandler extends DefaultHandler{
 			    
 			} catch (Exception e) {
 				if (AppSettings.LOG_ENABLED)
-					Log.e("xml.handlers.RatingAdapter", e.toString());
+					Log.e("xml.handlers.RatingAdapter", "Error:" + e.toString());
 			}
 		}
 	    
@@ -118,7 +118,7 @@ public class SetRatingHandler extends DefaultHandler{
 			    return result;
 			} catch (Exception e) {
 				if (AppSettings.LOG_ENABLED)
-					Log.e("xml.handlers.RatingAdapter", e.toString());
+					Log.e("xml.handlers.RatingAdapter", "Error:" + e.toString());
 				return false;
 			}
 		}

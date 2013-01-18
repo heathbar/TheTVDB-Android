@@ -101,7 +101,7 @@ public class EpisodeHandler extends DefaultHandler{
 		    
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 		}
 	}
     
@@ -122,7 +122,7 @@ public class EpisodeHandler extends DefaultHandler{
 		    return theEpisode; 
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 			return new TvEpisode();
 		}
 	}

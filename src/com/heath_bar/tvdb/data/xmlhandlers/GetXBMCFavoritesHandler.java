@@ -64,7 +64,7 @@ public class GetXBMCFavoritesHandler extends DefaultHandler{
 
 			} catch (Exception e) {
 				if (AppSettings.LOG_ENABLED)
-					Log.e("GetXBMCFavoritesAdapter", e.toString());				
+					Log.e("GetXBMCFavoritesAdapter", "Error:" + e.toString());				
 			}
 		}
 	    
@@ -82,7 +82,7 @@ public class GetXBMCFavoritesHandler extends DefaultHandler{
 			    
 		    } catch (Exception e){
 		    	if (AppSettings.LOG_ENABLED)
-					Log.e("GetXBMCFavoritesAdapter", e.toString());
+					Log.e("GetXBMCFavoritesAdapter", "Error:" + e.toString());
 			}
 		    return null;
 		}

@@ -19,16 +19,13 @@
 package com.heath_bar.tvdb;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -45,7 +42,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.tvdb.UpdateService.LocalBinder;
 import com.heath_bar.tvdb.data.FavoritesData;
 import com.heath_bar.tvdb.data.adapters.PopupMenuAdapter;
 import com.heath_bar.tvdb.data.adapters.SeriesAiredListAdapter;
@@ -59,9 +55,8 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	private Cursor refreshCursor;						// replacement cursor
 	private SeriesAiredListAdapter adapter;				// adapter to lookup air times
 	private ResponseReceiver updateReceiver;			// listener for updates from the adapter
-	private UpdateService favoritesUpdateService;
 	private Intent favoritesUpdater;
-	private boolean boundToService = false;
+	private boolean isRefreshing = false;
 	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
 	private boolean syncFavsTVDB;
 	private boolean importFavsXBMC;
@@ -115,44 +110,35 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
     	RefreshFavoritesAsync();
 	}
     
-    
-    /** Stop any existing refreshes, and start a new one */
 	private void RefreshFavoritesAsync(){
-
-		// Set the empty list to "Loading"
-		TextView emptyList = (TextView)findViewById(android.R.id.empty);
-		emptyList.setText(getResources().getString(R.string.loading));
-				
+		
 		// Refresh from the db 
 		new QueryDatabaseTask().execute();
 		
-		// Reset the empty list text
-		emptyList = (TextView)findViewById(android.R.id.empty);
-		emptyList.setText(getResources().getString(R.string.empty_list_favorites));
-		
+		if (isRefreshing)
+			return; 
+		else 
+			isRefreshing = true;				
+				
 		// Hide refresh button and show Progress animation
 		setSupportProgressBarIndeterminateVisibility(true);
-
-		// Stop the service if it is already running
-		if (boundToService)
-			favoritesUpdateService.stop();
-
-//		// Unregister for responses from the update service
-//		if (updateReceiver != null)
-//			unregisterReceiver(updateReceiver);
-		
-		if (updateReceiver == null){
-		// Re-register for responses
+				
+		// Set the empty list text
+		TextView emptyList = (TextView)findViewById(android.R.id.empty);
+		emptyList.setText(getResources().getString(R.string.loading));
+						
+		// Register for responses from the update service
+		if (updateReceiver != null)
+			unregisterReceiver(updateReceiver);
+				
 		updateReceiver = new ResponseReceiver();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(UpdateService.ACTION_UPDATE);
 		filter.addAction(UpdateService.ACTION_COMPLETE);
         registerReceiver(updateReceiver, filter);
-		}
         
         // Launch the update service to sync the local favorites database with everything else
         startService(favoritesUpdater);
-        bindService(favoritesUpdater, updateServiceConnection, Context.BIND_AUTO_CREATE);
 	}
 	
 	private class QueryDatabaseTask extends AsyncTask<Void, Void, Cursor>{
@@ -204,11 +190,18 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 				
 		        try {
 			        adapter.changeCursor(refreshCursor);
+			        //setListAdapter(adapter);
 		        }catch(Exception e){}
-
+		        
 			} else if (intent.getAction().equals(UpdateService.ACTION_COMPLETE)){
 				// Hide the progress animation and show the refresh button
 				setSupportProgressBarIndeterminateVisibility(false);
+				
+				// Reset the empty list text
+				TextView emptyList = (TextView)findViewById(android.R.id.empty);
+				emptyList.setText(getResources().getString(R.string.empty_list_favorites));
+				
+				isRefreshing = false;
 			}
 		}
 	}
@@ -264,25 +257,6 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	
 	
 	
-	
-	/** Defines call backs for service binding, passed to bindService() */
-    private ServiceConnection updateServiceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            LocalBinder binder = (LocalBinder) service;
-            favoritesUpdateService = binder.getService();
-            boundToService = true;
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-        	boundToService = false;
-        }
-    };
-	
-	
-	
 	/** Show the popup menu when the user clicks the sort button */
 	@SuppressWarnings("deprecation")
 	public void showSortPopupMenu(View v){
@@ -321,17 +295,18 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
     	
     	if (key == null || key.equals("syncFavsTVDB")){
-    		syncFavsTVDB = settings.getBoolean(key, false);
+    		syncFavsTVDB = settings.getBoolean(key, false); 
   			if (syncFavsTVDB){
-				favorites.uploadLocalFavoritesToTheTVDB();				
-  				RefreshFavoritesAsync();
-			} 
+				favorites.uploadLocalFavoritesToTheTVDB();
+				
+  				// TODO: cancel current refresh
+  				// TODO: start a new refresh
+  			} 
   		}
     	if (key == null || key.equals("importFavsXBMC")){
   			importFavsXBMC = settings.getBoolean(key, false);
   			if (importFavsXBMC){
-  				favorites.importFavoritesFromXBMC();
-  				RefreshFavoritesAsync();
+  				favorites.importFavoritesFromXBMC();		// TODO: Cancel current refresh and force a new one.
   			}
   		}
     	if (key == null || key.equals("textSize")){
@@ -404,11 +379,6 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	    	refreshCursor.close();
 	    if (favorites != null)
             favorites.close();
-	    
-	    if (boundToService){
-    		unbindService(updateServiceConnection);
-    		boundToService = false;
-    	}
 	    
 	    if (updateReceiver != null)
 	    	unregisterReceiver(updateReceiver);

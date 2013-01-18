@@ -84,7 +84,7 @@ public class FavoritesDetailsHandler extends DefaultHandler {
 		    
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.SeriesDatesHandler", e.toString());
+				Log.e("xml.handlers.SeriesDatesHandler", "Error:" + e.toString());
 		}
 	}
     

@@ -107,7 +107,7 @@ public class SeriesDetailsHandler extends DefaultHandler {
 				
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.SeriesHandler", e.toString());
+				Log.e("xml.handlers.SeriesHandler", "Error:" + e.toString());
 		}
 	}
     
@@ -127,7 +127,7 @@ public class SeriesDetailsHandler extends DefaultHandler {
 		    return currentSeries;
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.SeriesHandler", e.toString());
+				Log.e("xml.handlers.SeriesHandler", "Error:" + e.toString());
 		    return null;
 		}
 	}

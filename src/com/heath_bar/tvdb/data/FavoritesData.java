@@ -52,7 +52,6 @@ public class FavoritesData {
 			Toast.makeText(context, "Something bad happend while uploading your favorites to thetvdb.com", Toast.LENGTH_LONG).show();
 		}
 	}
-
 	
 	
 	/** Push a single new favorite to the account on thetvdb.com */

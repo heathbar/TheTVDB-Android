@@ -80,7 +80,7 @@ public class ActorHandler extends DefaultHandler{
 		    
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 		}
 	}
     
@@ -98,7 +98,7 @@ public class ActorHandler extends DefaultHandler{
 		    return targetActor;
 		} catch (Exception e) {
 			if (AppSettings.LOG_ENABLED)
-				Log.e("xml.handlers.EpisodeHandler", e.toString());
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 			return new Actor();
 		}
 	}

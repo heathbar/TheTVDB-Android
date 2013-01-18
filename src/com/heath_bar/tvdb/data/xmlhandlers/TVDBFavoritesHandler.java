@@ -68,7 +68,7 @@ public class TVDBFavoritesHandler extends DefaultHandler{
 
 			} catch (Exception e) {
 				if (AppSettings.LOG_ENABLED)
-					Log.e("GetTVDBFavoritesAdapter", e.toString());				
+					Log.e("GetTVDBFavoritesAdapter", "Error:" + e.toString());				
 			}
 		}
 	    
@@ -85,7 +85,7 @@ public class TVDBFavoritesHandler extends DefaultHandler{
 			    
 			    return favoritesList;
 		    } catch (Exception e){
-				Log.e("GetTVDBFavoritesAdapter", e.getMessage());
+				Log.e("GetTVDBFavoritesAdapter", "Error:" + e.getMessage());
 			}
 		    return null;
 		}
@@ -103,7 +103,7 @@ public class TVDBFavoritesHandler extends DefaultHandler{
 			    
 			    return favoritesList;
 		    } catch (Exception e){
-				Log.e("GetTVDBFavoritesAdapter", e.getMessage());
+				Log.e("GetTVDBFavoritesAdapter", "Error:" + e.getMessage());
 			}
 		    return null;
 		}
@@ -121,7 +121,7 @@ public class TVDBFavoritesHandler extends DefaultHandler{
 			    
 			    return favoritesList;
 		    } catch (Exception e){
-				Log.e("GetTVDBFavoritesAdapter", e.getMessage());
+				Log.e("GetTVDBFavoritesAdapter", "Error:" + e.getMessage());
 			}
 		    return null;
 		}

@@ -165,18 +165,23 @@ public class SeriesDbAdapter {
 	
 	
 	private String buildWhereString(ArrayList<Long> list){
-		StringBuilder sb = new StringBuilder();
 		
-		sb.append("(");
-		
-		for(int i=0; i<list.size(); i++)
-			if (i+1 == list.size())
-				sb.append("'" + list.get(i) + "'");
-			else
-				sb.append("'" + list.get(i) + "', ");
-		sb.append(")");
-		
-		return sb.toString();
+		if (list == null || list.size() == 0){
+			return "''";
+		}else{
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("(");
+			
+			for(int i=0; i<list.size(); i++)
+				if (i+1 == list.size())
+					sb.append("'" + list.get(i) + "'");
+				else
+					sb.append("'" + list.get(i) + "', ");
+			sb.append(")");
+			
+			return sb.toString();
+		}
 	}
 
 
