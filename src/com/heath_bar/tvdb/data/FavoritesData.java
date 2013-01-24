@@ -46,6 +46,7 @@ public class FavoritesData {
 			while (c.moveToNext()){
 				tvdb.addFavorite(accountId, c.getLong(c.getColumnIndex(SeriesDbAdapter.KEY_ID)));
 			}
+			c.close();
 		}catch (InvalidAccountIdException e){
 			Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
 		}catch (Exception e){

@@ -81,16 +81,20 @@ public class UpdateService extends IntentService {
 				while (favs.moveToNext())
 				{
 					long seriesId = favs.getLong(favs.getColumnIndex(SeriesDbAdapter.KEY_ID));
+					
 					FavoriteSeriesInfo info = tvdb.getInfo(seriesId);
-									
-					// update the db with the new info
-					favorites.updateFavorite(info);
 					
-					// Tell the UI that something changed
-					Intent broadcastIntent = new Intent();
-					broadcastIntent.setAction(ACTION_UPDATE);
-					sendBroadcast(broadcastIntent);
+					if (info != null){
+						// update the db with the new info
+						favorites.updateFavorite(info);
 					
+						// Tell the UI that something changed
+						Intent broadcastIntent = new Intent();
+						broadcastIntent.setAction(ACTION_UPDATE);
+						sendBroadcast(broadcastIntent);
+					}else {
+						Log.e("UpdateSeries", "NULL: " + seriesId);
+					}
 				}
 			}catch (Exception e){
 				Log.e("Update Service", "Crash! " + e.getMessage());				

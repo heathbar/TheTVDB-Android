@@ -104,18 +104,23 @@ public class BannerViewer extends SherlockActivity {
 		@Override
 		protected void onPostExecute(WebImage wi){
 
-			// Save for sharing later
-			webImage = wi;
-			
-			ImageView image = (ImageView)findViewById(R.id.image);
-			image.setImageBitmap(wi.getBitmap());
-			image.setOnClickListener(new View.OnClickListener() {
+			if (wi != null){
 				
-				@Override
-				public void onClick(View v) {
-					shareImage();
-				}
-			});
+				// Keep a pointer to the image so we can potentially share it later
+				webImage = wi;
+				
+				ImageView image = (ImageView)findViewById(R.id.image);
+				image.setImageBitmap(wi.getBitmap());
+				image.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						shareImage();
+					}
+				});
+			}else{
+				Toast.makeText(getApplicationContext(), "Oops! The image failed to load.", Toast.LENGTH_SHORT).show();
+			}
 			
 			// Hide the loading text
 			findViewById(R.id.loading1).setVisibility(View.GONE);
