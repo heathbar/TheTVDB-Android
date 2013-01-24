@@ -110,13 +110,15 @@ public class FavoritesData {
     /** imports a list of series into the local databse, optionally  */
     private void importFavoritesToDatabase(ArrayList<Long> favoritesList, boolean truncateOthers){
     	
-    	if (truncateOthers)
+		if (truncateOthers)
     		db.truncateExcept(favoritesList);
-    		
-    	for (long seriesId : favoritesList){
-    		if (!db.isFavoriteSeries(seriesId)){
-    			db.createFavoriteSeries(seriesId);
-    		}
+		
+		if (favoritesList != null && favoritesList.size() > 0){
+    		for (long seriesId : favoritesList){
+	    		if (!db.isFavoriteSeries(seriesId)){
+	    			db.createFavoriteSeries(seriesId);
+	    		}
+	    	}
     	}
     }
 	    
