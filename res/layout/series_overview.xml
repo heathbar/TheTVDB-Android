@@ -16,19 +16,6 @@
 		    android:layout_height="wrap_content" 
 		    android:textColor="@color/white"
 		    android:text="@string/loading" />
-        
-        <Button
-		    android:id="@+id/btn_add_to_favorites"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_gravity="right"
-		    android:background="@drawable/button_background"
-		    android:textColor="@color/white"
-		    android:padding="6dip"
-		    android:layout_margin="4dip"
-		    android:contentDescription="@string/add_to_favorites"
-		    android:text="@string/add_to_favorites"
-		    android:visibility="gone" />
 
 		<ImageView
 		    android:id="@+id/series_banner"

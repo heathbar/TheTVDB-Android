@@ -160,14 +160,20 @@ public class SeriesDbAdapter {
 
 
 	public void truncateExcept(ArrayList<Long> favoritesList) {
-		mDb.execSQL("DELETE FROM " + FAVORITES_TABLE + " WHERE " + KEY_ID + " NOT IN " + buildWhereString(favoritesList));		
+		String whereString = buildWhereString(favoritesList);
+
+		if (whereString.equals("")){
+			mDb.execSQL("DELETE FROM " + FAVORITES_TABLE);
+		}else{
+			mDb.execSQL("DELETE FROM " + FAVORITES_TABLE + " WHERE " + KEY_ID + " NOT IN " + whereString);
+		}
 	}
 	
 	
 	private String buildWhereString(ArrayList<Long> list){
 		
 		if (list == null || list.size() == 0){
-			return "''";
+			return "";
 		}else{
 			StringBuilder sb = new StringBuilder();
 			

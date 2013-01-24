@@ -39,7 +39,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -80,6 +79,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	protected float textSize;
 	protected long cacheSize;
 	protected String userAccountId;
+	protected Boolean isFavorite = null;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -175,23 +175,10 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		
 		// Set title
 		getSupportActionBar().setTitle(seriesInfo.getName());
-		
-		// Hide/Activate the favorites button
-		if (seriesInfo.isFavorite(getApplicationContext())){
-			Button b = (Button)findViewById(R.id.btn_add_to_favorites);
-    		b.setVisibility(View.GONE);
-		}else {
-    		Button b = (Button)findViewById(R.id.btn_add_to_favorites);
-    		b.setVisibility(View.VISIBLE);
-    		b.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Button b = (Button)findViewById(R.id.btn_add_to_favorites);
-					b.setVisibility(View.GONE);
-					addToFavorites();
-				}
-			});
-		}
+				
+		// redraw the options menu with the correct icon
+		isFavorite = seriesInfo.isFavorite(getApplicationContext());
+		invalidateOptionsMenu();
 		
 		// Set the banner
 		ImageView imageView = (ImageView)findViewById(R.id.series_banner);
@@ -555,9 +542,27 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		@Override
 		protected void onPostExecute(Void v) {
 			Toast.makeText(getApplicationContext(), "This show will now appear in your favorites list.", Toast.LENGTH_SHORT).show();
+			isFavorite = true;
+			invalidateOptionsMenu();
 		}
 	}
 	
+	private class RemoveFavoriteTask extends AsyncTask<Long, Void, Boolean>{
+		@Override
+		protected Boolean doInBackground(Long... params) {
+			FavoritesData favorites = new FavoritesData(getApplicationContext());
+			favorites.removeSeries(params[0]);
+			favorites.close();
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Boolean result) {
+			Toast.makeText(getApplicationContext(), "The show has been removed from your favorites.", Toast.LENGTH_SHORT).show();
+			isFavorite = false;
+			invalidateOptionsMenu();
+		}
+	}
 	
 
 	/** Launch the share menu for the series banner */
@@ -694,9 +699,38 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
-		// SHARE Sub Menu ///////////////////////////
 		
+		if (isFavorite != null){
+			if (isFavorite){
+				menu.add("Remove Favorite")
+				.setIcon(R.drawable.ic_discard)
+		        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+					@Override
+					public boolean onMenuItemClick(MenuItem item) {
+						new RemoveFavoriteTask().execute(seriesInfo.getId());
+						return false;
+					}
+				})
+		        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+				
+			}else{
+				menu.add("Favorite")
+				.setIcon(R.drawable.ic_favorite)
+		        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+					
+					@Override
+					public boolean onMenuItemClick(MenuItem item) {
+						addToFavorites();
+						return false;
+					}
+				})
+		        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);			
+			}
+		}
+		
+		
+		
+		// SHARE Sub Menu ///////////////////////////
 		SubMenu subMenu1 = menu.addSubMenu("Share");
 		subMenu1
     		.add("TheTVDB Link")
@@ -776,9 +810,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
 		userAccountId = settings.getString("accountId", "").trim();
     	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-    	
-    	Button b = (Button)findViewById(R.id.btn_add_to_favorites);
-    	b.setTextSize(textSize);
 
     	TextView textview = (TextView)findViewById(R.id.loading1);
     	textview.setTextSize(textSize);
