@@ -49,6 +49,7 @@ import com.heath_bar.tvdb.types.Rating;
 import com.heath_bar.tvdb.types.TvEpisode;
 import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 import com.heath_bar.tvdb.util.DateUtil;
+import com.heath_bar.tvdb.util.DialogBuilder;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 
@@ -320,7 +321,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
  	/** Display the rating dialog to the user */
 	private void showRatingDialog(){
 		if (userAccountId.equals("")){
-			Toast.makeText(this, "You must specify your account identifier in the application settings before you can set ratings.", Toast.LENGTH_LONG).show();
+			DialogBuilder.InformationalDialog(this, "Error", "You must specify your account identifier in the application settings before you can set ratings.").show();
 		}else{
 			RatingFragment dialog = new RatingFragment();
 			dialog.setTitle(myEpisode.getName());

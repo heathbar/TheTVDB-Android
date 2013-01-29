@@ -242,7 +242,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
 	        @Override  
 	        public void onClick(View view) { 
-	        	DialogBuilder.InformationalDialog(SeriesOverview.this, "Disclaimer", "All TV show information is maintained by users on thetvdb website. \n\nTimes are typically listed in the timezone of the network that airs them.\n\nCorrections can be made at http://thetvdb.com").show();
+	        	DialogBuilder.InformationalDialog(SeriesOverview.this, "Disclaimer", "All TV show information is maintained by users on thetvdb website. \n\nAir Times are typically listed in the timezone of the network that airs them.\n\nCorrections can be made at http://thetvdb.com").show();
 	        }  
 	    };
 	    int start = airedText.length()-1;
@@ -675,7 +675,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
  	/** Display the rating dialog to the user */
 	private void showRatingDialog(){
 		if (userAccountId.equals("")){
-			Toast.makeText(this, "You must specify your account identifier in the application settings before you can set ratings.", Toast.LENGTH_LONG).show();
+			DialogBuilder.InformationalDialog(this, "Error", "You must specify your account identifier in the application settings before you can set ratings.").show();
 		}else{
 			RatingFragment dialog = new RatingFragment();
 			dialog.setTitle(seriesInfo.getName());
