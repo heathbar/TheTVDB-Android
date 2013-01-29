@@ -43,6 +43,7 @@ public class FavoritesDetailsHandler extends DefaultHandler {
 	private StringBuilder sb;
     private FavoriteSeriesInfo info;
     private long timeNow;
+    private long airsTime = 0;
     private Context context;
     
     public FavoritesDetailsHandler(Context ctx){
@@ -72,8 +73,10 @@ public class FavoritesDetailsHandler extends DefaultHandler {
 			
 			if (name.equals("seriesname")){
 				info.setSeriesName(sb.toString());
+			} else if (name.equals("airs_time")) {
+				airsTime = DateUtil.parseTime(sb.toString());
 			}else if (name.equals("firstaired") && !sb.toString().equals("")){
-				long airedDate = DateUtil.parseDate(sb.toString()).getTime()/1000L;
+				long airedDate = DateUtil.parseDate(sb.toString()).getTime()/1000L + airsTime;
 				
 				if (airedDate > info.getLastAired() && airedDate < timeNow)
 					info.setLastAired(airedDate);
@@ -95,6 +98,7 @@ public class FavoritesDetailsHandler extends DefaultHandler {
 	    	
 			URL url = new URL(AppSettings.SERIES_FULL_URL + String.valueOf(seriesId) + "/all/" + languageCode + ".xml");		//http://thetvdb.com/api/0A41C0DEA5531762/series/<seriesid>/all/en.xml
 			timeNow = System.currentTimeMillis() / 1000L;
+			
 
 			info = new FavoriteSeriesInfo(seriesId, "", 0, 0);
 			

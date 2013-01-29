@@ -162,12 +162,18 @@ public class ActorDetails extends SherlockActivity {
 		if (theActor.getImage().getBitmap() != null && !theActor.getImage().getUrl().equals("")){
 		
 			imageId = theActor.getImage().getId();
-
+			final String imageTitle = theActor.getName();
+			final String imageUrl = theActor.getImage().getUrl();
+			
 			ImageButton banner = (ImageButton)findViewById(R.id.actor_image);
     		banner.setImageBitmap(theActor.getImage().getBitmap());
     		banner.setOnClickListener(new View.OnClickListener() {   
     			public void onClick(View v) { 
-    				shareImage();
+    				Intent myIntent = new Intent(getApplicationContext(), ImageViewer.class);
+    				myIntent.putExtra("imageTitle", imageTitle);
+    				myIntent.putExtra("imageId", imageId);
+    				myIntent.putExtra("imageUrl", imageUrl);
+    	    		startActivity(myIntent);
     			}
 			});
     		banner.setVisibility(View.VISIBLE);

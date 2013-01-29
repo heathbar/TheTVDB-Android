@@ -96,8 +96,8 @@ public class SeriesDbAdapter {
         		new String[] {
         			KEY_ID, 
         			KEY_TITLE,
-        			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch')) END AS " + KEY_LAST_AIRED,
-        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch')) END AS " + KEY_NEXT_AIRED
+        			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_LAST_AIRED,
+        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED
     			},
                 KEY_TITLE + " <> ''", null, null, null, sortBy);
     }
@@ -107,8 +107,8 @@ public class SeriesDbAdapter {
         		new String[] {
         			KEY_ID, 
         			KEY_TITLE,
-        			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch')) END AS " + KEY_LAST_AIRED,
-        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch')) END AS " + KEY_NEXT_AIRED
+        			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_LAST_AIRED,
+        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED
     			},
                 null, null, null, null, null);
     }

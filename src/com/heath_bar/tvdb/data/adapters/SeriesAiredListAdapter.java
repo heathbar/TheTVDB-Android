@@ -18,6 +18,8 @@
  */
 package com.heath_bar.tvdb.data.adapters;
 
+import com.heath_bar.tvdb.util.DateUtil;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -32,9 +34,10 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	public int[] _to;
 	public int[] _colors;
 	private float _textSize;
+	private boolean _useNiceDates;
 	
     @SuppressWarnings("deprecation")
-	public SeriesAiredListAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, int[] colors) throws Exception {
+	public SeriesAiredListAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, int[] colors, boolean useNiceDates) throws Exception {
     	super(context, layout, c, from, to);
 
     	if (to.length != 3 || from.length != 3)
@@ -43,6 +46,7 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
     	_from = from.clone();
     	_to = to;
     	_colors = colors;
+    	_useNiceDates = useNiceDates;
     	
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
     	_textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
@@ -70,11 +74,17 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	        holder.textView1.setText(cursor.getString(holder.column1));
 	        holder.textView1.setTextSize(_textSize*1.6f);
 	        
-	        holder.textView2.setText("Last Aired: " + cursor.getString(holder.column2));
+	        
+	        if (_useNiceDates)
+	        	holder.textView2.setText("Last Aired: " + DateUtil.toNiceString(cursor.getString(holder.column2)));
+	        else
+	        	holder.textView2.setText("Last Aired: " + cursor.getString(holder.column2));
 	        holder.textView2.setTextSize(_textSize*0.7f);
 	        
 	        if (cursor.getString(holder.column3).equals("Unknown"))
 	        	holder.textView3.setText("");
+	        else if (_useNiceDates)
+	        	holder.textView3.setText("Next Aired: " + DateUtil.toNiceString(cursor.getString(holder.column3)));
 	        else
 	        	holder.textView3.setText("Next Aired: " + cursor.getString(holder.column3));
 	        holder.textView3.setTextSize(_textSize*0.7f);

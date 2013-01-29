@@ -113,6 +113,7 @@ public class FavoritesData {
 		if (truncateOthers)
     		db.truncateExcept(favoritesList);
 		
+		
 		if (favoritesList != null && favoritesList.size() > 0){
     		for (long seriesId : favoritesList){
 	    		if (!db.isFavoriteSeries(seriesId)){

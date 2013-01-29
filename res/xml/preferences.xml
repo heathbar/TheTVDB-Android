@@ -28,6 +28,13 @@
         android:max="500"
         />
     
+    
+    <CheckBoxPreference android:key="useNiceDates"
+        android:title="Use Relative Dates"
+        android:summary="Use &quot;today&quot;, &quot;tomorrow&quot; and &quot;yesterday&quot; when appropriate"
+        android:defaultValue="true"
+        />
+    
     </PreferenceCategory>
     <PreferenceCategory android:title="TheTVDB.com Account Integration" >
 	   

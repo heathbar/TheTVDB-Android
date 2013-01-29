@@ -63,7 +63,8 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	
 	
 	private IcsListPopupWindow sortPopupMenu;			// define a popup menu for the sort button to show
-	private String sortBy = SeriesDbAdapter.KEY_TITLE;  // Sort by show title by default
+	private String sortBy; 								// this is set by a preference value
+	private boolean useNiceDates;						// this is set by a preference value
 	
 	
     @Override
@@ -166,7 +167,8 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
 	      
 	        try{
-		        adapter = new SeriesAiredListAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors);
+	        	
+		        adapter = new SeriesAiredListAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors, useNiceDates);
 				setListAdapter(adapter);
 				getListView().setOnItemClickListener(new ItemClickedListener());
 				registerForContextMenu(getListView());
@@ -280,6 +282,12 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 			break;
 		}
 		sortPopupMenu.dismiss();
+		
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor prefEditor = settings.edit();
+		prefEditor.putString("sortBy", sortBy);
+		prefEditor.commit();		
+		
 		new QueryDatabaseTask().execute();		
 	}
 	
@@ -298,9 +306,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
     		syncFavsTVDB = settings.getBoolean(key, false); 
   			if (syncFavsTVDB){
 				favorites.uploadLocalFavoritesToTheTVDB();
-				
-  				// TODO: cancel current refresh
-  				// TODO: start a new refresh
+				RefreshFavoritesAsync();
   			} 
   		}
     	if (key == null || key.equals("importFavsXBMC")){
@@ -318,6 +324,13 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	        TextView header_text = (TextView) header.findViewById(R.id.text);
 	        header_text.setTextSize(textSize*1.1f);
   		}
+    	if (key == null || key.equals("sortBy")){
+    		sortBy = settings.getString("sortBy", SeriesDbAdapter.KEY_TITLE);
+    	}
+    	
+    	if (key == null || key.equals("useNiceDates")){
+    		useNiceDates = settings.getBoolean("useNiceDates", true);
+    	}
 	}
     
 	

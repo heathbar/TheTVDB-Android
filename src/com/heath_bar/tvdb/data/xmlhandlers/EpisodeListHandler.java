@@ -45,6 +45,7 @@ public class EpisodeListHandler extends DefaultHandler {
     private TvEpisode currentEpisode;
     private TvEpisodeList episodeList;
     private Context context;
+    private long airsTime = 0; 
     
     public EpisodeListHandler(Context ctx){
     	context = ctx;
@@ -73,8 +74,11 @@ public class EpisodeListHandler extends DefaultHandler {
 		try {
 			name = name.trim().toLowerCase();
 			
+			
 			if (name.equals("episode")){
 				episodeList.add(currentEpisode);
+			} else if (name.equals("airs_time")) {
+				airsTime = DateUtil.parseTime(sb.toString());
 			} else if (name.equals("id")){
 				if (currentEpisode != null)
 					currentEpisode.setId(Integer.valueOf(sb.toString()));
@@ -86,7 +90,7 @@ public class EpisodeListHandler extends DefaultHandler {
 				currentEpisode.setName(sb.toString());
 			} else if (name.equals("firstaired")){
 				if (currentEpisode != null){
-					long date = DateUtil.parseDate(sb.toString()).getTime()/1000L;
+					long date = DateUtil.parseDate(sb.toString()).getTime()/1000L + airsTime;
 					currentEpisode.setAirDate(date);
 				}
 			}

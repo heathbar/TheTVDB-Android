@@ -65,6 +65,7 @@ import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
 import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 import com.heath_bar.tvdb.util.DateUtil;
+import com.heath_bar.tvdb.util.DialogBuilder;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.heath_bar.tvdb.util.StringUtil;
@@ -80,6 +81,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	protected long cacheSize;
 	protected String userAccountId;
 	protected Boolean isFavorite = null;
+	protected boolean useNiceDates;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -181,6 +183,10 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		invalidateOptionsMenu();
 		
 		// Set the banner
+		final String imageTitle = seriesInfo.getName();
+		final String imageId = seriesInfo.getImage().getId();
+		final String imageUrl = seriesInfo.getImage().getUrl();
+		
 		ImageView imageView = (ImageView)findViewById(R.id.series_banner);
 		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
 		imageView.setVisibility(View.VISIBLE);
@@ -189,7 +195,11 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		imageView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				shareImage();
+				Intent myIntent = new Intent(getApplicationContext(), ImageViewer.class);
+				myIntent.putExtra("imageTitle", imageTitle);
+				myIntent.putExtra("imageId", imageId);
+				myIntent.putExtra("imageUrl", imageUrl);
+	        	startActivity(myIntent);
 			}
 		});
 		
@@ -225,7 +235,23 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			sb.append(" at " + seriesInfo.getAirTime());
 		if (!seriesInfo.getNetwork().equals(""))
 			sb.append(" on " + seriesInfo.getNetwork());
-		textview.setText(sb.toString());
+		sb.append("*");
+		
+		SpannableString airedText = new SpannableString(sb.toString());
+
+		NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
+	        @Override  
+	        public void onClick(View view) { 
+	        	DialogBuilder.InformationalDialog(SeriesOverview.this, "Disclaimer", "All TV show information is maintained by users on thetvdb website. \n\nTimes are typically listed in the timezone of the network that airs them.\n\nCorrections can be made at http://thetvdb.com").show();
+	        }  
+	    };
+	    int start = airedText.length()-1;
+		int end = airedText.length();
+		airedText.setSpan(clickableSpan, start, end, 0);
+		airedText.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
+		airedText.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, airedText.length(), 0);
+		textview.setMovementMethod(LinkMovementMethod.getInstance());
+		textview.setText(airedText, BufferType.SPANNABLE);
 		textview.setVisibility(View.VISIBLE);
 		
 		// Set actors
@@ -421,7 +447,8 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			 text = new SpannableString("Last Episode: unknown");
 		}else{
 		
-			text = new SpannableString("Last Episode: " + last.getName() + " (" + DateUtil.toString(last.getAirDate()) + ")");
+			String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(last.getAirDate())) : DateUtil.toString(last.getAirDate());
+			text = new SpannableString("Last Episode: " + last.getName() + " (" + dateString + ")");
 
 			NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
 		        @Override  
@@ -448,7 +475,8 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				 text = new SpannableString("Next Episode: unknown");
 			}else{
 			
-				text = new SpannableString("Next Episode: " + next.getName() + " (" + DateUtil.toString(next.getAirDate()) + ")");
+				String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(next.getAirDate())) : DateUtil.toString(next.getAirDate());
+				text = new SpannableString("Next Episode: " + next.getName() + " (" + dateString + ")");
 	
 				NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
 			        @Override  
@@ -809,6 +837,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
 		userAccountId = settings.getString("accountId", "").trim();
+		useNiceDates = settings.getBoolean("useNiceDates", true);
     	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
 
     	TextView textview = (TextView)findViewById(R.id.loading1);

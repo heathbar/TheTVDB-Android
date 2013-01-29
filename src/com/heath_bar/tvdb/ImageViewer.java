@@ -24,7 +24,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -34,9 +33,10 @@ import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapWebUtil;
 import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
+import com.heath_bar.tvdb.types.ZoomableImageView;
 import com.heath_bar.tvdb.util.ShareUtil;
 
-public class BannerViewer extends SherlockActivity {
+public class ImageViewer extends SherlockActivity {
 
 	protected WebImage webImage;
 	
@@ -46,18 +46,18 @@ public class BannerViewer extends SherlockActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setContentView(R.layout.banner_viewer);
+        setContentView(R.layout.image_viewer);
         	
 		try {
 			
 			Bundle extras = getIntent().getExtras();
 		    if(extras != null) {
-		    	String seriesName = getIntent().getStringExtra("seriesName");
+		    	String title = getIntent().getStringExtra("imageTitle");
 		    	String imageId = getIntent().getStringExtra("imageId");
-		    	String url = getIntent().getStringExtra("url");
+		    	String url = getIntent().getStringExtra("imageUrl");
 
 				// Set title
-				getSupportActionBar().setTitle(seriesName);
+				getSupportActionBar().setTitle(title);
 		    	
 		    	// Start the asynchronous load process
 		    	setSupportProgressBarIndeterminateVisibility(true);
@@ -109,13 +109,12 @@ public class BannerViewer extends SherlockActivity {
 				// Keep a pointer to the image so we can potentially share it later
 				webImage = wi;
 				
-				ImageView image = (ImageView)findViewById(R.id.image);
+				ZoomableImageView image = (ZoomableImageView)findViewById(R.id.image);
 				image.setImageBitmap(wi.getBitmap());
 				image.setOnClickListener(new View.OnClickListener() {
-					
 					@Override
 					public void onClick(View v) {
-						shareImage();
+						finish();
 					}
 				});
 			}else{

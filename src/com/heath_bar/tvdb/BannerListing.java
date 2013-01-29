@@ -127,10 +127,10 @@ public class BannerListing extends SherlockListActivity {
 
 	    	WebImage image = (WebImage)adapter.getItem(position);
 	    	
-        	Intent myIntent = new Intent(arg0.getContext(), BannerViewer.class);
+        	Intent myIntent = new Intent(arg0.getContext(), ImageViewer.class);
+        	myIntent.putExtra("imageTitle", seriesName);
         	myIntent.putExtra("imageId", image.getId());
-        	myIntent.putExtra("url", image.getUrl());
-        	myIntent.putExtra("seriesName", seriesName);
+        	myIntent.putExtra("imageUrl", image.getUrl());
         	adapter.clearMemoryCache();
     		startActivity(myIntent);
 	    }

@@ -51,4 +51,31 @@ public class DateUtil {
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		return format.format(d);
 	}
+	
+	public static long parseTime(String timeString) {
+		try{
+			SimpleDateFormat format = new SimpleDateFormat("hh:mm aa Z");
+			Date d = format.parse(timeString + " +0000");						// calculate from UTC so 8:00 PM renders 72000 seconds, regardless of timezone
+			return d.getTime()/1000L;
+		}catch (ParseException pe){
+			return 0;
+		}	
+	}
+	
+	public static String toNiceString(String dateString){
+		
+		String today = DateUtil.toString(System.currentTimeMillis()/1000L);
+		String tomorrow = DateUtil.toString(System.currentTimeMillis()/1000L + 86400);
+		String yesterday = DateUtil.toString(System.currentTimeMillis()/1000L - 86400);
+
+		if (dateString.equals(today))
+			return "Today";
+		else if (dateString.equals(tomorrow))
+			return "Tomorrow";
+		else if (dateString.equals(yesterday))
+			return "Yesterday";
+		else
+			return dateString;
+	
+	}
 }

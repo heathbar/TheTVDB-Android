@@ -168,13 +168,20 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		if (theEpisode.getImage() != null && (theEpisode.getImage().getBitmap() == null || theEpisode.getImage().getUrl().equals(""))){
 			// do nothin
 		} else {
-			imageId = theEpisode.getImage().getId();			
+			imageId = theEpisode.getImage().getId();
+			final String imageTitle = theEpisode.getName();
+			final String imageUrl = theEpisode.getImage().getUrl();
+			
 			ImageButton banner = (ImageButton)findViewById(R.id.episode_thumb);
     		banner.setImageBitmap(theEpisode.getImage().getBitmap());
     		banner.setVisibility(View.VISIBLE);
     		banner.setOnClickListener(new View.OnClickListener() {   
     			public void onClick(View v) { 
-					shareImage();
+    				Intent myIntent = new Intent(getApplicationContext(), ImageViewer.class);
+    				myIntent.putExtra("imageTitle", imageTitle);
+    				myIntent.putExtra("imageId", imageId);
+    				myIntent.putExtra("imageUrl", imageUrl);
+    	        	startActivity(myIntent);
     			}
 			});
 		}
