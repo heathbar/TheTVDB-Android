@@ -24,7 +24,7 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content" 
 		    android:textColor="@color/white"
-		    android:textSize="26dip" />
+		    android:textSize="26sp" />
         
         <ImageButton
 		    android:id="@+id/episode_thumb"
@@ -43,7 +43,7 @@
 		    android:id="@+id/overview_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
+		    android:textSize="24sp"
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/overview" />
@@ -53,14 +53,14 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
 		
 		<TextView
 		    android:id="@+id/director_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
+		    android:textSize="24sp"
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/director" />
@@ -70,14 +70,14 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
         
         <TextView
 		    android:id="@+id/writer_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
+		    android:textSize="24sp"
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/writer" />
@@ -87,7 +87,7 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
 				
 		
@@ -95,7 +95,7 @@
 		    android:id="@+id/rating_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
+		    android:textSize="24sp"
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/rating" />
@@ -105,7 +105,7 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
 		
 		
@@ -113,7 +113,7 @@
 		    android:id="@+id/first_aired_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
+		    android:textSize="24sp"
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/first_aired" />
@@ -123,7 +123,7 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
 				
 		
@@ -131,7 +131,7 @@
 		    android:id="@+id/guest_stars_header"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
+		    android:textSize="24sp"
 		    android:textColor="@color/header_white"
 		    android:visibility="gone"
 		    android:text="@string/guest_stars" />
@@ -141,7 +141,7 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
 		
 		<TextView
@@ -149,7 +149,7 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
+		    android:textSize="18sp"
 		    android:visibility="gone" />
 		        
         </LinearLayout>
