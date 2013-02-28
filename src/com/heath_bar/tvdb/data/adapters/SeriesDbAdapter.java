@@ -97,9 +97,9 @@ public class SeriesDbAdapter {
         			KEY_ID, 
         			KEY_TITLE,
         			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_LAST_AIRED,
-        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED
+        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' WHEN " + KEY_NEXT_AIRED + " = -1 THEN 'ZZ' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED	// using ZZ = hack so that it shows up at the bottom when sorted
     			},
-                KEY_TITLE + " <> ''", null, null, null, sortBy);
+                KEY_TITLE + " <> ''", null, null, null, sortBy + ", " + KEY_TITLE);
     }
     
     public Cursor fetchAllFavorites(){
@@ -108,7 +108,7 @@ public class SeriesDbAdapter {
         			KEY_ID, 
         			KEY_TITLE,
         			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_LAST_AIRED,
-        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED
+        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' WHEN " + KEY_NEXT_AIRED + " = -1 THEN 'ZZ' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED	// using ZZ = hack so that it shows up at the bottom when sorted
     			},
                 null, null, null, null, null);
     }

@@ -19,6 +19,7 @@
 package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.net.URL;
+import java.util.Locale;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -69,10 +70,13 @@ public class FavoritesDetailsHandler extends DefaultHandler {
     @Override
 	public void endElement(String uri, String name, String qName) throws SAXException {
 		try {
-			name = name.trim().toLowerCase();
+			name = name.trim().toLowerCase(Locale.ENGLISH);
 			
 			if (name.equals("seriesname")){
 				info.setSeriesName(sb.toString());
+			} else if (name.equals("status")){
+				if (sb.toString().equals("Ended"))
+					info.setNextAired(-1);
 			} else if (name.equals("airs_time")) {
 				airsTime = DateUtil.parseTime(sb.toString());
 			}else if (name.equals("firstaired") && !sb.toString().equals("")){

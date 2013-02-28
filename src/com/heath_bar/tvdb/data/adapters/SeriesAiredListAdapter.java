@@ -82,7 +82,9 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	        holder.textView2.setTextSize(_textSize*0.7f);
 	        
 	        if (cursor.getString(holder.column3).equals("Unknown"))
-	        	holder.textView3.setText("");
+	        	holder.textView3.setText("Next Aired: Unknown");
+	        else if (cursor.getString(holder.column3).equals("ZZ"))		// ZZ = hack so that it shows up at the bottom when sorted
+	        	holder.textView3.setText("Ended");
 	        else if (_useNiceDates)
 	        	holder.textView3.setText("Next Aired: " + DateUtil.toNiceString(cursor.getString(holder.column3)));
 	        else

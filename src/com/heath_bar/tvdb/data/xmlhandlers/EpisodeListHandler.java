@@ -51,6 +51,7 @@ public class EpisodeListHandler extends DefaultHandler {
     	context = ctx;
     }
 
+    
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
 	    name = name.trim().toLowerCase();				// format the current element name
