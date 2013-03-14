@@ -70,7 +70,7 @@ public class FavoritesDetailsHandler extends DefaultHandler {
     @Override
 	public void endElement(String uri, String name, String qName) throws SAXException {
 		try {
-			name = name.trim().toLowerCase(Locale.ENGLISH);
+			name = name.trim().toLowerCase(Locale.getDefault());
 			
 			if (name.equals("seriesname")){
 				info.setSeriesName(sb.toString());

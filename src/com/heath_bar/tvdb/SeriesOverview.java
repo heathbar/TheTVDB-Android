@@ -51,7 +51,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.tvdb.data.FavoritesData;
+import com.heath_bar.tvdb.data.FavoritesDAL;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapWebUtil;
 import com.heath_bar.tvdb.data.xmlhandlers.EpisodeListHandler;
@@ -561,7 +561,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		@Override
 		protected Void doInBackground(TvSeries... params) {
 			FavoriteSeriesInfo info = new FavoriteSeriesInfo(Long.valueOf(params[0].getId()), params[0].getName(), 0, 0);
-			FavoritesData favorites = new FavoritesData(getApplicationContext());
+			FavoritesDAL favorites = new FavoritesDAL(getApplicationContext());
 			favorites.createFavoriteSeries(info);
 			favorites.close();
 			return null;
@@ -578,7 +578,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	private class RemoveFavoriteTask extends AsyncTask<Long, Void, Boolean>{
 		@Override
 		protected Boolean doInBackground(Long... params) {
-			FavoritesData favorites = new FavoritesData(getApplicationContext());
+			FavoritesDAL favorites = new FavoritesDAL(getApplicationContext());
 			favorites.removeSeries(params[0]);
 			favorites.close();
 			return null;

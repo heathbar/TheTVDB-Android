@@ -42,7 +42,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.Window;
-import com.heath_bar.tvdb.data.FavoritesData;
+import com.heath_bar.tvdb.data.FavoritesDAL;
 import com.heath_bar.tvdb.data.adapters.PopupMenuAdapter;
 import com.heath_bar.tvdb.data.adapters.SeriesAiredListAdapter;
 import com.heath_bar.tvdb.data.adapters.SeriesDbAdapter;
@@ -50,7 +50,7 @@ import com.heath_bar.tvdb.data.adapters.SeriesDbAdapter;
 public class TheTVDBActivity extends SherlockListActivity implements OnItemClickListener   {
 	
 
-	private FavoritesData favorites;
+	private FavoritesDAL favorites;
 	private Cursor cursor;								// cursor to hold the favorites from the db
 	private Cursor refreshCursor;						// replacement cursor
 	private SeriesAiredListAdapter adapter;				// adapter to lookup air times
@@ -75,7 +75,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
         setContentView(R.layout.favorites_list);
 
         // Connect to database
-        favorites = new FavoritesData(this);
+        favorites = new FavoritesDAL(this);
 
         if (favoritesUpdater == null)
         	favoritesUpdater = new Intent(getApplicationContext(), UpdateService.class);

@@ -12,13 +12,13 @@ import com.heath_bar.tvdb.data.xmlhandlers.TVDBFavoritesHandler;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.exceptions.InvalidAccountIdException;
 
-public class FavoritesData {
+public class FavoritesDAL {
 
 	protected Context context;
 	private SeriesDbAdapter db;
 	
 	
-	public FavoritesData(Context ctx){
+	public FavoritesDAL(Context ctx){
 		context = ctx;
 		db = new SeriesDbAdapter(ctx);
 		db.open();

@@ -25,7 +25,7 @@ import android.database.Cursor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.heath_bar.tvdb.data.FavoritesData;
+import com.heath_bar.tvdb.data.FavoritesDAL;
 import com.heath_bar.tvdb.data.adapters.SeriesDbAdapter;
 import com.heath_bar.tvdb.data.xmlhandlers.FavoritesDetailsHandler;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
@@ -61,7 +61,7 @@ public class UpdateService extends IntentService {
 	    	boolean syncFavsXBMC = preferences.getBoolean("syncFavsXBMC", false);
 	
 	    	// Connect to the data store
-	    	FavoritesData favorites = new FavoritesData(this);
+	    	FavoritesDAL favorites = new FavoritesDAL(this);
 			
 	    	if (syncFavsTVDB)
 				favorites.importFavoritesFromTVDB();
