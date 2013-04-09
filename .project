@@ -30,4 +30,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>android-16</name>
+			<type>2</type>
+			<location>/home/hp/software/eclipse/android-sdk-linux/sources/android-16</location>
+		</link>
+	</linkedResources>
 </projectDescription>

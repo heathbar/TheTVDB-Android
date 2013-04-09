@@ -18,8 +18,6 @@
  */
 package com.heath_bar.tvdb.data.adapters;
 
-import com.heath_bar.tvdb.util.DateUtil;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -27,6 +25,8 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+
+import com.heath_bar.tvdb.util.DateUtil;
 
 public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 

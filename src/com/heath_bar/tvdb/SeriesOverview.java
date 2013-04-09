@@ -21,30 +21,19 @@ package com.heath_bar.tvdb;
 
 import java.util.ArrayList;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
-import android.text.style.AbsoluteSizeSpan;
-import android.text.style.TextAppearanceSpan;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -52,506 +41,154 @@ import com.actionbarsherlock.view.MenuItem.OnMenuItemClickListener;
 import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.data.FavoritesDAL;
-import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
-import com.heath_bar.tvdb.data.adapters.lazylist.BitmapWebUtil;
-import com.heath_bar.tvdb.data.xmlhandlers.EpisodeListHandler;
-import com.heath_bar.tvdb.data.xmlhandlers.GetRatingHandler;
-import com.heath_bar.tvdb.data.xmlhandlers.SeriesDetailsHandler;
-import com.heath_bar.tvdb.data.xmlhandlers.SetRatingHandler;
+import com.heath_bar.tvdb.data.TvdbDAL;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
-import com.heath_bar.tvdb.types.Rating;
 import com.heath_bar.tvdb.types.TvEpisode;
-import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
-import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
-import com.heath_bar.tvdb.util.DateUtil;
-import com.heath_bar.tvdb.util.DialogBuilder;
-import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
-import com.heath_bar.tvdb.util.StringUtil;
+import com.viewpagerindicator.TitlePageIndicator;
+import com.viewpagerindicator.TitlePageIndicator.IndicatorStyle;
 
 
-public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
+public class SeriesOverview extends SherlockFragmentActivity  {
 
-	
+	ViewPager mViewPager;
+    StaticFragmentPagerAdapter mPageAdapter;
+    
 	protected long seriesId;
 	protected TvSeries seriesInfo;
-	protected TvEpisodeList episodeList;
-	protected float textSize;
-	protected long cacheSize;
-	protected String userAccountId;
 	protected Boolean isFavorite = null;
-	protected boolean useNiceDates;
 	
-	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
+	protected TvdbDAL tvdb;
+	protected boolean castRefreshing = false;
+	protected boolean summaryRefreshing = false;
+	protected boolean episodesRefreshing = false;
+	protected EpisodeListFragment episodeRefreshQueuedFragment;
+
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.series_overview);
-        	
-		try {
-			
-			Bundle extras = getIntent().getExtras();
-		    if(extras != null) {
-		    	seriesId = getIntent().getLongExtra("id", 0);
-				
-				ApplyPreferences();
-				
-		    	// Start the asynchronous load process
-		    	setSupportProgressBarIndeterminateVisibility(true);
-				new LoadInfoTask().execute(seriesId);
-				
-    		}
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-	}
+        setProgressBarIndeterminateVisibility(true);
+        
+        Bundle extras = getIntent().getExtras();
+	    if(extras != null) {
+	    	seriesId = getIntent().getLongExtra("id", 0);
+	    	tvdb = new TvdbDAL(this);
+	        
+	        final ActionBar bar = getSupportActionBar();
+	        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+	        bar.setTitle("Series Overview");
 	
-	// Class to load the basic series info asynchronously
-	private class LoadInfoTask extends AsyncTask<Long, Void, TvSeries>{
-		@Override
-		protected TvSeries doInBackground(Long... id) {
-			
-			try {
-				// Lookup basic series info
-				SeriesDetailsHandler infoQuery = new SeriesDetailsHandler(getApplicationContext());
-	    		seriesInfo = infoQuery.getInfo(id[0]);
-	    			    		
-	    		Bitmap bitmap;
-		    	BitmapFileCache fileCache = new BitmapFileCache(getApplicationContext(), cacheSize);
-		    	
-		    	if (fileCache.contains(seriesInfo.getImage().getId())){
-		    		
-		    		bitmap = fileCache.get(seriesInfo.getImage().getId());
-
-		    	}else{
-		    	
-		    		BitmapWebUtil web = new BitmapWebUtil(getApplicationContext());
-		    		bitmap = web.downloadBitmap(seriesInfo.getImage().getUrl());
-					fileCache.put(seriesInfo.getImage().getId(), bitmap);
-				}
-				seriesInfo.getImage().setBitmap(bitmap);
-				
-				return seriesInfo;
-
-	    		
-			}catch (Exception e){
-				e.printStackTrace();
-			}
-			return null;
-		}
-		
-		@Override
-		protected void onPostExecute(TvSeries info){
-			// Populate the activity with the data we just loaded
-			PopulateStuff(info);
-			
-			// Hide the first loading text, show the second
-			findViewById(R.id.loading1).setVisibility(View.GONE);
-			findViewById(R.id.loading2).setVisibility(View.VISIBLE);
-			
-			
-			
-			// Load Rating
-			if (!userAccountId.equals(""))
-				new LoadRatingTask().execute();
-			else
-				setUserRatingTextView(0);
-			
-			// Load episodes 
-			new LoadEpisodesTask().execute();
-		}
-		
-	}
-	/** Populate the interface with the data pulled from the webz */
-	private void PopulateStuff(TvSeries seriesInfo){
-		
-		if (seriesInfo == null)
-		{
-			Toast.makeText(getApplicationContext(), "Something bad happened. No data was found.", Toast.LENGTH_SHORT).show();
-			return;
-		}
-		
-		
-		// Set title
-		getSupportActionBar().setTitle(seriesInfo.getName());
-				
-		// redraw the options menu with the correct icon
-		isFavorite = seriesInfo.isFavorite(getApplicationContext());
-		invalidateOptionsMenu();
-		
-		// Set the banner
-		final String imageTitle = seriesInfo.getName();
-		final String imageId = seriesInfo.getImage().getId();
-		final String imageUrl = seriesInfo.getImage().getUrl();
-		
-		ImageView imageView = (ImageView)findViewById(R.id.series_banner);
-		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
-		imageView.setVisibility(View.VISIBLE);
-		final String seriesName = seriesInfo.getName();
-		
-		imageView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent myIntent = new Intent(getApplicationContext(), ImageViewer.class);
-				myIntent.putExtra("imageTitle", imageTitle);
-				myIntent.putExtra("imageId", imageId);
-				myIntent.putExtra("imageUrl", imageUrl);
-	        	startActivity(myIntent);
-			}
-		});
-		
-		
-		
-		// Set the banner link
-		TextView textview = (TextView)findViewById(R.id.banner_listing_link);
-		textview.setTextColor(getResources().getColor(R.color.tvdb_green));
-		textview.setVisibility(View.VISIBLE);
-		textview.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Intent i = new Intent(getApplicationContext(), BannerListing.class);
-				i.putExtra("seriesId", seriesId);
-				i.putExtra("seriesName", seriesName);
-				startActivity(i);
-			}
-		});
-		
-		// Set air info
-		textview = (TextView)findViewById(R.id.airs_header);
-		textview.setVisibility(View.VISIBLE);
-		textview = (TextView)findViewById(R.id.last_episode);
-		textview.setVisibility(View.VISIBLE);
-		textview = (TextView)findViewById(R.id.next_episode);
-		textview.setVisibility(View.VISIBLE);
-		
-		textview = (TextView)findViewById(R.id.series_air_info);
-		StringBuffer sb = new StringBuffer();
-		sb.append(seriesInfo.getAirDay());
-		if (!seriesInfo.getAirTime().equals(""))
-			sb.append(" at " + seriesInfo.getAirTime());
-		if (!seriesInfo.getNetwork().equals(""))
-			sb.append(" on " + seriesInfo.getNetwork());
-		sb.append("*");
-		
-		SpannableString airedText = new SpannableString(sb.toString());
-
-		NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
-	        @Override  
-	        public void onClick(View view) { 
-	        	DialogBuilder.InformationalDialog(SeriesOverview.this, "Disclaimer", "All TV show information is maintained by users on thetvdb website. \n\nAir Times are typically listed in the timezone of the network that airs them.\n\nCorrections can be made at http://thetvdb.com").show();
-	        }  
-	    };
-	    int start = airedText.length()-1;
-		int end = airedText.length();
-		airedText.setSpan(clickableSpan, start, end, 0);
-		airedText.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
-		airedText.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, airedText.length(), 0);
-		textview.setMovementMethod(LinkMovementMethod.getInstance());
-		textview.setText(airedText, BufferType.SPANNABLE);
-		textview.setVisibility(View.VISIBLE);
-		
-		// Set actors
-		textview = (TextView)findViewById(R.id.starring);
-		textview.setVisibility(View.VISIBLE);
-		textview = (TextView)findViewById(R.id.series_actors);
-		textview.setVisibility(View.VISIBLE);
-				
-		SpannableStringBuilder text = tagsBuilder(seriesInfo.getActors(), "|");
-		textview.setText(text, BufferType.SPANNABLE);
-		textview.setMovementMethod(LinkMovementMethod.getInstance());
-		
-		// Set rating
-		textview = (TextView)findViewById(R.id.rating_header);
-		textview.setVisibility(View.VISIBLE);
-		
-		textview = (TextView)findViewById(R.id.rating);
-		textview.setText(seriesInfo.getRating() + " / 10");
-		textview.setVisibility(View.VISIBLE);
-		
-		
-		// Set genre
-		textview = (TextView)findViewById(R.id.genre_header);
-		textview.setVisibility(View.VISIBLE);
-		
-		textview = (TextView)findViewById(R.id.genre);
-		textview.setText(StringUtil.commafy(seriesInfo.getGenre()));
-		textview.setVisibility(View.VISIBLE);
-		
-		
-		// Set runtime
-		textview = (TextView)findViewById(R.id.runtime_header);
-		textview.setVisibility(View.VISIBLE);
-		
-		textview = (TextView)findViewById(R.id.runtime);
-		textview.setText(seriesInfo.getRuntime() + " minutes");
-		textview.setVisibility(View.VISIBLE);
-		
-		
-		// Set overview
-		textview = (TextView)findViewById(R.id.overview_header);
-		textview.setVisibility(View.VISIBLE);
-		
-		textview = (TextView)findViewById(R.id.overview);
-		textview.setText(seriesInfo.getOverview());
-		textview.setVisibility(View.VISIBLE);
-		
-		// Show Seasons header
-		textview = (TextView)findViewById(R.id.seasons_header);
-		textview.setVisibility(View.VISIBLE);
-		
-		// IMDB Link
-		textview = (TextView)findViewById(R.id.imdb_link);
-		textview.setVisibility(View.VISIBLE);
-		
-		final String imdbId = seriesInfo.getIMDB();
-		SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.imdb));
-		ssb.setSpan(new NonUnderlinedClickableSpan(getResources().getString(R.string.imdb)) {
-			@Override
-			public void onClick(View v){
-				Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.imdb.com/title/" + imdbId));
-				startActivity(myIntent);	        		
-			}
-		}, 0, ssb.length(), 0);
-		
-		ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
-		textview.setText(ssb, BufferType.SPANNABLE);
-		textview.setMovementMethod(LinkMovementMethod.getInstance());
-	}
-	
-	// Make the clickable span for the actors
-	private SpannableStringBuilder tagsBuilder(String text, String delim){
-		SpannableStringBuilder builtTags = new SpannableStringBuilder();
-		int start = 0;
-		int end = 0;
-		
-		// if no text, break early
-		if (text.length() == 0)
-			return builtTags;
-				
-		// If the string starts with delim, remove the first delim
-		if (text.substring(0, 1).equals(delim))
-			text = text.substring(1);
-		
-		do {
-			start = 0;
-			end = text.indexOf(delim, 0);
-			
-			try {
-				if (start < end) {
-					final Context ctx = getApplicationContext();
-					String targetString = text.substring(start, end);
-					SpannableStringBuilder ssb = new SpannableStringBuilder(targetString);
-					ssb.setSpan(new NonUnderlinedClickableSpan(targetString) {
-						@Override
-						public void onClick(View v){
-							Intent myIntent = new Intent(ctx, ActorDetails.class);
-				        	myIntent.putExtra("ActorName", tag);
-				        	myIntent.putExtra("seriesId", seriesId);
-				        	myIntent.putExtra("seriesName", seriesInfo.getName());
-				    		startActivityForResult(myIntent, 0);	
-						}
-					}, start, end, 0);
-					ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
-					//ssb.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, ssb.length(), 0);				// Override the text size with the user's preference
-					builtTags.append(ssb);
-					if (text.substring(end + 1).indexOf(delim) >= 0)
-						builtTags.append(", ");
-					text = text.substring(end + 1);
-				}
-			} catch (IndexOutOfBoundsException e){}
-		} while (start < end);
-
-		return builtTags;
+//	        mPageAdapter = new StaticFragmentPagerAdapter(this, null);
+//	        mPageAdapter.addTab("Cast", ActorsFragment.class, null);
+//	        mPageAdapter.addTab("Summary", SummaryFragment.class, null);
+//	        mPageAdapter.addTab("Episodes", EpisodeListFragment.class, null);
+	        	        
+//	        ArrayList<TabInfo> tabList = new ArrayList<TabInfo>();
+//	        fragList.add(new ActorsFragment());
+//	        fragList.add(new SummaryFragment());
+//	        fragList.add(new EpisodeListFragment());
+	        
+	        mPageAdapter = new StaticFragmentPagerAdapter(getSupportFragmentManager());
+	        mPageAdapter.addTab("Actors", new ActorsFragment());
+	        mPageAdapter.addTab("Summary", new SummaryFragment());
+	        mPageAdapter.addTab("Episodes", new EpisodeListFragment());
+	        
+	        mViewPager = (ViewPager)findViewById(R.id.pager);
+	        mViewPager.setAdapter(mPageAdapter);
+	        mViewPager.setOnPageChangeListener(mPageAdapter);
+	        mViewPager.setCurrentItem(1);
+	        
+	        // Bind the title indicator to the adapter
+	        TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.indicator);
+	        titleIndicator.setViewPager(mViewPager);
+	    
+	        // Make it stylish
+	        final float density = getResources().getDisplayMetrics().density;
+	        titleIndicator.setBackgroundColor(0xFF000000);
+	        titleIndicator.setTopPadding(1 * density);
+	        titleIndicator.setFooterColor(getResources().getColor(R.color.tvdb_green));
+	        titleIndicator.setFooterLineHeight(1 * density);
+	        titleIndicator.setFooterIndicatorHeight(3 * density);
+	        titleIndicator.setFooterIndicatorStyle(IndicatorStyle.Triangle);
+	        titleIndicator.setSelectedBold(true);
+	    }
+ 
 	}
 	
 	
+	// Requests from the fragments to load data for them ///////////////////////////////////////////////////////////////
 	
+	public void requestCastRefresh(ActorsFragment fragment){
+		castRefreshing = true;
+		setProgressBarIndeterminateVisibility(true);
+
+		tvdb.new LoadActorList(fragment).execute(seriesId);
+		
+		castRefreshing = false;
+		clearIndeterminateProgressBar();
+	}
 	
-	// Load the episode info asynchronously
-	private class LoadEpisodesTask extends AsyncTask<Void, Void, Void>{
-		@Override
-		protected Void doInBackground(Void... params) {
-			
-			try {
-				// Lookup Season/Episode listing
-	    		EpisodeListHandler episodeHandler = new EpisodeListHandler(getApplicationContext());
-	    		episodeList = episodeHandler.getEpisodes(seriesId);
-			}catch (Exception e){
-				e.printStackTrace();
-			}
-			return null;
+	public void requestSummaryRefresh(SummaryFragment fragment){
+		summaryRefreshing = true;
+		setProgressBarIndeterminateVisibility(true);
+		
+		tvdb.new LoadSummaryTask(fragment).execute(seriesId);
+		
+		summaryRefreshing = false;
+		clearIndeterminateProgressBar();
+	}
+	
+	public void requestEpisodeRefresh(EpisodeListFragment fragment){
+		episodesRefreshing = true;
+		setProgressBarIndeterminateVisibility(true);
+		
+		// If we have the seriesInfo already available, load the episodes, else wait until we have seriesInfo available
+		if (seriesInfo != null){
+			tvdb.new LoadEpisodeList(fragment).execute(seriesId);
+		}else {
+			episodeRefreshQueuedFragment = fragment;
 		}
 		
-		@Override
-		protected void onPostExecute(Void params){
-			 
-			// Populate the next/last aired text views
-			PopulateStuffPartTwo();
-			
-    		// Append the Season info at the bottom of the View
-    		ArrayList<Integer> seasonList = episodeList.getSeasonList();
-    		LinearLayout mainLayout = (LinearLayout)findViewById(R.id.series_overview_linear_layout);
-    		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    		for (int i=0; i<seasonList.size(); i++) {
+		episodesRefreshing = false;
+		clearIndeterminateProgressBar();
+	}
 
-    			int seasonNo = seasonList.get(i);
-    			
-    			View seasonRow = inflater.inflate(R.layout.season_row, mainLayout, false);
-    			seasonRow.setBackgroundColor(AppSettings.listBackgroundColors[i % AppSettings.listBackgroundColors.length]);
-    			
-    			TextView text = (TextView)seasonRow.findViewById(R.id.season_text);
-    			//text.setId(seasonNo);
-    			text.setTextSize(textSize*1.6f);
+	public void clearIndeterminateProgressBar(){
+		if (!castRefreshing && !summaryRefreshing && !episodesRefreshing)
+			setProgressBarIndeterminateVisibility(false);
+	}
 
-    			if (seasonNo == 0)
-    				text.setText("Specials");
-    			else
-    				text.setText("Season " + seasonNo);
-    			
-    			seasonRow.setId(seasonNo);
-    			
-    			seasonRow.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View seasonRow) {
-						
-						ShowHideEpisodes(seasonRow);
-					}
-				});
-    			
-    			mainLayout.addView(seasonRow);
-    			
-    		}
-
-    		// Hide the progress animation and loading text
-			setSupportProgressBarIndeterminateVisibility(false);
-			findViewById(R.id.loading2).setVisibility(View.GONE);
+	
+	// Callback from the LoadSummaryTask
+	public void setTvSeriesInfo(TvSeries info) {
+		getSupportActionBar().setTitle(info.getName());
+		seriesInfo = info;
+		
+		isFavorite = seriesInfo.isFavorite(this);
+		supportInvalidateOptionsMenu();
+		
+		// if an episode refresh was waiting for seriesInfo, kick it off now
+		if (episodeRefreshQueuedFragment != null){
+			requestEpisodeRefresh(episodeRefreshQueuedFragment);
+			episodeRefreshQueuedFragment = null;
 		}
 	}
 	
-	/** Populate the GUI with the episode information */
-	private void PopulateStuffPartTwo(){
-		
-		// Populate the next/last episodes
-		TvEpisode last = episodeList.getLastAired();
-		TvEpisode next = episodeList.getNextAired();
-		
-		SpannableString text = null;		
-		
-		TextView richTextView = (TextView)findViewById(R.id.last_episode);
-		
-		if (last == null){
-			 text = new SpannableString("Last Episode: unknown");
-		}else{
-		
-			String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(last.getAirDate())) : DateUtil.toString(last.getAirDate());
-			text = new SpannableString("Last Episode: " + last.getName() + " (" + dateString + ")");
-
-			NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
-		        @Override  
-		        public void onClick(View view) { 
-		            episodeListener.onClick(view);
-		        }  
-		    };
-		    int start = 14;
-			int end = start + last.getName().length();
-		    text.setSpan(clickableSpan, start, end, 0);
-		    text.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
-		    text.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, text.length(), 0);
-		    richTextView.setId(last.getId());
-			richTextView.setMovementMethod(LinkMovementMethod.getInstance());
-		}
-		richTextView.setText(text, BufferType.SPANNABLE);
-		
-		
-		text = null;
-		richTextView = (TextView)findViewById(R.id.next_episode);
-
-		if (seriesInfo != null && seriesInfo.getStatus() != null && !seriesInfo.getStatus().equals("Ended")){
-			if (next == null){
-				 text = new SpannableString("Next Episode: unknown");
-			}else{
-			
-				String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(next.getAirDate())) : DateUtil.toString(next.getAirDate());
-				text = new SpannableString("Next Episode: " + next.getName() + " (" + dateString + ")");
+	public TvSeries getTvSeriesInfo(){
+		return seriesInfo;
+	}
 	
-				NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
-			        @Override  
-			        public void onClick(View view) { 
-			        	episodeListener.onClick(view);  
-			        }  
-			    };
-			    int start = 14;
-				int end = start + next.getName().length();
-			    text.setSpan(clickableSpan, start, end, 0);
-			    text.setSpan(new TextAppearanceSpan(this, R.style.episode_link), start, end, 0);
-			    text.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, text.length(), 0);
-				richTextView.setId(next.getId());
-				richTextView.setMovementMethod(LinkMovementMethod.getInstance());
-			}
-			richTextView.setText(text, BufferType.SPANNABLE);
-		}
+	// Callback from LoadEpisodeTask
+	public void setLastNextEpisodes(TvEpisode last, TvEpisode next){
+		
 	}
 	
 	
-	// Dynamically add/remove the views for each episode
-	protected void ShowHideEpisodes(View seasonRow) {
-		
-		// Get the linear layout that we will be adding/removing the episodes to/from
-		LinearLayout epLinearLayout = (LinearLayout)seasonRow;
-		
-		if (epLinearLayout.getChildCount() == 1){	// if collapsed, expand (add) the seasons
-		
-			TextView seasonText = (TextView)seasonRow.findViewById(R.id.season_text);
-			seasonText.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.arrow_down), null, null, null);
-
-			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			
-			for (int i=0; i<episodeList.size(); i++){
-				if (seasonRow.getId() == episodeList.get(i).getSeason()){
-					View episodeView = inflater.inflate(R.layout.episode_text_row, epLinearLayout, false);
-					
-					episodeView.setBackgroundColor(AppSettings.listBackgroundColors[i % AppSettings.listBackgroundColors.length]);
-					
-					TextView text = (TextView)episodeView.findViewById(R.id.text);
-					String nameText = String.format("%02d", episodeList.get(i).getNumber()) + " " + episodeList.get(i).getName();
-					text.setText(nameText);
-					text.setTextSize(textSize);
-					text.setId(episodeList.get(i).getId());
-										
-					episodeView.setOnClickListener(episodeListener);
-					epLinearLayout.addView(episodeView);
-				}
-			}
-		} else {	 // else season is expanded, collapse it
-			TextView seasonText = (TextView)seasonRow.findViewById(R.id.season_text);
-			seasonText.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.arrow_right), null, null, null);
-			
-			for (int i=epLinearLayout.getChildCount()-1; i>0; i--){
-				epLinearLayout.removeView(epLinearLayout.getChildAt(i));	
-			}
-			
-		}
-		
-	}
-	
-	// Handle episode clicks
-	final OnClickListener episodeListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			TextView epText = (TextView)v;
-        	long episodeId = epText.getId();            
-        	Intent myIntent = new Intent(getApplicationContext(), EpisodeDetails.class);
-        	myIntent.putExtra("id", episodeId);
-        	myIntent.putExtra("seriesId", seriesId);
-        	myIntent.putExtra("seriesName", seriesInfo.getName());        	
-    		startActivityForResult(myIntent, 0);		
-		}
-	};
-	
+	// Favorites functions /////////////////////////////////////////////////////////////////
 
 	public void addToFavorites(){
 		new AddFavoriteTask().execute(seriesInfo);		
@@ -571,7 +208,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		protected void onPostExecute(Void v) {
 			Toast.makeText(getApplicationContext(), "This show will now appear in your favorites list.", Toast.LENGTH_SHORT).show();
 			isFavorite = true;
-			invalidateOptionsMenu();
+			supportInvalidateOptionsMenu();
 		}
 	}
 	
@@ -588,7 +225,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		protected void onPostExecute(Boolean result) {
 			Toast.makeText(getApplicationContext(), "The show has been removed from your favorites.", Toast.LENGTH_SHORT).show();
 			isFavorite = false;
-			invalidateOptionsMenu();
+			supportInvalidateOptionsMenu();
 		}
 	}
 	
@@ -604,124 +241,189 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 		}
 	}
 	
-	
-	
-	
-	// User Rating Functions ////////////////////////////////////////////////////////
-	
-	
-	// Load the user's rating asynchronously
-	private class LoadRatingTask extends AsyncTask<Void, Void, Integer>{
-		
-		private Exception e;
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			
-			try {
-	    		GetRatingHandler ratingAdapter = new GetRatingHandler();
-	    		Rating r = ratingAdapter.getSeriesRating(userAccountId, seriesId);
-	    		return Integer.valueOf(r.getUserRating());
-			}catch (RatingNotFoundException e){
-				return 0;
-			}catch (Exception e){
-				this.e = e;
-			}
-			return 0;
-		}
-		
-		@Override
-		protected void onPostExecute(Integer rating){
-			if (e != null)
-				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-			
-			setUserRatingTextView(rating);
-		}
-	}
-	
- 	/** Update the GUI with the specified rating */
- 	private void setUserRatingTextView(int rating){
- 		
- 		try {
-	 		TextView ratingTextView = (TextView)findViewById(R.id.rating);
-			String communityRating = (seriesInfo == null) ? "?" : seriesInfo.getRating(); 
-	 		String communityRatingText = communityRating + " / 10";
-			
-			String ratingTextA = communityRatingText + "  (";
-			String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
-			String ratingTextC = ")";
-			
-			int start = ratingTextA.length();
-			int end = ratingTextA.length() + ratingTextB.length();
-					
-			SpannableStringBuilder ssb = new SpannableStringBuilder(ratingTextA + ratingTextB + ratingTextC);
-			
-			ssb.setSpan(new NonUnderlinedClickableSpan() {
-				@Override
-				public void onClick(View v){
-					showRatingDialog();		        		
-				}
-			}, start, end, 0);
-			
-			ssb.setSpan(new TextAppearanceSpan(getApplicationContext(), R.style.episode_link), start, end, 0);	// Set the style of the text
-			ratingTextView.setText(ssb, BufferType.SPANNABLE);
-			ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
- 		}catch (Exception e){
- 			Log.e("SeriesOverview", "Failed to setUserRatingTextView: " + e.getMessage());
- 		}
- 	}
- 	
- 	
- 	/** Display the rating dialog to the user */
-	private void showRatingDialog(){
-		if (userAccountId.equals("")){
-			DialogBuilder.InformationalDialog(this, "Error", "You must specify your account identifier in the application settings before you can set ratings.").show();
-		}else{
-			RatingFragment dialog = new RatingFragment();
-			dialog.setTitle(seriesInfo.getName());
-			dialog.show(getSupportFragmentManager(), "RatingFragment");
-		}
-	}
-	
-	// Called when the user clicks Rate from the dialog 
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        TextView valueText = (TextView)dialog.getDialog().findViewById(R.id.value);
-        new UpdateRatingTask().execute(userAccountId, String.valueOf(seriesId), valueText.getText().toString());
-    }
-    
-    // Called when the user clicks Cancel from the dialog
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-        // Do nothing	
-    }
-    
-    // Update the rating asynchronously
- 	private class UpdateRatingTask extends AsyncTask<String, Void, Boolean>{
- 		@Override
- 		protected Boolean doInBackground(String... params) {
- 			try {
- 				SetRatingHandler ra = new SetRatingHandler();
- 		        return ra.setSeriesRating(params[0], params[1], Integer.valueOf(params[2]));
- 			}catch (Exception e){
- 				return false;
- 			} 			
- 		}
- 		
- 		@Override
- 		protected void onPostExecute(Boolean result){
- 			if (result){
- 				new LoadRatingTask().execute();
- 				Toast.makeText(getApplicationContext(), "Your rating has been saved", Toast.LENGTH_SHORT).show();
- 			}else{
- 				Toast.makeText(getApplicationContext(), "A problem was encountered while trying to save your rating", Toast.LENGTH_SHORT).show();
- 			}
- 		}
 
- 	}
- 	
- 	
 	
+	
+	
+ 	
+ 	/**
+     * This is a helper class that implements the management of tabs and all
+     * details of connecting a ViewPager with associated TabHost.  It relies on a
+     * trick.  Normally a tab host has a simple API for supplying a View or
+     * Intent that each tab will show.  This is not sufficient for switching
+     * between pages.  So instead we make the content part of the tab host
+     * 0dp high (it is not shown) and the TabsAdapter supplies its own dummy
+     * view to show as the tab content.  It listens to changes in tabs, and takes
+     * care of switch to the correct paged in the ViewPager whenever the selected
+     * tab changes.
+     */
+    public static class StaticFragmentPagerAdapter extends PagerAdapter implements ViewPager.OnPageChangeListener {
+        
+
+        private final FragmentManager mFragmentManager;
+        private FragmentTransaction mCurTransaction = null;
+        private Fragment mCurrentPrimaryItem = null;
+        private final ArrayList<TabInfo> mTabs;
+               
+        private ArrayList<Fragment.SavedState> mSavedState;
+        
+        static final class TabInfo {
+        	private final String title;
+            private final Fragment fragment;
+            private boolean added;
+
+            TabInfo(String _title, Fragment _frag) {
+            	title = _title;
+                fragment = _frag;
+                added = false;
+            }
+        }
+
+        public StaticFragmentPagerAdapter(FragmentManager fm) {
+        	mFragmentManager = fm;
+        	mTabs = new ArrayList<SeriesOverview.StaticFragmentPagerAdapter.TabInfo>();
+        	mSavedState = new ArrayList<Fragment.SavedState>();
+        }
+        
+        public void addTab(String tabTitle, Fragment frag){
+        	mTabs.add(new TabInfo(tabTitle, frag));
+        }
+        
+        @Override
+        public Object instantiateItem(View container, int position) {
+    		if (mTabs != null && mTabs.size() > position){
+    			TabInfo t = mTabs.get(position);
+
+    			// Add it if it's not already added
+    			if (!t.added){
+	        		if (mCurTransaction == null) {
+	                    mCurTransaction = mFragmentManager.beginTransaction();
+	                }	        		
+	    			mCurTransaction.add(container.getId(), t.fragment, t.title);
+	    			
+	    			if (t.fragment != mCurrentPrimaryItem) {
+	    	            t.fragment.setMenuVisibility(false);
+	    	            t.fragment.setUserVisibleHint(false);
+	    	        }
+	    			t.added = true;
+    			}
+    		}
+            
+//        	if (mSavedState.size() > position){
+//        		Fragment.SavedState fss = mSavedState.get(position);
+//        		if (fss != null)
+//        			fragment.setInitialSavedState(fss);
+//        	}
+
+    		return mTabs.get(position).fragment;
+        }
+        
+        @Override
+        public void destroyItem(View container, int position, Object object){
+        	
+        	// NOTHING TO DO HERE, EXCEPT MAYBE MANAGE STATE
+        	// We like to hog all the memories
+        }
+        
+        @Override
+        public void setPrimaryItem(View Container, int position, Object object){
+        	Fragment fragment = (Fragment) object;
+        	if (fragment != mCurrentPrimaryItem){
+        		if (mCurrentPrimaryItem != null){
+        			mCurrentPrimaryItem.setMenuVisibility(false);
+        		}
+        		if (fragment != null){
+        			fragment.setMenuVisibility(true);
+        		}
+        		mCurrentPrimaryItem = fragment;
+        	}
+        }
+        
+        @Override
+        public void finishUpdate(View container) {
+        	if(mCurTransaction != null){
+        		mCurTransaction.commitAllowingStateLoss();
+        		mCurTransaction = null;
+        		mFragmentManager.executePendingTransactions();
+        	}
+        }
+        
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+        	return ((Fragment)object).getView() == view;
+        }
+        
+        @Override
+        public Parcelable saveState() {
+        	Bundle state = null;
+        	if (mSavedState.size() > 0){
+        		state = new Bundle();
+        		Fragment.SavedState[] fss = new Fragment.SavedState[mSavedState.size()];
+        		mSavedState.toArray(fss);
+        		state.putParcelableArray("states", fss);
+        	}
+        	for (int i=0; i<mTabs.size(); i++){
+        		Fragment f = mTabs.get(i).fragment;
+        		if (f != null){
+        			if(state == null)
+        				state = new Bundle();
+        			String key = "f" + i;
+        			mFragmentManager.putFragment(state, key, f);
+        		}
+        	}
+        	return state;
+        }
+        
+        
+        @Override
+        public void restoreState(Parcelable state, ClassLoader loader) {
+        	if (state != null){
+        		Bundle bundle = (Bundle)state;
+        		bundle.setClassLoader(loader);
+        		Parcelable[] fss = bundle.getParcelableArray("states");
+        		mSavedState.clear();
+        		mTabs.clear();
+        		if (fss != null){
+        			for (int i=0; i<fss.length; i++){
+        				mSavedState.add((Fragment.SavedState)fss[i]);
+        			}
+        		}
+        		Iterable<String> keys = bundle.keySet();
+        		for (String key: keys){
+        			if (key.startsWith("f")){
+        				int index = Integer.parseInt(key.substring(1));
+        				Fragment f = mFragmentManager.getFragment(bundle, key);
+        				if (f != null){
+        					while(mTabs.size() <= index){
+        						mTabs.add(null);
+        					}
+        					f.setMenuVisibility(false);
+        					mTabs.set(index, new TabInfo("TAB", f));
+        				}
+        			}
+        		}
+        	}
+        }
+        
+        @Override
+        public int getCount() {
+            return mTabs.size();
+        }
+        
+        @Override
+        public CharSequence getPageTitle(int position) {
+        	return mTabs.get(position).title;
+        }
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { }
+
+        @Override
+        public void onPageSelected(int position) { }
+
+        @Override
+        public void onPageScrollStateChanged(int state) { }
+    }
 	
 	// ACTIONBAR MENU ////////////////////////////////////////////////
 	
@@ -830,70 +532,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	     }
 	     return false;
 	}
+
+
 	
-
-	// Apply Preferences
-	private void ApplyPreferences() {
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-		userAccountId = settings.getString("accountId", "").trim();
-		useNiceDates = settings.getBoolean("useNiceDates", true);
-    	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-
-    	TextView textview = (TextView)findViewById(R.id.loading1);
-    	textview.setTextSize(textSize);
-    	
-    	textview = (TextView)findViewById(R.id.loading2);
-    	textview.setTextSize(textSize);
-    	
-    	textview = (TextView)findViewById(R.id.banner_listing_link);
-    	textview.setTextSize(textSize);
-
-    	textview = (TextView)findViewById(R.id.airs_header);
-    	textview.setTextSize(textSize*1.3f);
-    	
-    	textview = (TextView)findViewById(R.id.last_episode);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.next_episode);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.series_air_info);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.starring);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)findViewById(R.id.series_actors);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.rating_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)findViewById(R.id.rating);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.genre_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)findViewById(R.id.genre);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.runtime_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)findViewById(R.id.runtime);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.overview_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)findViewById(R.id.overview);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)findViewById(R.id.seasons_header);
-		textview.setTextSize(textSize*1.3f);
-
-
-	}
 }

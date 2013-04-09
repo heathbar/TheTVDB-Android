@@ -19,6 +19,8 @@
 package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Locale;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -39,11 +41,12 @@ public class ActorHandler extends DefaultHandler{
     private Actor currentActor;
     private Actor targetActor;
     private String searchName;
+    private ArrayList<Actor> actors;
 
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
-	    sb = new StringBuilder();						// Reset the string builder
+	    name = name.trim().toLowerCase(Locale.getDefault());		// format the current element name
+	    sb = new StringBuilder();									// Reset the string builder
 	    
 	    if (name.equals("actor"))
 	    	currentActor = new Actor();
@@ -61,7 +64,7 @@ public class ActorHandler extends DefaultHandler{
     @Override
 	public void endElement(String uri, String name, String qName) throws SAXException {
 		try {
-			name = name.trim().toLowerCase();
+			name = name.trim().toLowerCase(Locale.getDefault());
 			
 			if (targetActor == null){
 				if (name.equals("id")){
@@ -73,8 +76,15 @@ public class ActorHandler extends DefaultHandler{
 					currentActor.setName(sb.toString());
 				} else if (name.equals("role")) {
 					currentActor.setRole(sb.toString());
-				} else if (name.equals("actor") && currentActor.getName().equals(searchName)){
-					targetActor = currentActor;
+				} else if (name.equals("actor")){
+					
+					// if searchName = null we are retrieving all actors - add the current actor to the ArrayList
+					// else we are searching for a specific actor, if we've found him/her, set the targetActor accordingly
+					if (searchName == null){
+						actors.add(currentActor);
+					}else if (currentActor.getName().equals(searchName)){
+						targetActor = currentActor;
+					}
 				}
 			}
 		    
@@ -100,6 +110,26 @@ public class ActorHandler extends DefaultHandler{
 			if (AppSettings.LOG_ENABLED)
 				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
 			return new Actor();
+		}
+	}
+	
+	public ArrayList<Actor> getActors(String seriesId){
+	
+		try{
+			URL url = new URL(AppSettings.SERIES_FULL_URL + seriesId + "/actors.xml");	
+			actors = new ArrayList<Actor>();
+			
+		    SAXParserFactory spf = SAXParserFactory.newInstance();
+		    SAXParser sp = spf.newSAXParser();
+		    XMLReader xr = sp.getXMLReader();
+		    xr.setContentHandler(this);
+		    xr.parse(new InputSource(url.openStream()));
+		    		    
+		    return actors;
+		} catch (Exception e) {
+			if (AppSettings.LOG_ENABLED)
+				Log.e("xml.handlers.EpisodeHandler", "Error:" + e.toString());
+			return new ArrayList<Actor>();
 		}
 	}
 }

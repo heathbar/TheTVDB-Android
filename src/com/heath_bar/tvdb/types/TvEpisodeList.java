@@ -81,7 +81,7 @@ public class TvEpisodeList extends ArrayList<TvEpisode> {
 			 if (!seasons.contains(seasonNo))
 				 seasons.add(seasonNo);
 		}
-		return seasons;		
+		return seasons;	
 	}
 	
 
@@ -93,5 +93,15 @@ public class TvEpisodeList extends ArrayList<TvEpisode> {
 				count++;
 		}
 		return count;
+	}
+	
+	public TvEpisode getEpisode(int seasonNumber, int episodeNumber){
+		for (Iterator<TvEpisode> i = this.iterator(); i.hasNext();){
+			TvEpisode ep = i.next();
+			if (ep.getSeason() == seasonNumber && ep.getNumber() == episodeNumber){
+				return ep;
+			}
+		}
+		return null;
 	}
 }

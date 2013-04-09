@@ -29,9 +29,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
-
-import com.heath_bar.tvdb.R;
+import android.widget.ProgressBar;
 
 public class BitmapLoader {
 	
@@ -40,7 +40,6 @@ public class BitmapLoader {
 	private BitmapWebUtil web;
 	private WebImageList images;						// Holds a map of ids (keys) and urls (values)
 	private Map<ImageView, String> lastAssignments; 	// keep track of what URL was last assigned to a given imageview
-	final int loading_placeholder = R.drawable.loading;
 	private boolean preferThumbnails;
     ExecutorService asyncQueue; 
 
@@ -56,25 +55,29 @@ public class BitmapLoader {
 		asyncQueue = Executors.newFixedThreadPool(5);
 	}
 
-	/** Load the bitmap from the cache into the specified imageview; on cache miss load it asynchronously */
-	public void Load(int position, ImageView image) {
+	/** Load the bitmap from the cache into the specified image view; on cache miss load it asynchronously */
+	public void Load(int position, ImageView image, ProgressBar progress) {
 		String id = images.get(position).getId();
 		lastAssignments.put(image, id);
 		Bitmap bitmap = memCache.get(id);
 
-		if (bitmap != null)
+		if (bitmap != null){
 			image.setImageBitmap(bitmap);
-		else
-			LoadAsync(position, image);
+			image.setVisibility(View.VISIBLE);
+			progress.setVisibility(View.GONE);
+		}else{
+			LoadAsync(position, image, progress);
+		}
 	}
 
 
-	/** Load the bitmap by id into the specified imageview. Try to load from disk first, web second */
-	private void LoadAsync(int position, ImageView image) {
+	/** Load the bitmap by id into the specified image view. Try to load from disk first, web second */
+	private void LoadAsync(int position, ImageView image, ProgressBar progress) {
 
 		try {
-			image.setImageResource(loading_placeholder);									// 1. Display the loading image for now
-			asyncQueue.submit(new BitmapLoaderRunnable(images.get(position), image));		// 2. Load image asynchronously from file/web
+			progress.setVisibility(View.VISIBLE);													// 1. Display the loading image for now
+			image.setVisibility(View.GONE);
+			asyncQueue.submit(new BitmapLoaderRunnable(images.get(position), image, progress));		// 2. Load image asynchronously from file/web
 		} catch (Throwable e) {
 			e.printStackTrace();
 			if(e instanceof OutOfMemoryError)
@@ -87,9 +90,11 @@ public class BitmapLoader {
 	class BitmapLoaderRunnable implements Runnable {
 		WebImage wi;
 		ImageView image;
-        public BitmapLoaderRunnable(WebImage wi, ImageView image){
+		ProgressBar progress;
+        public BitmapLoaderRunnable(WebImage wi, ImageView image, ProgressBar progress){
         	this.wi = wi;
             this.image = image;
+            this.progress = progress;
         }
         
         @Override
@@ -98,7 +103,7 @@ public class BitmapLoader {
         	Bitmap bitmap = null;
         	
     		try {
-    			// If a different url has been assigned to this imageview, just quit now; don't waste time downloading the image
+    			// If a different URL has been assigned to this image view, just quit now; don't waste time downloading the image
     			if (lastAssignments.get(image) == null || !lastAssignments.get(image).equals(wi.getId()))
 	        		return;
     			
@@ -125,7 +130,7 @@ public class BitmapLoader {
 				e.printStackTrace();
 				return;
 			} catch (Throwable e){
-				e.printStackTrace();
+				Log.e("BitmapLoader", "Error:" + e.getMessage());
 				if(e instanceof OutOfMemoryError)
 					Log.e("BitmapLoader", "Encountered OutOfMemory Error when cache was " + memCache.getSizeMB() + "MB");
 					memCache.clear();
@@ -134,7 +139,7 @@ public class BitmapLoader {
         	
         	if (bitmap != null){
         		// Display the bitmap in the image view on the UI thread
-        		((Activity)image.getContext()).runOnUiThread(new BitmapDisplayer(bitmap, image));
+        		((Activity)image.getContext()).runOnUiThread(new BitmapDisplayer(bitmap, image, progress));
 
         		// Add the bitmap to the memory cache
         		memCache.put(wi.getId(), bitmap);
@@ -147,19 +152,25 @@ public class BitmapLoader {
         {
             Bitmap bitmap;
             ImageView image;
-            public BitmapDisplayer(Bitmap bitmap, ImageView image){
+            ProgressBar progress;
+            public BitmapDisplayer(Bitmap bitmap, ImageView image, ProgressBar progress){
             	this.bitmap = bitmap;
             	this.image = image;
+            	this.progress = progress;
             }
             public void run()
             {
-            	String lastId = lastAssignments.get(image);			// Only display the bitmap in the imageview if another  
-				if (lastId != null && lastId.equals(wi.getId()))	// bitmap hasn't started loading into this imageview 
+            	String lastId = lastAssignments.get(image);			// Only display the bitmap in the image view if another  
+				if (lastId != null && lastId.equals(wi.getId()))	// bitmap hasn't started loading into this image view 
 				{
-					if(bitmap != null)
+					if(bitmap != null){
 	                    image.setImageBitmap(bitmap);
-	                else
-	                    image.setImageResource(loading_placeholder);
+	                    image.setVisibility(View.VISIBLE);
+	                    progress.setVisibility(View.GONE);
+					}else{
+						image.setVisibility(View.GONE);
+	                    progress.setVisibility(View.VISIBLE);
+					}
 				}
             }
         }

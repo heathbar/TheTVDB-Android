@@ -47,7 +47,7 @@ public class ImageViewer extends SherlockActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.image_viewer);
-        	
+
 		try {
 			
 			Bundle extras = getIntent().getExtras();

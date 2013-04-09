@@ -54,7 +54,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	private Cursor cursor;								// cursor to hold the favorites from the db
 	private Cursor refreshCursor;						// replacement cursor
 	private SeriesAiredListAdapter adapter;				// adapter to lookup air times
-	private ResponseReceiver updateReceiver;			// listener for updates from the adapter
+	private ResponseReceiver updateReceiver;			// listener for updates from the service
 	private Intent favoritesUpdater;
 	private boolean isRefreshing = false;
 	private SharedPreferences.OnSharedPreferenceChangeListener prefListener;

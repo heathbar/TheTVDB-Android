@@ -1,209 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#FF000000" >
+  
+	<com.viewpagerindicator.TitlePageIndicator
+	    android:id="@+id/indicator"
+	    android:layout_height="wrap_content"
+	    android:layout_width="fill_parent" />
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scrollView1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        
-        <TextView
-		    android:id="@+id/loading1"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content" 
-		    android:textColor="@color/white"
-		    android:text="@string/loading" />
-
-		<ImageView
-		    android:id="@+id/series_banner"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:adjustViewBounds="true"
-		    android:layout_gravity="center_horizontal"
-		    android:background="#FFFFFF"
-		    android:padding="1dip"
-		    android:layout_marginTop="10dip"
-		    android:layout_marginBottom="12dip"
-		    android:contentDescription="@string/banner_alt_text"
-		    android:visibility="gone" />
-
-		<TextView
-		    android:id="@+id/banner_listing_link"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:gravity="right"
-		    android:textSize="18dip"
-		    android:visibility="gone"
-		    android:text="@string/banner_listing_link" />
-		
-		<TextView
-		    android:id="@+id/airs_header"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
-		    android:textColor="@color/header_white"
-		    android:visibility="gone"
-		    android:text="@string/airs" />
-		
-		<TextView
-		    android:id="@+id/series_air_info"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone" />
-		
-		<TextView
-		    android:id="@+id/last_episode"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone" />	
-		    		
-		<TextView
-		    android:id="@+id/next_episode"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_marginBottom="12dip"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone" />
-				
-		<TextView
-		    android:id="@+id/starring"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
-		    android:textColor="@color/header_white"
-		    android:visibility="gone"
-		    android:text="@string/starring" />
-		
-		<TextView
-		    android:id="@+id/series_actors"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone"
-		    android:layout_marginBottom="12dip" />
-
-		<TextView
-		    android:id="@+id/rating_header"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
-		    android:textColor="@color/header_white"
-		    android:visibility="gone"
-		    android:text="@string/rating" />
-        
-		<TextView
-		    android:id="@+id/rating"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone"
-		    android:layout_marginBottom="12dip" />
-		
-		<TextView
-		    android:id="@+id/genre_header"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
-		    android:textColor="@color/header_white"
-		    android:visibility="gone"
-		    android:text="@string/genre" />
-		
-		<TextView
-		    android:id="@+id/genre"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone"
-		    android:layout_marginBottom="12dip" />
-		
-		<TextView
-		    android:id="@+id/runtime_header"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
-		    android:textColor="@color/header_white"
-		    android:visibility="gone"
-		    android:text="@string/runtime" />
-		
-		<TextView
-		    android:id="@+id/runtime"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone"
-		    android:layout_marginBottom="12dip" />
-		
-		<TextView
-		    android:id="@+id/overview_header"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:textSize="24dip"
-		    android:textColor="@color/header_white"
-		    android:visibility="gone"
-		    android:text="@string/overview" />
-		
-		<TextView
-		    android:id="@+id/overview"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone" />
-
-		
-		<TextView
-		    android:id="@+id/seasons_header"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content" 
-		    android:paddingLeft="2dip"
-		    android:paddingTop="2dip"
-		    android:paddingRight="2dip"
-		    android:paddingBottom="2dip"
-		    android:layout_marginTop="12dip"
-		    android:background="@color/tvdb_green"
-		    android:textColor="@color/white"
-		    android:textStyle="bold"
-		    android:textSize="18dip"
-		    android:text="@string/seasons_header"
-		    android:visibility="gone" />
-		
-		<TextView
-		    android:id="@+id/loading2"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content" 
-		    android:textColor="@color/white"
-		    android:text="@string/loading"
-		    android:visibility="gone" />
-		
-	    <LinearLayout
-	        android:id="@+id/series_overview_linear_layout"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:orientation="vertical" />
-						
-		<TextView
-		    android:id="@+id/imdb_link"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18dip"
-		    android:visibility="gone" />
-		
-    </LinearLayout>
-</ScrollView>
-
+	<android.support.v4.view.ViewPager
+		android:id="@+id/pager"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+	
+</LinearLayout>
 <!-- 
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
 │                                                  TERMS OF USE: MIT License                                                   │

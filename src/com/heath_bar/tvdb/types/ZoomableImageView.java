@@ -364,7 +364,7 @@ public class ZoomableImageView extends View {
    
     public void setImageBitmap(Bitmap b) {       
         if(b != null) {
-            imgBitmap = b;               
+            imgBitmap = b;
            
             containerWidth = getWidth();
             containerHeight = getHeight();
@@ -379,7 +379,7 @@ public class ZoomableImageView extends View {
             matrix.reset();
            
             if(defaultScale == ZoomableImageView.DEFAULT_SCALE_FIT_INSIDE) {               
-                if(imgWidth > containerWidth) {           
+                if(imgWidth > containerWidth) {
                     scale = (float)containerWidth / imgWidth;           
                     float newHeight = imgHeight * scale;           
                     initY = (containerHeight - (int)newHeight)/2;

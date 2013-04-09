@@ -25,6 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+
+import com.heath_bar.tvdb.R;
 
 public class LazyBitmapAdapter extends BaseAdapter {
 
@@ -69,7 +72,8 @@ public class LazyBitmapAdapter extends BaseAdapter {
         	convertView = inflater.inflate(layout, null);
 
         ImageView image = (ImageView)convertView.findViewById(imageview);
-        loader.Load(position, image);
+        ProgressBar progress = (ProgressBar)convertView.findViewById(R.id.progress);
+        loader.Load(position, image, progress);
 
         return convertView;
 	}

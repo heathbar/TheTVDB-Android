@@ -6,7 +6,8 @@
     android:textSize="18sp"
     android:paddingTop="8dip"
     android:paddingBottom="8dip"
-    android:paddingLeft="12dip" />
+    android:paddingLeft="12dip"
+    android:textIsSelectable="false" />
 
 <!-- 
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
