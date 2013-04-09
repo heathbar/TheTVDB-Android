@@ -30,6 +30,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -277,6 +278,11 @@ public class SeriesOverview extends SherlockFragmentActivity  {
                 fragment = _frag;
                 added = false;
             }
+            TabInfo(String _title, Fragment _frag, boolean _added) {
+            	title = _title;
+                fragment = _frag;
+                added = _added;
+            }
         }
 
         public StaticFragmentPagerAdapter(FragmentManager fm) {
@@ -298,22 +304,27 @@ public class SeriesOverview extends SherlockFragmentActivity  {
     			if (!t.added){
 	        		if (mCurTransaction == null) {
 	                    mCurTransaction = mFragmentManager.beginTransaction();
-	                }	        		
-	    			mCurTransaction.add(container.getId(), t.fragment, t.title);
+	                }
+	        		try{
+	        			mCurTransaction.add(container.getId(), t.fragment);
+	        		}catch (IllegalStateException e){
+	        			Log.e("SeriesOverview", "instantiateItem:" + e.getMessage());
+	        		}
 	    			
 	    			if (t.fragment != mCurrentPrimaryItem) {
 	    	            t.fragment.setMenuVisibility(false);
 	    	            t.fragment.setUserVisibleHint(false);
-	    	        }
+	    	        }	    			
+	    			 
+//	            	if (mSavedState.size() > position){
+//	            		Fragment.SavedState fss = mSavedState.get(position);
+//	            		if (fss != null)
+//	            			t.fragment.setInitialSavedState(fss);
+//	            	}
 	    			t.added = true;
     			}
     		}
-            
-//        	if (mSavedState.size() > position){
-//        		Fragment.SavedState fss = mSavedState.get(position);
-//        		if (fss != null)
-//        			fragment.setInitialSavedState(fss);
-//        	}
+           
 
     		return mTabs.get(position).fragment;
         }
@@ -355,20 +366,22 @@ public class SeriesOverview extends SherlockFragmentActivity  {
         
         @Override
         public Parcelable saveState() {
-        	Bundle state = null;
-        	if (mSavedState.size() > 0){
-        		state = new Bundle();
-        		Fragment.SavedState[] fss = new Fragment.SavedState[mSavedState.size()];
-        		mSavedState.toArray(fss);
-        		state.putParcelableArray("states", fss);
-        	}
-        	for (int i=0; i<mTabs.size(); i++){
-        		Fragment f = mTabs.get(i).fragment;
-        		if (f != null){
-        			if(state == null)
-        				state = new Bundle();
+        	Bundle state = new Bundle();
+        	String[] titles = new String[mTabs.size()];
+        	Fragment.SavedState[] fss = new Fragment.SavedState[mSavedState.size()];
+    		mSavedState.toArray(fss);
+    		state.putParcelableArray("states", fss);
+    		state.putStringArray("titles", titles);
+    		
+        	for(int i=0; i<mTabs.size(); i++){
+        		TabInfo t = mTabs.get(i);
+        		titles[i] = t.title;
+        		mSavedState.add(null);
+        		mSavedState.set(i, mFragmentManager.saveFragmentInstanceState(t.fragment));
+        		
+        		if (t.fragment != null){
         			String key = "f" + i;
-        			mFragmentManager.putFragment(state, key, f);
+        			mFragmentManager.putFragment(state, key, t.fragment);
         		}
         	}
         	return state;
@@ -381,6 +394,7 @@ public class SeriesOverview extends SherlockFragmentActivity  {
         		Bundle bundle = (Bundle)state;
         		bundle.setClassLoader(loader);
         		Parcelable[] fss = bundle.getParcelableArray("states");
+        		String[] titles = bundle.getStringArray("titles");
         		mSavedState.clear();
         		mTabs.clear();
         		if (fss != null){
@@ -398,7 +412,7 @@ public class SeriesOverview extends SherlockFragmentActivity  {
         						mTabs.add(null);
         					}
         					f.setMenuVisibility(false);
-        					mTabs.set(index, new TabInfo("TAB", f));
+        					mTabs.set(index, new TabInfo(titles[index], f, true));
         				}
         			}
         		}
