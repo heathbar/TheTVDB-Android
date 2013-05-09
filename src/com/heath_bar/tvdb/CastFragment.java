@@ -14,12 +14,12 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.actionbarsherlock.app.SherlockListFragment;
-import com.heath_bar.tvdb.data.adapters.ActorsAdapter;
+import com.heath_bar.tvdb.data.adapters.CastAdapter;
 import com.heath_bar.tvdb.types.Actor;
 
-public class ActorsFragment extends SherlockListFragment {
+public class CastFragment extends SherlockListFragment {
 
-	protected ActorsAdapter adapter;
+	protected CastAdapter adapter;
 	//protected int mCurrentPostion = 0;
 	protected long seriesId;
 	protected long cacheSize;
@@ -42,21 +42,15 @@ public class ActorsFragment extends SherlockListFragment {
  		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
  		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
  		textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-    	
-    	setupAdapter(getActivity(), null);
+ 		
 	}
 
 	public void setupAdapter(FragmentActivity activity, ArrayList<Actor> theActors) {
 		try {
 			if (adapter == null){
-				if (theActors == null){
-					// If the adapter is null and we have no data to put in it, ask the activity to find us some data
-					// Note: The activity will call this function again, but with a valid theActors list
-					((SeriesOverview)activity).requestCastRefresh(this);
-				}else{
-					adapter = new ActorsAdapter(activity, R.layout.actor_row, theActors, textSize);
-				}
+				adapter = new CastAdapter(activity, R.layout.actor_row, theActors, textSize);
 			}
+			
 
 			ListView list = (ListView)activity.findViewById(android.R.id.list);
 			if (list != null){
@@ -69,7 +63,7 @@ public class ActorsFragment extends SherlockListFragment {
 			ProgressBar progress = ((ProgressBar)activity.findViewById(R.id.progress_actors));
 			if (progress != null)
 				progress.setVisibility(View.GONE);
-		
+
 		} catch (Exception e){
 			Log.e("ActorsFragment", "Error: " + e.getMessage());
 		}

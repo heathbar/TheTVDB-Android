@@ -19,6 +19,7 @@
 package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.net.URL;
+import java.util.Locale;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -57,7 +58,7 @@ public class SetRatingHandler extends DefaultHandler{
 		public void endElement(String uri, String name, String qName) throws SAXException {
 			try {
 
-				if (name.trim().toLowerCase().equals("rating"))
+				if (name.trim().toLowerCase(Locale.getDefault()).equals("rating"))
 					result = true;
 			    
 			} catch (Exception e) {

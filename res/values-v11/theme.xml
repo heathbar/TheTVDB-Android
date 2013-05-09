@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.tvdb" parent="Theme.Sherlock">
+		<item name="actionBarStyle">@style/Widget.Styled.ActionBar</item>
+	    <item name="android:actionBarStyle">@style/Widget.Styled.ActionBar</item>
+	    </style>
+    
+    <style name="Widget.Styled.ActionBar" parent="Widget.Sherlock.ActionBar">
+        <item name="background">@drawable/tvdb__ab_background</item>
+        <item name="android:background">@drawable/tvdb__ab_background</item>
+    </style>
+        
+</resources>

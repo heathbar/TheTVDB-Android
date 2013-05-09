@@ -24,14 +24,10 @@ import java.util.ArrayList;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.PagerAdapter;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -43,71 +39,109 @@ import com.actionbarsherlock.view.SubMenu;
 import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.data.FavoritesDAL;
 import com.heath_bar.tvdb.data.TvdbDAL;
+import com.heath_bar.tvdb.data.adapters.SeriesOverviewPagerAdapter;
+import com.heath_bar.tvdb.types.Actor;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
-import com.heath_bar.tvdb.types.TvEpisode;
+import com.heath_bar.tvdb.types.LoadCastDataTask;
+import com.heath_bar.tvdb.types.LoadEpisodeListTask;
+import com.heath_bar.tvdb.types.LoadSeriesDataTask;
+import com.heath_bar.tvdb.types.TaskFragment;
+import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
 import com.heath_bar.tvdb.util.ShareUtil;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.viewpagerindicator.TitlePageIndicator.IndicatorStyle;
 
 
-public class SeriesOverview extends SherlockFragmentActivity  {
+public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener, TaskFragment.TaskFinishedListener {
 
 	ViewPager mViewPager;
-    StaticFragmentPagerAdapter mPageAdapter;
+	SeriesOverviewPagerAdapter mPageAdapter;
     
 	protected long seriesId;
 	protected TvSeries seriesInfo;
 	protected Boolean isFavorite = null;
 	
 	protected TvdbDAL tvdb;
-	protected boolean castRefreshing = false;
-	protected boolean summaryRefreshing = false;
-	protected boolean episodesRefreshing = false;
-	protected EpisodeListFragment episodeRefreshQueuedFragment;
+	protected int refreshing = 0;
+	
+	// define the cast task fragments (the workers)
+	protected static final String TASK1_FRAGMENT_TAG = "task1";
+	protected static final String TASK2_FRAGMENT_TAG = "task2";
+	protected static final String TASK3_FRAGMENT_TAG = "task3";
 
+	// define the tasks IDs hat will be sent to the task fragments (the work) 
+	protected static final int CAST_TASK_ID = 0;
+	protected static final int SUMMARY_TASK_ID = 1;
+	protected static final int EPISODE_DATA_TASK_ID = 2;
+	
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.series_overview);
-        setProgressBarIndeterminateVisibility(true);
+        
+        final ActionBar bar = getSupportActionBar();
+        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        bar.setTitle("Series Overview");
         
         Bundle extras = getIntent().getExtras();
 	    if(extras != null) {
 	    	seriesId = getIntent().getLongExtra("id", 0);
+	    	seriesInfo = new TvSeries();
+	    	seriesInfo.setId(seriesId);
+	    	seriesInfo.setName(getIntent().getStringExtra("seriesName"));
+	    	
+	    	bar.setTitle(seriesInfo.getName());
+	    	
 	    	tvdb = new TvdbDAL(this);
 	        
-	        final ActionBar bar = getSupportActionBar();
-	        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
-	        bar.setTitle("Series Overview");
-	
-//	        mPageAdapter = new StaticFragmentPagerAdapter(this, null);
-//	        mPageAdapter.addTab("Cast", ActorsFragment.class, null);
-//	        mPageAdapter.addTab("Summary", SummaryFragment.class, null);
-//	        mPageAdapter.addTab("Episodes", EpisodeListFragment.class, null);
-	        	        
-//	        ArrayList<TabInfo> tabList = new ArrayList<TabInfo>();
-//	        fragList.add(new ActorsFragment());
-//	        fragList.add(new SummaryFragment());
-//	        fragList.add(new EpisodeListFragment());
+	        mPageAdapter = new SeriesOverviewPagerAdapter(getSupportFragmentManager());
 	        
-	        mPageAdapter = new StaticFragmentPagerAdapter(getSupportFragmentManager());
-	        mPageAdapter.addTab("Actors", new ActorsFragment());
-	        mPageAdapter.addTab("Summary", new SummaryFragment());
-	        mPageAdapter.addTab("Episodes", new EpisodeListFragment());
+	        // At this point the activity may have been recreated due to a rotation,
+	        // and there may be a TaskFragment lying around. So see if we can find it.
+	        // Check to see if we have retained the worker fragment.
+	        TaskFragment castTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK1_FRAGMENT_TAG);
+
+	        if (castTaskFragment == null){
+	            castTaskFragment = new TaskFragment();
+	            
+	            // And create a task for it to monitor. In this implementation the taskFragment
+	            // executes the task, but you could change it so that it is started here.
+	            castTaskFragment.setTask(CAST_TASK_ID, new LoadCastDataTask(seriesId));
+            	
+	            // Show the fragment.
+	            // I'm not sure which of the following two lines is best to use but this one works well.
+	            //taskFragment.show(mFM, TASK_FRAGMENT_TAG);
+	            getSupportFragmentManager().beginTransaction().add(castTaskFragment, TASK1_FRAGMENT_TAG).commit();
+	        }
+	        
+	        TaskFragment seriesTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK2_FRAGMENT_TAG);
+	        if (seriesTaskFragment == null){
+	        	seriesTaskFragment = new TaskFragment();
+	        	seriesTaskFragment.setTask(SUMMARY_TASK_ID, new LoadSeriesDataTask(seriesId));
+	            getSupportFragmentManager().beginTransaction().add(seriesTaskFragment, TASK2_FRAGMENT_TAG).commit();
+	        }
+
+	        TaskFragment episodeTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK3_FRAGMENT_TAG);
+	        if (episodeTaskFragment == null){
+	        	episodeTaskFragment = new TaskFragment();
+	        	episodeTaskFragment.setTask(EPISODE_DATA_TASK_ID, new LoadEpisodeListTask(seriesId));
+	        	getSupportFragmentManager().beginTransaction().add(episodeTaskFragment, TASK3_FRAGMENT_TAG).commit();
+	        }
+
 	        
 	        mViewPager = (ViewPager)findViewById(R.id.pager);
 	        mViewPager.setAdapter(mPageAdapter);
 	        mViewPager.setOnPageChangeListener(mPageAdapter);
 	        mViewPager.setCurrentItem(1);
+	        mViewPager.setOffscreenPageLimit(2);
 	        
 	        // Bind the title indicator to the adapter
 	        TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.indicator);
 	        titleIndicator.setViewPager(mViewPager);
 	    
-	        // Make it stylish
 	        final float density = getResources().getDisplayMetrics().density;
 	        titleIndicator.setBackgroundColor(0xFF000000);
 	        titleIndicator.setTopPadding(1 * density);
@@ -116,79 +150,73 @@ public class SeriesOverview extends SherlockFragmentActivity  {
 	        titleIndicator.setFooterIndicatorHeight(3 * density);
 	        titleIndicator.setFooterIndicatorStyle(IndicatorStyle.Triangle);
 	        titleIndicator.setSelectedBold(true);
+	    
 	    }
- 
-	}
+ 	}
 	
-	
-	// Requests from the fragments to load data for them ///////////////////////////////////////////////////////////////
-	
-	public void requestCastRefresh(ActorsFragment fragment){
-		castRefreshing = true;
-		setProgressBarIndeterminateVisibility(true);
 
-		tvdb.new LoadActorList(fragment).execute(seriesId);
-		
-		castRefreshing = false;
-		clearIndeterminateProgressBar();
-	}
-	
-	public void requestSummaryRefresh(SummaryFragment fragment){
-		summaryRefreshing = true;
-		setProgressBarIndeterminateVisibility(true);
-		
-		tvdb.new LoadSummaryTask(fragment).execute(seriesId);
-		
-		summaryRefreshing = false;
-		clearIndeterminateProgressBar();
-	}
-	
-	public void requestEpisodeRefresh(EpisodeListFragment fragment){
-		episodesRefreshing = true;
-		setProgressBarIndeterminateVisibility(true);
-		
-		// If we have the seriesInfo already available, load the episodes, else wait until we have seriesInfo available
-		if (seriesInfo != null){
-			tvdb.new LoadEpisodeList(fragment).execute(seriesId);
-		}else {
-			episodeRefreshQueuedFragment = fragment;
-		}
-		
-		episodesRefreshing = false;
-		clearIndeterminateProgressBar();
-	}
 
-	public void clearIndeterminateProgressBar(){
-		if (!castRefreshing && !summaryRefreshing && !episodesRefreshing)
-			setProgressBarIndeterminateVisibility(false);
-	}
-
-	
-	// Callback from the LoadSummaryTask
-	public void setTvSeriesInfo(TvSeries info) {
-		getSupportActionBar().setTitle(info.getName());
-		seriesInfo = info;
-		
-		isFavorite = seriesInfo.isFavorite(this);
-		supportInvalidateOptionsMenu();
-		
-		// if an episode refresh was waiting for seriesInfo, kick it off now
-		if (episodeRefreshQueuedFragment != null){
-			requestEpisodeRefresh(episodeRefreshQueuedFragment);
-			episodeRefreshQueuedFragment = null;
+	@Override
+	@SuppressWarnings("unchecked")
+	public void onTaskFinished(int taskId, Object resultData) {
+		try {
+			if (taskId == CAST_TASK_ID){
+				CastFragment castFragment = mPageAdapter.getCastFragment();
+				castFragment.setupAdapter(this, (ArrayList<Actor>)resultData);
+				
+			} else if (taskId == SUMMARY_TASK_ID){
+				seriesInfo = (TvSeries)resultData;
+				
+				// redraw the options menu with the correct icon
+				FavoritesDAL db = new FavoritesDAL(this);
+				isFavorite = db.isFavoriteSeries(seriesInfo.getId());
+				supportInvalidateOptionsMenu();
+				
+				// Update the summary fragment
+				SummaryFragment summaryFragment = mPageAdapter.getSummaryFragment();
+				summaryFragment.populateTheUI(this, seriesInfo); 
+			
+				
+			} else if (taskId == EPISODE_DATA_TASK_ID){
+				TvEpisodeList epList = (TvEpisodeList)resultData;
+				EpisodeListFragment episodeFragment = mPageAdapter.getEpisodeListFragment();
+				episodeFragment.setupAdapter(this, seriesInfo, epList);
+				
+				SummaryFragment summaryFragment = mPageAdapter.getSummaryFragment();
+				summaryFragment.populateTheUIPart2(this, epList.getLastAired(), epList.getNextAired());
+			}
+		} catch (ClassCastException e) {
+			Log.e("SeriesOverview", "onTaskFinished:" + e.getMessage());
 		}
 	}
 	
-	public TvSeries getTvSeriesInfo(){
-		return seriesInfo;
-	}
-	
-	// Callback from LoadEpisodeTask
-	public void setLastNextEpisodes(TvEpisode last, TvEpisode next){
-		
-	}
 	
 	
+    
+    
+    
+    // Ratings ///////////////////////////////////////////////////////////////////////////////////
+    
+    // Called when the user clicks Rate from the dialog 
+ 	@Override
+ 	public void onDialogPositiveClick(DialogFragment dialog) {
+ 		TextView valueText = (TextView)dialog.getDialog().findViewById(R.id.value);
+ 		SummaryFragment sf = mPageAdapter.getSummaryFragment();
+ 	    sf.updateRating(valueText.getText().toString());
+ 	}
+
+ 	@Override
+ 	public void onDialogNegativeClick(DialogFragment dialog) {
+ 		// Do nothing
+ 	}
+  	
+    
+    
+    
+ 	
+ 	
+ 	
+
 	// Favorites functions /////////////////////////////////////////////////////////////////
 
 	public void addToFavorites(){
@@ -234,7 +262,7 @@ public class SeriesOverview extends SherlockFragmentActivity  {
 	/** Launch the share menu for the series banner */
 	public void shareImage(){
 		try{
-			Intent i = ShareUtil.makeIntent(getApplicationContext(), seriesInfo.getImage().getId());
+			Intent i = ShareUtil.makeIntent(getApplicationContext(), seriesInfo.getBanner().getId());
 			if (i != null)
 				startActivity(i);
 		}catch (Exception e){
@@ -244,201 +272,33 @@ public class SeriesOverview extends SherlockFragmentActivity  {
 	
 
 	
-	
-	
- 	
- 	/**
-     * This is a helper class that implements the management of tabs and all
-     * details of connecting a ViewPager with associated TabHost.  It relies on a
-     * trick.  Normally a tab host has a simple API for supplying a View or
-     * Intent that each tab will show.  This is not sufficient for switching
-     * between pages.  So instead we make the content part of the tab host
-     * 0dp high (it is not shown) and the TabsAdapter supplies its own dummy
-     * view to show as the tab content.  It listens to changes in tabs, and takes
-     * care of switch to the correct paged in the ViewPager whenever the selected
-     * tab changes.
-     */
-    public static class StaticFragmentPagerAdapter extends PagerAdapter implements ViewPager.OnPageChangeListener {
-        
-
-        private final FragmentManager mFragmentManager;
-        private FragmentTransaction mCurTransaction = null;
-        private Fragment mCurrentPrimaryItem = null;
-        private final ArrayList<TabInfo> mTabs;
-               
-        private ArrayList<Fragment.SavedState> mSavedState;
-        
-        static final class TabInfo {
-        	private final String title;
-            private final Fragment fragment;
-            private boolean added;
-
-            TabInfo(String _title, Fragment _frag) {
-            	title = _title;
-                fragment = _frag;
-                added = false;
-            }
-            TabInfo(String _title, Fragment _frag, boolean _added) {
-            	title = _title;
-                fragment = _frag;
-                added = _added;
-            }
-        }
-
-        public StaticFragmentPagerAdapter(FragmentManager fm) {
-        	mFragmentManager = fm;
-        	mTabs = new ArrayList<SeriesOverview.StaticFragmentPagerAdapter.TabInfo>();
-        	mSavedState = new ArrayList<Fragment.SavedState>();
-        }
-        
-        public void addTab(String tabTitle, Fragment frag){
-        	mTabs.add(new TabInfo(tabTitle, frag));
-        }
-        
-        @Override
-        public Object instantiateItem(View container, int position) {
-    		if (mTabs != null && mTabs.size() > position){
-    			TabInfo t = mTabs.get(position);
-
-    			// Add it if it's not already added
-    			if (!t.added){
-	        		if (mCurTransaction == null) {
-	                    mCurTransaction = mFragmentManager.beginTransaction();
-	                }
-	        		try{
-	        			mCurTransaction.add(container.getId(), t.fragment);
-	        		}catch (IllegalStateException e){
-	        			Log.e("SeriesOverview", "instantiateItem:" + e.getMessage());
-	        		}
-	    			
-	    			if (t.fragment != mCurrentPrimaryItem) {
-	    	            t.fragment.setMenuVisibility(false);
-	    	            t.fragment.setUserVisibleHint(false);
-	    	        }	    			
-	    			 
-//	            	if (mSavedState.size() > position){
-//	            		Fragment.SavedState fss = mSavedState.get(position);
-//	            		if (fss != null)
-//	            			t.fragment.setInitialSavedState(fss);
-//	            	}
-	    			t.added = true;
-    			}
-    		}
-           
-
-    		return mTabs.get(position).fragment;
-        }
-        
-        @Override
-        public void destroyItem(View container, int position, Object object){
-        	
-        	// NOTHING TO DO HERE, EXCEPT MAYBE MANAGE STATE
-        	// We like to hog all the memories
-        }
-        
-        @Override
-        public void setPrimaryItem(View Container, int position, Object object){
-        	Fragment fragment = (Fragment) object;
-        	if (fragment != mCurrentPrimaryItem){
-        		if (mCurrentPrimaryItem != null){
-        			mCurrentPrimaryItem.setMenuVisibility(false);
-        		}
-        		if (fragment != null){
-        			fragment.setMenuVisibility(true);
-        		}
-        		mCurrentPrimaryItem = fragment;
-        	}
-        }
-        
-        @Override
-        public void finishUpdate(View container) {
-        	if(mCurTransaction != null){
-        		mCurTransaction.commitAllowingStateLoss();
-        		mCurTransaction = null;
-        		mFragmentManager.executePendingTransactions();
-        	}
-        }
-        
-        @Override
-        public boolean isViewFromObject(View view, Object object) {
-        	return ((Fragment)object).getView() == view;
-        }
-        
-        @Override
-        public Parcelable saveState() {
-        	Bundle state = new Bundle();
-        	String[] titles = new String[mTabs.size()];
-        	Fragment.SavedState[] fss = new Fragment.SavedState[mSavedState.size()];
-    		mSavedState.toArray(fss);
-    		state.putParcelableArray("states", fss);
-    		state.putStringArray("titles", titles);
-    		
-        	for(int i=0; i<mTabs.size(); i++){
-        		TabInfo t = mTabs.get(i);
-        		titles[i] = t.title;
-        		mSavedState.add(null);
-        		mSavedState.set(i, mFragmentManager.saveFragmentInstanceState(t.fragment));
-        		
-        		if (t.fragment != null){
-        			String key = "f" + i;
-        			mFragmentManager.putFragment(state, key, t.fragment);
-        		}
-        	}
-        	return state;
-        }
-        
-        
-        @Override
-        public void restoreState(Parcelable state, ClassLoader loader) {
-        	if (state != null){
-        		Bundle bundle = (Bundle)state;
-        		bundle.setClassLoader(loader);
-        		Parcelable[] fss = bundle.getParcelableArray("states");
-        		String[] titles = bundle.getStringArray("titles");
-        		mSavedState.clear();
-        		mTabs.clear();
-        		if (fss != null){
-        			for (int i=0; i<fss.length; i++){
-        				mSavedState.add((Fragment.SavedState)fss[i]);
-        			}
-        		}
-        		Iterable<String> keys = bundle.keySet();
-        		for (String key: keys){
-        			if (key.startsWith("f")){
-        				int index = Integer.parseInt(key.substring(1));
-        				Fragment f = mFragmentManager.getFragment(bundle, key);
-        				if (f != null){
-        					while(mTabs.size() <= index){
-        						mTabs.add(null);
-        					}
-        					f.setMenuVisibility(false);
-        					mTabs.set(index, new TabInfo(titles[index], f, true));
-        				}
-        			}
-        		}
-        	}
-        }
-        
-        @Override
-        public int getCount() {
-            return mTabs.size();
-        }
-        
-        @Override
-        public CharSequence getPageTitle(int position) {
-        	return mTabs.get(position).title;
-        }
-
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { }
-
-        @Override
-        public void onPageSelected(int position) { }
-
-        @Override
-        public void onPageScrollStateChanged(int state) { }
+    
+    
+    
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    	super.onRestoreInstanceState(savedInstanceState);
+    	// Instance state has been restored. Send data to the fragments.
+    	
+    	TaskFragment castTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK1_FRAGMENT_TAG);
+    	Object data = castTaskFragment.getResultData();
+    	if (data != null)
+    		onTaskFinished(CAST_TASK_ID, data);
+    	
+    	TaskFragment seriesTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK2_FRAGMENT_TAG);
+    	data = seriesTaskFragment.getResultData();
+    	if (data != null)
+    		onTaskFinished(SUMMARY_TASK_ID, data);
+    	
+    	TaskFragment episodeTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK3_FRAGMENT_TAG);
+    	data = episodeTaskFragment.getResultData();
+    	if (data != null)
+    		onTaskFinished(EPISODE_DATA_TASK_ID, data);
     }
-	
+    
+    
+    
+    
 	// ACTIONBAR MENU ////////////////////////////////////////////////
 	
 	@Override
@@ -447,7 +307,7 @@ public class SeriesOverview extends SherlockFragmentActivity  {
 		if (isFavorite != null){
 			if (isFavorite){
 				menu.add("Remove Favorite")
-				.setIcon(R.drawable.ic_discard)
+				.setIcon(R.drawable.ic_favorite)
 		        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
 					@Override
 					public boolean onMenuItemClick(MenuItem item) {
@@ -459,7 +319,7 @@ public class SeriesOverview extends SherlockFragmentActivity  {
 				
 			}else{
 				menu.add("Favorite")
-				.setIcon(R.drawable.ic_favorite)
+				.setIcon(R.drawable.ic_not_favorite)
 		        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
 					
 					@Override
@@ -519,19 +379,6 @@ public class SeriesOverview extends SherlockFragmentActivity  {
         subMenu1Item.setIcon(R.drawable.ic_share);
         subMenu1Item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
-		
-		menu.add("Search")
-        .setIcon(R.drawable.ic_search)
-        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-			
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				onSearchRequested();
-				return false;
-			}
-		})
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
         return true;
     }
 	
@@ -546,7 +393,6 @@ public class SeriesOverview extends SherlockFragmentActivity  {
 	     }
 	     return false;
 	}
-
 
 	
 }

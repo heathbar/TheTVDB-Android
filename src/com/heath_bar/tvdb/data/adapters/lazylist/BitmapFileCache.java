@@ -30,6 +30,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.util.Log;
 
 public class BitmapFileCache {
 	protected File cacheDir;
@@ -94,9 +95,9 @@ public class BitmapFileCache {
 		try {
 			iStream = new FileInputStream(file);
 			return BitmapFactory.decodeStream(iStream);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
+		} catch (Throwable e) {
+			Log.e("BitmapFileCache", "Throwable: " + e.getMessage());
+			return null;       
 		}
     }
 	public Bitmap getThumb(String key){
@@ -116,13 +117,14 @@ public class BitmapFileCache {
 	}
     
 	public void put(String key, Bitmap item) throws IOException {
-		File cachedFile = new File(cacheDir, key);
-    	if (!cachedFile.exists())
-    		cachedFile.createNewFile();
-    	OutputStream oStream = new FileOutputStream(cachedFile);
-		item.compress(Bitmap.CompressFormat.JPEG, 90, oStream);
-		oStream.close();
-		
+		if (item != null){
+			File cachedFile = new File(cacheDir, key);
+	    	if (!cachedFile.exists())
+	    		cachedFile.createNewFile();
+	    	OutputStream oStream = new FileOutputStream(cachedFile);
+			item.compress(Bitmap.CompressFormat.JPEG, 90, oStream);
+			oStream.close();
+		}
 		trimCache();
     }
 	

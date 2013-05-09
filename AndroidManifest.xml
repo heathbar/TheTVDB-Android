@@ -4,7 +4,7 @@
     android:installLocation="auto"
     android:versionCode="11"
     android:versionName="0.7.0">
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="13"/>
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="16"/>
 	<permission android:name="com.heath_bar.tvdb.search"></permission>
 	
 	<uses-permission android:name="android.permission.INTERNET" />
@@ -30,17 +30,12 @@
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
         
-        
-        
+                
         
         <activity android:name="com.heath_bar.tvdb.EpisodeDetails">
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
         
-        <activity android:name="com.heath_bar.tvdb.ActorDetails">
-            <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
-        </activity>
-         
         <activity android:name="com.heath_bar.tvdb.BannerListing">
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>

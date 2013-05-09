@@ -22,8 +22,6 @@ import com.heath_bar.tvdb.types.TvSeries;
 public class EpisodeListFragment extends SherlockFragment {
 
 	protected EpisodeAdapter adapter;
-	//protected int mCurrentPostion = 0;
-	protected long seriesId;
 	protected long cacheSize;
 	protected float textSize;
 	protected Parcelable mListState = null;
@@ -46,40 +44,26 @@ public class EpisodeListFragment extends SherlockFragment {
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
   		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
   		textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-  		
-  		// go find some data
-  		setupAdapter(getActivity(), null);
     }
     
   	
-	public void setupAdapter(FragmentActivity activity, TvEpisodeList episodeList) {
+	public void setupAdapter(FragmentActivity activity, final TvSeries info, TvEpisodeList episodeList) {
 		try {
 			
-			if (adapter == null){
-				if (episodeList == null){
-					// If the adapter is null and we have no data to put in it, ask the activity to find us some data
-					// Note: The activity will call this function again, but with a valid episodeList
-					((SeriesOverview)getActivity()).requestEpisodeRefresh(this);
-					return;
-				}else{
-					adapter = new EpisodeAdapter(activity, episodeList, textSize);
-				}
-			}
+			adapter = new EpisodeAdapter(activity, episodeList, textSize);
 			
 			ExpandableListView list = (ExpandableListView)activity.findViewById(R.id.expandable_list);
 			list.setAdapter(adapter);
 			
-			final TvSeries info = ((SeriesOverview)activity).getTvSeriesInfo();
 			list.setOnChildClickListener(new OnChildClickListener() {
 				@Override
 				public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 					long episodeId = adapter.getChildId(groupPosition, childPosition);
 					Intent myIntent = new Intent(getActivity(), EpisodeDetails.class);
 					myIntent.putExtra("id", episodeId);
-		        	myIntent.putExtra("seriesId", seriesId);
-		        	if (info != null)
-		        		myIntent.putExtra("seriesName", info.getName());        	
-		    		startActivityForResult(myIntent, 0);
+		        	myIntent.putExtra("seriesId", info.getId());
+	        		myIntent.putExtra("seriesName", info.getName());
+		    		startActivity(myIntent);
 					return false;
 				}
 			});

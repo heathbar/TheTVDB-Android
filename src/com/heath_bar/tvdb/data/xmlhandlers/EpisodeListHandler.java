@@ -19,6 +19,7 @@
 package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.net.URL;
+import java.util.Locale;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -54,8 +55,8 @@ public class EpisodeListHandler extends DefaultHandler {
     
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
-	    sb = new StringBuilder();						// Reset the string builder
+	    name = name.trim().toLowerCase(Locale.getDefault());				// format the current element name
+	    sb = new StringBuilder();											// Reset the string builder
 	    
 	    if (name.equals("episode"))
 	    	currentEpisode = new TvEpisode();
@@ -73,7 +74,7 @@ public class EpisodeListHandler extends DefaultHandler {
     @Override
 	public void endElement(String uri, String name, String qName) throws SAXException {
 		try {
-			name = name.trim().toLowerCase();
+			name = name.trim().toLowerCase(Locale.getDefault());
 			
 			
 			if (name.equals("episode")){

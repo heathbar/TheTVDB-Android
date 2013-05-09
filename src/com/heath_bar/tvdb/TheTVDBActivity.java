@@ -213,11 +213,16 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		
 	    @Override
 	    public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
+	    	long seriesId = adapter.getItemId(position-1);
 	    	
-        	long seriesId = adapter.getItemId(position-1);            
+	    	CharSequence seriesName = "";
+	    	TextView tv = (TextView)arg1.findViewById(R.id.list_item_title);
+	    	if (tv != null) seriesName = tv.getText();
+	    	
         	Intent myIntent = new Intent(arg0.getContext(), SeriesOverview.class);
         	myIntent.putExtra("id", seriesId);
-    		startActivityForResult(myIntent, 0);
+        	myIntent.putExtra("seriesName", seriesName);
+    		startActivity(myIntent);
 	    }
 	}
 		
@@ -367,7 +372,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
     	
     	
     	menu.add("Preferences")
-    		.setIcon(R.drawable.ic_prefs)
+    		.setIcon(R.drawable.ic_settings)
     		.setOnMenuItemClickListener(new OnMenuItemClickListener() {
 				
 				@Override

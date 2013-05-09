@@ -78,7 +78,7 @@ public class BannerListing extends SherlockListActivity {
 		    	
     		}
 		}catch (Exception e){
-			e.printStackTrace();
+			Log.e("BannerListing", "Error: " + e.getMessage());
 		}
 	}
 		
@@ -94,7 +94,7 @@ public class BannerListing extends SherlockListActivity {
 				
 				return banners;
 			}catch (Exception e){
-				e.printStackTrace();
+				Log.e("LoadBannerThumbsTask", "Error: " + e.getMessage());
 			}
 			return null;
 		}

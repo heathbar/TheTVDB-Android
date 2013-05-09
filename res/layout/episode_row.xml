@@ -1,15 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView android:id="@+id/text"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:textSize="18sp"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:paddingTop="8dip"
     android:paddingBottom="8dip"
-    android:paddingLeft="12dip"
-    android:textIsSelectable="false" />
+    android:orientation="horizontal">
 
-<!-- 
+    <TextView android:id="@+id/episode_number"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:gravity="center_vertical"
+	    android:paddingLeft="16dip"
+	    android:textSize="40sp"
+	    android:textIsSelectable="false" />
+
+    <LinearLayout
+        android:id="@+id/episode_right_half"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:gravity="center_vertical"
+	    android:orientation="vertical"
+	    android:paddingTop="0dip"
+	    android:paddingBottom="0dip">
+    
+	    <TextView android:id="@+id/episode_name"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:textSize="18sp"
+		    android:paddingBottom="0dip"
+		    android:paddingLeft="8dip"
+		    android:textIsSelectable="false"
+		    android:textColor="@android:color/white"		    
+		    android:singleLine="true"
+	        android:ellipsize="marquee" />
+	    
+	    <TextView android:id="@+id/episode_date"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:paddingTop="0dip"
+		    android:paddingLeft="8dip"
+		    android:textSize="14sp"
+		    android:textColor="@android:color/white"
+		    android:textIsSelectable="false" />
+    </LinearLayout>
+</LinearLayout>
+
+<!--
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
 │                                                  TERMS OF USE: MIT License                                                   │
 │                                                  Copyright © 2012 Heath Paddock                                              │

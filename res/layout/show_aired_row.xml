@@ -5,34 +5,34 @@
     android:stretchColumns="1">
     <TableRow>
 	    <TextView android:id="@+id/list_item_title"
-		    xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="fill_parent"
 		    android:layout_height="fill_parent"
 		    android:layout_span="2"
 		    android:textSize="30sp"
-		    android:textColor="@color/white"
+		    android:textColor="@android:color/white"
 		    android:paddingTop="8dip"
 		    android:paddingBottom="4dip"
-		    android:paddingLeft="5dip" />
+		    android:paddingLeft="5dip"
+		    android:textIsSelectable="false" />
     </TableRow>
     <TableRow>
     	<TextView android:id="@+id/last_aired"
-		    xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="wrap_content"
 		    android:layout_height="fill_parent"
 		    android:textSize="14sp"
 		    android:paddingTop="0dip"
 		    android:paddingBottom="4dip" 
-		    android:paddingLeft="5dip"/>
+		    android:paddingLeft="5dip"
+		    android:textIsSelectable="false" />
 		<TextView android:id="@+id/next_aired"
-		    xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="wrap_content"
 		    android:layout_height="fill_parent"
 		    android:textSize="14sp"
 		    android:paddingTop="0dip"
 		    android:paddingBottom="4dip"
 		    android:paddingRight="5dip"
-		    android:gravity="right" />
+		    android:gravity="right"
+		    android:textIsSelectable="false"  />
 	</TableRow>
 </TableLayout>
 <!-- 

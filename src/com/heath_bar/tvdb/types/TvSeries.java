@@ -18,9 +18,6 @@
  */
 package com.heath_bar.tvdb.types;
 
-import android.content.Context;
-
-import com.heath_bar.tvdb.data.adapters.SeriesDbAdapter;
 import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
 
 
@@ -28,11 +25,11 @@ public class TvSeries {
 
 	private Long id;
 	private String name;
-	private WebImage image;
+	private WebImage banner;
 	private String overview;
 	private String firstAired;
 	private String language;
-	private String poster;
+	private WebImage poster;
 	private String actors;
 	private String airDay;
 	private String airTime;
@@ -92,10 +89,12 @@ public class TvSeries {
 	public void setRating(String rating) {
 		this.rating = rating;
 	}
-	public String getPoster() {
+	public WebImage getPoster() {
+		if (poster == null)
+			poster = new WebImage();
 		return poster;
 	}
-	public void setPoster(String poster) {
+	public void setPoster(WebImage poster) {
 		this.poster = poster;
 	}
 	public String getLanguage() {
@@ -129,26 +128,19 @@ public class TvSeries {
 	public void setFirstAired(String firstAired) {
 		this.firstAired = firstAired;
 	}
-	public boolean isFavorite(Context ctx) {
-		SeriesDbAdapter db = new SeriesDbAdapter(ctx);
-		db.open();
-		boolean isFav = db.isFavoriteSeries(id);
-		db.close();
-		return isFav;
-	}
 	public void setActors(String actorList) {
 		actors = actorList;
 	}
 	public String getActors(){
 		return actors;
 	}
-	public WebImage getImage() {
-		if (image == null)
-			image = new WebImage();
-		return image;
+	public WebImage getBanner() {
+		if (banner == null)
+			banner = new WebImage();
+		return banner;
 	}
-	public void setImage(WebImage banner) {
-		this.image = banner;
+	public void setBanner(WebImage banner) {
+		this.banner = banner;
 	}
 
 }

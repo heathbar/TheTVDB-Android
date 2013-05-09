@@ -1,64 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scrollView1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <LinearLayout
-        android:id="@+id/series_overview_linear_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        
-        <TextView
-		    android:id="@+id/loading1"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content" 
-		    android:textColor="@color/white"
-		    android:text="@string/loading" />
-
-        
-        <TextView
-		    android:id="@+id/title"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content" 
-		    android:textColor="@color/white"
-		    android:textSize="26sp" />
-        
-   		<TextView
-		    android:id="@+id/role"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_marginLeft="5dip"
-		    android:textSize="18sp"
-		    android:visibility="gone" />
-        
-        <ImageButton
-		    android:id="@+id/actor_image"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_gravity="center_horizontal"
-		    android:adjustViewBounds="true"
-		    android:background="#FFFFFF"
-		    android:padding="1dip"
-		    android:layout_marginTop="10dip"
-		    android:layout_marginBottom="12dip"
-		    android:contentDescription="@string/banner_alt_text"
-		    android:visibility="gone" />
-		        
-        <TextView
-		    android:id="@+id/imdb_link"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:gravity="center_horizontal"
-		    android:textSize="18sp"
-		    android:visibility="gone" />
-        
-        </LinearLayout>
-</ScrollView>
-
-<!-- 
+/*
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
 │                                                  TERMS OF USE: MIT License                                                   │
 │                                                  Copyright © 2012 Heath Paddock                                              │
@@ -75,4 +15,36 @@
 │COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,   │
 │ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
--->
+ */
+
+package com.heath_bar.tvdb.types;
+
+import java.util.ArrayList;
+
+import com.heath_bar.tvdb.data.xmlhandlers.ActorHandler;
+
+public class LoadCastDataTask extends TaskFragmentTask {
+
+	TaskFragment mTaskFragment;
+    long seriesId;
+    
+    public LoadCastDataTask(long seriesId) {
+		this.seriesId = seriesId;
+	}
+        
+	@Override
+	protected ArrayList<Actor> doInBackground(TaskFragment... taskFragment) {
+		mTaskFragment = taskFragment[0];
+				
+		ActorHandler actorQuery = new ActorHandler();
+		ArrayList<Actor> theActors = actorQuery.getActors(String.valueOf(seriesId));
+						
+		return theActors;		
+	}
+	
+	@Override
+	protected void onPostExecute(Object data){
+		if (mTaskFragment != null)
+			mTaskFragment.taskFinished(data);
+	}
+}

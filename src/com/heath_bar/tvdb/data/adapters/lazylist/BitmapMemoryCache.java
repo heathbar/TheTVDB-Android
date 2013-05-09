@@ -32,9 +32,9 @@ public class BitmapMemoryCache {
     private long current_size = 0;
     private long maxSize = 1; 
 
-    /** Constructor: By default limit the cache to 25% of the heap */
+    /** Constructor: By default limit the cache to 20% of the heap */
     public BitmapMemoryCache(){
-        maxSize = Runtime.getRuntime().maxMemory()/4;
+        maxSize = Runtime.getRuntime().maxMemory()/5;
     }
     
     /** Set the max size of the cache 

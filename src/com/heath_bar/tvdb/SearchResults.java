@@ -118,9 +118,15 @@ public class SearchResults extends SherlockListActivity {
         @Override
         public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
         	
-        	long seriesId = adapter.getItemId(position);            
+        	long seriesId = adapter.getItemId(position);
+        	
+        	CharSequence seriesName = "";
+	    	TextView tv = (TextView)arg1.findViewById(R.id.text);
+	    	if (tv != null) seriesName = tv.getText();
+        	
         	Intent myIntent = new Intent(arg0.getContext(), SeriesOverview.class);
         	myIntent.putExtra("id", seriesId);
+        	myIntent.putExtra("seriesName", seriesName);
     		startActivityForResult(myIntent, 0);
         }
     }

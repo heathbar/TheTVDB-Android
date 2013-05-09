@@ -59,18 +59,6 @@ public class TvEpisodeList extends ArrayList<TvEpisode> {
 		}
 		return lastAired;
 	}
-
-	public int getNumberOfSeasons() {
-		int maxSeasonNo = 0;
-		
-		for (Iterator<TvEpisode> i = this.iterator(); i.hasNext();){
-			 int seasonNo = i.next().getSeason();
-			
-			if (seasonNo > maxSeasonNo)
-				maxSeasonNo = seasonNo;
-		}
-		return maxSeasonNo;
-	}
 	
 	public ArrayList<Integer> getSeasonList(){
 		ArrayList<Integer> seasons = new ArrayList<Integer>();

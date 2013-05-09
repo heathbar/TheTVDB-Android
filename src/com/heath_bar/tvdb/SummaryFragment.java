@@ -1,3 +1,22 @@
+/*
+│──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
+│                                                  TERMS OF USE: MIT License                                                   │
+│                                                  Copyright © 2012 Heath Paddock                                              │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation    │ 
+│files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,    │
+│modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software│
+│is furnished to do so, subject to the following conditions:                                                                   │
+│                                                                                                                              │
+│The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.│
+│                                                                                                                              │
+│THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE          │
+│WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR         │
+│COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,   │
+│ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                         │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ */
+
 package com.heath_bar.tvdb;
 
 import android.app.Activity;
@@ -6,8 +25,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -18,7 +36,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
@@ -32,85 +54,78 @@ import com.heath_bar.tvdb.util.DialogBuilder;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.StringUtil;
 
-public class SummaryFragment extends SherlockFragment implements RatingFragment.NoticeDialogListener {
+public class SummaryFragment extends SherlockFragment  {
 
-	protected long seriesId;
 	protected TvSeries seriesInfo;
 	protected float textSize;
 	protected long cacheSize;
 	protected String userAccountId;
 	protected Boolean isFavorite = null;
 	protected boolean useNiceDates;
+	protected FragmentManager mFragmentManager;
+	protected static final String TASK_FRAGMENT_TAG = "series_task";
+	protected static final int TASK_FRAGMENT = 0;
+	protected boolean isLoaded = false;
 	
-	
+
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     	if (container == null){
             return null;
     	}else{
-        	return inflater.inflate(R.layout.series_summary, container, false);
+			return inflater.inflate(R.layout.series_summary, container, false);
         }
     }
     
     @Override 
     public void onActivityCreated(Bundle savedInstanceState) {
     	super.onActivityCreated(savedInstanceState);
-    	
     	ApplyPreferences();
-    	
-    	((SeriesOverview)getActivity()).requestSummaryRefresh(this);
     }
-    
-    
+        
  	
 	/** Populate the interface with the data pulled from the webz */
-	public void populateTheUI(Activity activity, TvSeries seriesInfo){
+	public void populateTheUI(Activity activity, final TvSeries seriesInfo){
 		if (activity == null){
 			return;
-		}else if (seriesInfo == null)
-		{
+		}else if (seriesInfo == null){
 			Toast.makeText(activity, "Something bad happened. No data was found.", Toast.LENGTH_SHORT).show();
 			return;
 		}
 
+		this.seriesInfo = seriesInfo;
 		
-		// redraw the options menu with the correct icon
-		isFavorite = seriesInfo.isFavorite(activity);
-		((FragmentActivity)activity).supportInvalidateOptionsMenu();
-		
-		// Set the banner
-		final String imageTitle = seriesInfo.getName();
-		final String imageId = seriesInfo.getImage().getId();
-		final String imageUrl = seriesInfo.getImage().getUrl();
+		Animation fade = new AlphaAnimation(0.0f, 1.0f);
+		fade.setDuration(700);
 		
 		ImageView imageView = (ImageView)activity.findViewById(R.id.series_banner);
-		imageView.setImageBitmap(seriesInfo.getImage().getBitmap());
+		imageView.setImageBitmap(seriesInfo.getBanner().getBitmap());
 		imageView.setVisibility(View.VISIBLE);
-		final String seriesName = seriesInfo.getName();
+		imageView.startAnimation(fade);
 		
+		// Set the banner link
 		imageView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Intent myIntent = new Intent(getActivity(), ImageViewer.class);
-				myIntent.putExtra("imageTitle", imageTitle);
-				myIntent.putExtra("imageId", imageId);
-				myIntent.putExtra("imageUrl", imageUrl);
+				myIntent.putExtra("imageTitle", seriesInfo.getName());
+				myIntent.putExtra("imageId", seriesInfo.getBanner().getId());
+				myIntent.putExtra("imageUrl", seriesInfo.getBanner().getUrl());
 	        	startActivity(myIntent);
 			}
 		});
 		
 		
-		
-		// Set the banner link
 		TextView textview = (TextView)activity.findViewById(R.id.banner_listing_link);
 		textview.setTextColor(getResources().getColor(R.color.tvdb_green));
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(getActivity(), BannerListing.class);
-				i.putExtra("seriesId", seriesId);
-				i.putExtra("seriesName", seriesName);
+				i.putExtra("seriesId", seriesInfo.getId());
+				i.putExtra("seriesName", seriesInfo.getName());
 				startActivity(i);
 			}
 		});
@@ -118,10 +133,13 @@ public class SummaryFragment extends SherlockFragment implements RatingFragment.
 		// Set air info
 		textview = (TextView)activity.findViewById(R.id.airs_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview = (TextView)activity.findViewById(R.id.last_episode);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview = (TextView)activity.findViewById(R.id.next_episode);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		textview = (TextView)activity.findViewById(R.id.series_air_info);
 		StringBuffer sb = new StringBuffer();
@@ -148,45 +166,50 @@ public class SummaryFragment extends SherlockFragment implements RatingFragment.
 		textview.setMovementMethod(LinkMovementMethod.getInstance());
 		textview.setText(airedText, BufferType.SPANNABLE);
 		textview.setVisibility(View.VISIBLE);
-						
+		textview.startAnimation(fade);
+		
 		// Set rating
 		textview = (TextView)activity.findViewById(R.id.rating_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		textview = (TextView)activity.findViewById(R.id.rating);
 		textview.setText(seriesInfo.getRating() + " / 10");
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		
 		// Set genre
 		textview = (TextView)activity.findViewById(R.id.genre_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		textview = (TextView)activity.findViewById(R.id.genre);
 		textview.setText(StringUtil.commafy(seriesInfo.getGenre()));
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		
 		// Set runtime
 		textview = (TextView)activity.findViewById(R.id.runtime_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		textview = (TextView)activity.findViewById(R.id.runtime);
 		textview.setText(seriesInfo.getRuntime() + " minutes");
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
-		
-		// Set overview
-		textview = (TextView)activity.findViewById(R.id.overview_header);
-		textview.setVisibility(View.VISIBLE);
-		
+		// Set overview		
 		textview = (TextView)activity.findViewById(R.id.overview);
 		textview.setText(seriesInfo.getOverview());
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		// IMDB Link
 		textview = (TextView)activity.findViewById(R.id.imdb_link);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		final String imdbId = seriesInfo.getIMDB();
 		SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.imdb));
@@ -201,81 +224,98 @@ public class SummaryFragment extends SherlockFragment implements RatingFragment.
 		ssb.setSpan(new TextAppearanceSpan(activity, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
 		textview.setText(ssb, BufferType.SPANNABLE);
 		textview.setMovementMethod(LinkMovementMethod.getInstance());
+		textview.startAnimation(fade);
 		
-		// Hide the loading image
+		// Hide & show the loading spinner
 		activity.findViewById(R.id.progress_summary).setVisibility(View.GONE);
+		activity.findViewById(R.id.progress_summary2).setVisibility(View.VISIBLE);
+				
+		isLoaded = true;
+
 	}
 
-	
 		
 	public void populateTheUIPart2(Activity activity, TvEpisode last, TvEpisode next){
 
-		SpannableString text = null;		
+		if (activity == null){
+			return;
+		}
+		Animation fade = new AlphaAnimation(0.0f, 1.0f);
+		fade.setDuration(700);
 		
-		TextView richTextView = (TextView)activity.findViewById(R.id.last_episode);
+		LinearLayout ll = (LinearLayout)activity.findViewById(R.id.last_episode_row);
+		TextView textview = (TextView)activity.findViewById(R.id.last_episode);
 		
 		if (last == null){
-			 text = new SpannableString("Last Episode: unknown");
+			 textview.setText("Last Episode: unknown");
 		}else{
 		
-			String name = last.getSeason() + "x" + String.format("%02d", last.getNumber()) + " " + last.getName();
+			textview.setText("Last Episode:");
+			ll.setId(last.getId());
+			ll.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					episodeListener.onClick(v);
+				}
+			});
+			
+			textview = (TextView)ll.findViewById(R.id.episode_number);
+			textview.setText(last.getSeason() + "." + String.format("%02d", last.getNumber()));
+			
+			textview = (TextView)ll.findViewById(R.id.episode_name);
+			textview.setTextColor(getResources().getColor(R.color.tvdb_green));
+			textview.setText(last.getName());
+			
 			String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(last.getAirDate())) : DateUtil.toString(last.getAirDate());
-			text = new SpannableString("Last Episode: " + name + " (" + dateString + ")");
+			textview = (TextView)ll.findViewById(R.id.episode_date);
+			textview.setText(dateString);
 
-			NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
-		        @Override  
-		        public void onClick(View view) { 
-		            episodeListener.onClick(view);
-		        }  
-		    };
-		    int start = 14;
-			int end = start + name.length();
-		    text.setSpan(clickableSpan, start, end, 0);
-		    text.setSpan(new TextAppearanceSpan(activity, R.style.episode_link), start, end, 0);
-		    text.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, text.length(), 0);
-		    richTextView.setId(last.getId());
-			richTextView.setMovementMethod(LinkMovementMethod.getInstance());
+			ll.startAnimation(fade);	
 		}
-		richTextView.setText(text, BufferType.SPANNABLE);
 		
-		
-		text = null;
-		richTextView = (TextView)activity.findViewById(R.id.next_episode);
+		ll = (LinearLayout)activity.findViewById(R.id.next_episode_row);
+		textview = (TextView)activity.findViewById(R.id.next_episode);
 
 		if (next == null){
-			 text = new SpannableString("Next Episode: unknown");
+			 textview.setText("Next Episode: unknown");
 		}else{
 		
-			String name = next.getSeason() + "x" + String.format("%02d", next.getNumber()) + " " + next.getName();
+			textview.setText("Next Episode:");
+			ll.setId(next.getId());
+			ll.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					episodeListener.onClick(v);
+				}
+			});
+			
+			textview = (TextView)ll.findViewById(R.id.episode_number);
+			textview.setText(next.getSeason() + "." + String.format("%02d", next.getNumber()));
+			
+			textview = (TextView)ll.findViewById(R.id.episode_name);
+			textview.setTextColor(getResources().getColor(R.color.tvdb_green));
+			textview.setText(next.getName());
+			
+			
 			String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(next.getAirDate())) : DateUtil.toString(next.getAirDate());
-			text = new SpannableString("Next Episode: " + name + " (" + dateString + ")");
-
-			NonUnderlinedClickableSpan clickableSpan = new NonUnderlinedClickableSpan() {  
-		        @Override  
-		        public void onClick(View view) { 
-		        	episodeListener.onClick(view);  
-		        }  
-		    };
-		    int start = 14;
-			int end = start + name.length();
-		    text.setSpan(clickableSpan, start, end, 0);
-		    text.setSpan(new TextAppearanceSpan(activity, R.style.episode_link), start, end, 0);
-		    text.setSpan(new AbsoluteSizeSpan((int)textSize, true), 0, text.length(), 0);
-			richTextView.setId(next.getId());
-			richTextView.setMovementMethod(LinkMovementMethod.getInstance());
+			textview = (TextView)ll.findViewById(R.id.episode_date);
+			textview.setText(dateString);
+			
+			ll.startAnimation(fade);
 		}
-		richTextView.setText(text, BufferType.SPANNABLE);
+		
+		ProgressBar pb = (ProgressBar)activity.findViewById(R.id.progress_summary2);
+		pb.setVisibility(View.GONE);
 	}
 
 		// Handle episode clicks
 		final OnClickListener episodeListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				TextView epText = (TextView)v;
-	        	long episodeId = epText.getId();
+				long episodeId = v.getId();
 	        	Intent myIntent = new Intent(v.getContext(), EpisodeDetails.class);
 	        	myIntent.putExtra("id", episodeId);
-	        	myIntent.putExtra("seriesId", seriesId);
+	        	myIntent.putExtra("seriesId", seriesInfo.getId());
 	        	myIntent.putExtra("seriesName", seriesInfo.getName());
 	    		startActivityForResult(myIntent, 0);
 			}
@@ -325,20 +365,12 @@ public class SummaryFragment extends SherlockFragment implements RatingFragment.
 		}
 	}
 	
-	// Called when the user clicks Rate from the dialog 
-	@Override
-	public void onDialogPositiveClick(DialogFragment dialog) {
-	    TextView valueText = (TextView)dialog.getDialog().findViewById(R.id.value);
-
+	public void updateRating(String value) {
 	    TvdbDAL tvdb = new TvdbDAL(getActivity());
-	    tvdb.new UpdateRatingTask(this).execute(userAccountId, String.valueOf(seriesId), valueText.getText().toString());
+	    tvdb.new UpdateRatingTask(this).execute(userAccountId, String.valueOf(seriesInfo.getId()), value);
 	}
-
-	@Override
-	public void onDialogNegativeClick(DialogFragment dialog) {
-		// Do nothing
-	}
- 	
+	
+	
 	
 	// Apply Preferences
 	private void ApplyPreferences() {
@@ -349,43 +381,76 @@ public class SummaryFragment extends SherlockFragment implements RatingFragment.
     	textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
     	Activity activity = getActivity();
 
-    	TextView textview = (TextView)activity.findViewById(R.id.banner_listing_link);
-    	textview.setTextSize(textSize);
-
-    	textview = (TextView)activity.findViewById(R.id.airs_header);
-    	textview.setTextSize(textSize*1.3f);
-    	
-    	textview = (TextView)activity.findViewById(R.id.last_episode);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)activity.findViewById(R.id.next_episode);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)activity.findViewById(R.id.series_air_info);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)activity.findViewById(R.id.rating_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)activity.findViewById(R.id.rating);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)activity.findViewById(R.id.genre_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)activity.findViewById(R.id.genre);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)activity.findViewById(R.id.runtime_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)activity.findViewById(R.id.runtime);
-		textview.setTextSize(textSize);
-
-		textview = (TextView)activity.findViewById(R.id.overview_header);
-		textview.setTextSize(textSize*1.3f);
-
-		textview = (TextView)activity.findViewById(R.id.overview);
-		textview.setTextSize(textSize);
+    	try {
+	    	TextView textview = (TextView)activity.findViewById(R.id.banner_listing_link);
+	    	textview.setTextSize(textSize*1.2f);
+	
+	    	textview = (TextView)activity.findViewById(R.id.airs_header);
+	    	textview.setTextSize(textSize*1.3f);
+	    	
+	    	textview = (TextView)activity.findViewById(R.id.last_episode);
+			textview.setTextSize(textSize);
+	
+			textview = (TextView)activity.findViewById(R.id.next_episode);
+			textview.setTextSize(textSize);
+	
+			textview = (TextView)activity.findViewById(R.id.series_air_info);
+			textview.setTextSize(textSize);
+	
+			textview = (TextView)activity.findViewById(R.id.rating_header);
+			textview.setTextSize(textSize*1.3f);
+	
+			textview = (TextView)activity.findViewById(R.id.rating);
+			textview.setTextSize(textSize);
+	
+			textview = (TextView)activity.findViewById(R.id.genre_header);
+			textview.setTextSize(textSize*1.3f);
+	
+			textview = (TextView)activity.findViewById(R.id.genre);
+			textview.setTextSize(textSize);
+	
+			textview = (TextView)activity.findViewById(R.id.runtime_header);
+			textview.setTextSize(textSize*1.3f);
+	
+			textview = (TextView)activity.findViewById(R.id.runtime);
+			textview.setTextSize(textSize);
+	
+			textview = (TextView)activity.findViewById(R.id.overview);
+			textview.setTextSize(textSize);
+			
+			textview = (TextView)activity.findViewById(R.id.imdb_link);
+			textview.setTextSize(textSize*1.2f);
+			
+			LinearLayout ll = (LinearLayout)activity.findViewById(R.id.last_episode_row);
+			
+			textview = (TextView)ll.findViewById(R.id.episode_number);
+			textview.setTextSize(textSize*2.0f);
+			
+			textview = (TextView)ll.findViewById(R.id.episode_name);
+			textview.setTextSize(textSize);
+			
+			textview = (TextView)ll.findViewById(R.id.episode_date);
+			textview.setTextSize(textSize*0.7f);
+			
+			ll = (LinearLayout)activity.findViewById(R.id.next_episode_row);
+			
+			textview = (TextView)ll.findViewById(R.id.episode_number);
+			textview.setTextSize(textSize*2.0f);
+			
+			textview = (TextView)ll.findViewById(R.id.episode_name);
+			textview.setTextSize(textSize);
+			
+			textview = (TextView)ll.findViewById(R.id.episode_date);
+			textview.setTextSize(textSize*0.7f);
+			
+    	} catch (NullPointerException e){
+    		Log.e("SummaryFragment", "ApplyPreferences: " + e.getMessage());
+    	}
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putBoolean("isLoaded", isLoaded);
 	}
 }

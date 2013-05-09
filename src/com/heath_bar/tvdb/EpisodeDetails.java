@@ -17,6 +17,8 @@
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
  */
 package com.heath_bar.tvdb;
+import java.util.Locale;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -29,6 +31,8 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
@@ -52,6 +56,7 @@ import com.heath_bar.tvdb.util.DateUtil;
 import com.heath_bar.tvdb.util.DialogBuilder;
 import com.heath_bar.tvdb.util.NonUnderlinedClickableSpan;
 import com.heath_bar.tvdb.util.ShareUtil;
+import com.heath_bar.tvdb.util.StringUtil;
 
 
 public class EpisodeDetails extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener {
@@ -62,6 +67,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 	protected TvEpisode myEpisode = null;
 	protected long cacheSize;
 	protected String userAccountId;
+	protected boolean useNiceDates;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
@@ -151,7 +157,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 				setUserRatingTextView(0);
 			
 			// Hide the loading text
-			findViewById(R.id.loading1).setVisibility(View.GONE);
+			findViewById(R.id.progress_episode).setVisibility(View.GONE);
 			setSupportProgressBarIndeterminateVisibility(false);
 		}
 		
@@ -159,12 +165,32 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 	
 	/** Populate the GUI with the data we've found */
 	public void PopulateStuff(TvEpisode theEpisode){
-		
-		// Set Title
-		TextView textview = (TextView)findViewById(R.id.title);
-		textview.setVisibility(View.VISIBLE);
-		textview.setText(theEpisode.getSeason() + "x" + String.format("%02d", theEpisode.getNumber()) + " " + theEpisode.getName());
 
+		Animation fade = new AlphaAnimation(0.0f, 1.0f);
+		fade.setDuration(700);
+		
+		TextView textview = (TextView)findViewById(R.id.episode_number);
+		textview.setText("SEASON " + theEpisode.getSeason() + " EPISODE " + String.format(Locale.getDefault(), "%02d", theEpisode.getNumber()));
+		textview.startAnimation(fade);
+		
+		textview = (TextView)findViewById(R.id.episode_name);
+		textview.setText(theEpisode.getName());
+		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
+		
+		// First Aired
+		String dateText = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(theEpisode.getAirDate())) : DateUtil.toString(theEpisode.getAirDate());
+		textview = (TextView)findViewById(R.id.episode_date);
+		textview.setText(dateText);
+		textview.startAnimation(fade);
+		
+		// Rating
+		textview = (TextView)findViewById(R.id.rating_value);
+		textview.setVisibility(View.VISIBLE);
+		textview.setText(theEpisode.getRating() + " / 10");
+		textview.startAnimation(fade);
+		
+		
 		// Set Thumb
 		if (theEpisode.getImage() != null && (theEpisode.getImage().getBitmap() == null || theEpisode.getImage().getUrl().equals(""))){
 			// do nothin
@@ -176,6 +202,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 			ImageButton banner = (ImageButton)findViewById(R.id.episode_thumb);
     		banner.setImageBitmap(theEpisode.getImage().getBitmap());
     		banner.setVisibility(View.VISIBLE);
+    		banner.startAnimation(fade);
     		banner.setOnClickListener(new View.OnClickListener() {   
     			public void onClick(View v) { 
     				Intent myIntent = new Intent(getApplicationContext(), ImageViewer.class);
@@ -188,52 +215,41 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		}
 
 		// Overview
-		textview = (TextView)findViewById(R.id.overview_header);
-		textview.setVisibility(View.VISIBLE);
 		textview = (TextView)findViewById(R.id.overview);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview.setText(theEpisode.getOverview());
-		
+						
 		// Director
 		textview = (TextView)findViewById(R.id.director_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview = (TextView)findViewById(R.id.director);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview.setText(theEpisode.getDirector());
 		
 		// Writer
 		textview = (TextView)findViewById(R.id.writer_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview = (TextView)findViewById(R.id.writer);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview.setText(theEpisode.getWriter());
 				
-
-		// Rating
-		textview = (TextView)findViewById(R.id.rating_header);
-		textview.setVisibility(View.VISIBLE);
-		textview = (TextView)findViewById(R.id.rating);
-		textview.setVisibility(View.VISIBLE);
-		textview.setText(theEpisode.getRating() + " / 10");		
-
-
-		// First Aired
-		textview = (TextView)findViewById(R.id.first_aired_header);
-		textview.setVisibility(View.VISIBLE);
-		textview = (TextView)findViewById(R.id.first_aired);
-		textview.setVisibility(View.VISIBLE);
-		textview.setText(DateUtil.toString(theEpisode.getAirDate()));		
-
-
 		// Guest Stars
 		textview = (TextView)findViewById(R.id.guest_stars_header);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview = (TextView)findViewById(R.id.guest_stars);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		textview.setText(theEpisode.getGuestStars());
 		
 		textview = (TextView)findViewById(R.id.imdb_link);
 		textview.setVisibility(View.VISIBLE);
+		textview.startAnimation(fade);
 		
 		final String imdbId = theEpisode.getIMDB();
 		if (imdbId != ""){
@@ -249,6 +265,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 			ssb.setSpan(new TextAppearanceSpan(this, R.style.episode_link), 0, ssb.length(), 0);	// Set the style of the text
 			textview.setText(ssb, BufferType.SPANNABLE);
 			textview.setMovementMethod(LinkMovementMethod.getInstance());
+			textview.startAnimation(fade);
 		}
 	}
 
@@ -292,19 +309,12 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 
  	/** Update the GUI with the specified rating */
  	private void setUserRatingTextView(int rating){
- 		
- 		TextView ratingTextView = (TextView)findViewById(R.id.rating);
-		String communityRatingText = myEpisode.getRating() + " / 10";
 		
-		String ratingTextA = communityRatingText + "  (";
-		String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
-		String ratingTextC = ")";
+		String ratingText = (rating == 0) ? "rate" : StringUtil.wordify(rating);
 		
-		int start = ratingTextA.length();
-		int end = ratingTextA.length() + ratingTextB.length();
-				
-		SpannableStringBuilder ssb = new SpannableStringBuilder(ratingTextA + ratingTextB + ratingTextC);
-		
+		int start = 0;
+		int end = ratingText.length();				
+		SpannableStringBuilder ssb = new SpannableStringBuilder(ratingText);		
 		ssb.setSpan(new NonUnderlinedClickableSpan() {
 			@Override
 			public void onClick(View v){
@@ -313,6 +323,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		}, start, end, 0);
 		
 		ssb.setSpan(new TextAppearanceSpan(getApplicationContext(), R.style.episode_link), start, end, 0);	// Set the style of the text
+ 		TextView ratingTextView = (TextView)findViewById(R.id.rating_link);
 		ratingTextView.setText(ssb, BufferType.SPANNABLE);
 		ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
  	}
@@ -434,19 +445,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
         MenuItem subMenu1Item = subMenu1.getItem();
         subMenu1Item.setIcon(R.drawable.ic_share);
         subMenu1Item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-        		
-		menu.add("Search")
-        .setIcon(R.drawable.ic_search)
-        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-			
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				onSearchRequested();
-				return false;
-			}
-		})
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
+        
         return true;
     }
 
@@ -468,16 +467,23 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
 		userAccountId = settings.getString("accountId", "").trim();
+		useNiceDates = settings.getBoolean("useNiceDates", true);
     	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-    	
-		TextView textview = (TextView)findViewById(R.id.loading1);
+		
+		TextView textview = (TextView)findViewById(R.id.episode_number);
+		textview.setTextSize(textSize*0.8f);
+		
+		textview = (TextView)findViewById(R.id.episode_name);
+		textview.setTextSize(textSize*1.6f);
+		
+		textview = (TextView)findViewById(R.id.episode_date);
+		textview.setTextSize(textSize*0.8f);
+		
+		textview = (TextView)findViewById(R.id.rating_value);
 		textview.setTextSize(textSize);
 		
-		textview = (TextView)findViewById(R.id.title);
-		textview.setTextSize(textSize*1.4f);
-
-		textview = (TextView)findViewById(R.id.overview_header);
-		textview.setTextSize(textSize*1.3f);
+		textview = (TextView)findViewById(R.id.rating_link);
+		textview.setTextSize(textSize*0.8f);
 		
 		textview = (TextView)findViewById(R.id.overview);
 		textview.setTextSize(textSize);
@@ -492,18 +498,6 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		textview.setTextSize(textSize*1.3f);
 		
 		textview = (TextView)findViewById(R.id.writer);
-		textview.setTextSize(textSize);
-		
-		textview = (TextView)findViewById(R.id.rating_header);
-		textview.setTextSize(textSize*1.3f);
-		
-		textview = (TextView)findViewById(R.id.rating);
-		textview.setTextSize(textSize);
-		
-		textview = (TextView)findViewById(R.id.first_aired_header);
-		textview.setTextSize(textSize*1.3f);
-		
-		textview = (TextView)findViewById(R.id.first_aired);
 		textview.setTextSize(textSize);
 		
 		textview = (TextView)findViewById(R.id.guest_stars_header);

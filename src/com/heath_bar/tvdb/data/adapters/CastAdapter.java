@@ -21,7 +21,7 @@ import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
 import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
 import com.heath_bar.tvdb.types.Actor;
 
-public class ActorsAdapter extends BaseAdapter {
+public class CastAdapter extends BaseAdapter {
 
 	protected Context context;
 	protected int layout;
@@ -29,7 +29,7 @@ public class ActorsAdapter extends BaseAdapter {
 	protected float textSize;
 	private BitmapLoader loader;
 	
-	public ActorsAdapter(Context context, int layout, List<Actor> actors, float textSize){
+	public CastAdapter(Context context, int layout, List<Actor> actors, float textSize){
 		this.context = context;
 		this.layout = layout;
 		this.actors = actors;

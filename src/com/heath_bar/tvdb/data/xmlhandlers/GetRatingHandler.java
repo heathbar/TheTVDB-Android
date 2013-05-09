@@ -20,6 +20,7 @@ package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -50,7 +51,7 @@ public class GetRatingHandler extends DefaultHandler{
 		public void startElement(String uri, String name, String qName, Attributes atts) {
 		    sb = new StringBuilder();						// Reset the string builder
 		    
-		    name = name.trim().toLowerCase();
+		    name = name.trim().toLowerCase(Locale.getDefault());
 		    if (name.equals("series") || name.equals("episode"))
 		    	currentRating = new Rating();
 	    }
@@ -67,7 +68,7 @@ public class GetRatingHandler extends DefaultHandler{
 		public void endElement(String uri, String name, String qName) throws SAXException {
 			try {
 
-				name = name.trim().toLowerCase();
+				name = name.trim().toLowerCase(Locale.getDefault());
 				
 				if (errorMessage == null){
 					

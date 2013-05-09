@@ -19,6 +19,7 @@
 package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.net.URL;
+import java.util.Locale;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -50,7 +51,7 @@ public class SeriesDetailsHandler extends DefaultHandler {
     
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
-	    name = name.trim().toLowerCase();				// format the current element name
+	    name = name.trim().toLowerCase(Locale.getDefault());				// format the current element name
 	    sb = new StringBuilder();						// Reset the string builder
 	    
 	    if (name.equals("series")){						// If this is a new node, create a new instance
@@ -70,13 +71,16 @@ public class SeriesDetailsHandler extends DefaultHandler {
     @Override
 	public void endElement(String uri, String name, String qName) throws SAXException {
 		try {
-			name = name.trim().toLowerCase();
+			name = name.trim().toLowerCase(Locale.getDefault());
 			
 			if (name.equals("id")){
 				currentSeries.setId(Long.valueOf(sb.toString()));
-				currentSeries.getImage().setId("S" + sb.toString());
+				currentSeries.getBanner().setId("S" + sb.toString());
+				currentSeries.getPoster().setId("P" + sb.toString());
 			}else if (name.equals("banner")){
-				currentSeries.getImage().setUrl(AppSettings.BANNER_URL + sb.toString());
+				currentSeries.getBanner().setUrl(AppSettings.BANNER_URL + sb.toString());
+			}else if (name.equals("poster")){
+				currentSeries.getPoster().setUrl(AppSettings.BANNER_URL + sb.toString());
 			}else if (name.equals("firstaired")){
 				currentSeries.setFirstAired(sb.toString());
 			}else if (name.equals("imdb_id")){

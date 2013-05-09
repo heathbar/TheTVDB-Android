@@ -170,5 +170,7 @@ public class FavoritesDAL {
 	}
 
 	
-	
+	public boolean isFavoriteSeries(long seriesId){
+		return db.isFavoriteSeries(seriesId);
+	}
 }

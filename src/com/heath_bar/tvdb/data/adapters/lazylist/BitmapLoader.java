@@ -25,11 +25,14 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.heath_bar.tvdb.AppSettings;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -57,16 +60,23 @@ public class BitmapLoader {
 
 	/** Load the bitmap from the cache into the specified image view; on cache miss load it asynchronously */
 	public void Load(int position, ImageView image, ProgressBar progress) {
-		String id = images.get(position).getId();
-		lastAssignments.put(image, id);
-		Bitmap bitmap = memCache.get(id);
-
-		if (bitmap != null){
-			image.setImageBitmap(bitmap);
-			image.setVisibility(View.VISIBLE);
-			progress.setVisibility(View.GONE);
+		
+		// Make sure we have an image
+		if (!images.get(position).getUrl().equals(AppSettings.BANNER_URL)){
+			String id = images.get(position).getId();
+			lastAssignments.put(image, id);
+			Bitmap bitmap = memCache.get(id);
+	
+			if (bitmap != null){
+				image.setImageBitmap(bitmap);
+				image.setVisibility(View.VISIBLE);
+				progress.setVisibility(View.GONE);
+			}else{
+				LoadAsync(position, image, progress);
+			}
 		}else{
-			LoadAsync(position, image, progress);
+			image.setVisibility(View.GONE);
+			progress.setVisibility(View.GONE);
 		}
 	}
 
@@ -79,7 +89,7 @@ public class BitmapLoader {
 			image.setVisibility(View.GONE);
 			asyncQueue.submit(new BitmapLoaderRunnable(images.get(position), image, progress));		// 2. Load image asynchronously from file/web
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Log.e("BitmapLoader", "Throwable: " + e.getMessage());
 			if(e instanceof OutOfMemoryError)
 	               memCache.clear();
 		}
@@ -127,7 +137,7 @@ public class BitmapLoader {
     			
     			}
     		} catch (IOException e) {
-				e.printStackTrace();
+				Log.e("BitmapLoader", "Error: " + e.getMessage());
 				return;
 			} catch (Throwable e){
 				Log.e("BitmapLoader", "Error:" + e.getMessage());
@@ -136,14 +146,12 @@ public class BitmapLoader {
 					memCache.clear();
 			}
         	
-        	
-        	if (bitmap != null){
-        		// Display the bitmap in the image view on the UI thread
-        		((Activity)image.getContext()).runOnUiThread(new BitmapDisplayer(bitmap, image, progress));
+        
+    		// Display the bitmap in the image view on the UI thread
+    		((Activity)image.getContext()).runOnUiThread(new BitmapDisplayer(bitmap, image, progress));
 
-        		// Add the bitmap to the memory cache
-        		memCache.put(wi.getId(), bitmap);
-			}
+    		// Add the bitmap to the memory cache
+    		memCache.put(wi.getId(), bitmap);
         }
         
 
@@ -164,12 +172,15 @@ public class BitmapLoader {
 				if (lastId != null && lastId.equals(wi.getId()))	// bitmap hasn't started loading into this image view 
 				{
 					if(bitmap != null){
-	                    image.setImageBitmap(bitmap);
-	                    image.setVisibility(View.VISIBLE);
-	                    progress.setVisibility(View.GONE);
+					      image.setImageBitmap(bitmap);
+					      AlphaAnimation a = new AlphaAnimation(0.0f, 1.0f);
+					      a.setDuration(400);
+		                  image.setAnimation(a);
+		                  image.setVisibility(View.VISIBLE);
+		                  progress.setVisibility(View.GONE);
 					}else{
 						image.setVisibility(View.GONE);
-	                    progress.setVisibility(View.VISIBLE);
+	                    progress.setVisibility(View.GONE);
 					}
 				}
             }

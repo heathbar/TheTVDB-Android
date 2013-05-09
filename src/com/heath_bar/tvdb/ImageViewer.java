@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Toast;
@@ -96,7 +97,7 @@ public class ImageViewer extends SherlockActivity {
 		    	
 				return wi;
 			}catch (Exception e){
-				e.printStackTrace();
+				Log.e("ImageViewer.LoadImageTask", "Error: " + e.getMessage());
 			}
 			return null;
 		}

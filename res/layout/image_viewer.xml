@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@color/blue2">
         
     <TextView
 	    android:id="@+id/loading1"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content" 
-	    android:textColor="@color/white"
+	    android:textColor="@android:color/white"
 	    android:text="@string/loading" />
 
         
@@ -18,7 +19,7 @@
         android:layout_gravity="center_horizontal"
         android:contentDescription="@string/banner_alt_text" />   
         
-</RelativeLayout>
+</FrameLayout>
 
 <!-- 
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│

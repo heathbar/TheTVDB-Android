@@ -20,6 +20,7 @@ package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -42,7 +43,7 @@ public class GetXBMCFavoritesHandler extends DefaultHandler{
 		public void startElement(String uri, String name, String qName, Attributes atts) {
 		    sb = new StringBuilder();						// Reset the string builder
 		    
-		    name = name.trim().toLowerCase();
+		    name = name.trim().toLowerCase(Locale.getDefault());
 		    if (name.equals("???"))
 		    	showsList = new ArrayList<String>();
 	    }
@@ -59,7 +60,7 @@ public class GetXBMCFavoritesHandler extends DefaultHandler{
 		public void endElement(String uri, String name, String qName) throws SAXException {
 			try {
 
-				name = name.trim().toLowerCase();
+				name = name.trim().toLowerCase(Locale.getDefault());
 				// TODO: parse XML file
 
 			} catch (Exception e) {
