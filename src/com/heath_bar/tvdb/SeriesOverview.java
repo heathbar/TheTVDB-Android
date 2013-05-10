@@ -45,7 +45,7 @@ import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.LoadCastDataTask;
 import com.heath_bar.tvdb.types.LoadEpisodeListTask;
 import com.heath_bar.tvdb.types.LoadSeriesDataTask;
-import com.heath_bar.tvdb.types.TaskFragment;
+import com.heath_bar.tvdb.types.TaskManagementFragment;
 import com.heath_bar.tvdb.types.TvEpisodeList;
 import com.heath_bar.tvdb.types.TvSeries;
 import com.heath_bar.tvdb.util.ShareUtil;
@@ -53,7 +53,7 @@ import com.viewpagerindicator.TitlePageIndicator;
 import com.viewpagerindicator.TitlePageIndicator.IndicatorStyle;
 
 
-public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener, TaskFragment.TaskFinishedListener {
+public class SeriesOverview extends SherlockFragmentActivity implements RatingFragment.NoticeDialogListener, TaskManagementFragment.TaskFinishedListener {
 
 	ViewPager mViewPager;
 	SeriesOverviewPagerAdapter mPageAdapter;
@@ -66,14 +66,13 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	protected int refreshing = 0;
 	
 	// define the cast task fragments (the workers)
-	protected static final String TASK1_FRAGMENT_TAG = "task1";
-	protected static final String TASK2_FRAGMENT_TAG = "task2";
-	protected static final String TASK3_FRAGMENT_TAG = "task3";
-
+	protected static final String TASK_FRAGMENT_TAG = "myTaskFragment";
+	
 	// define the tasks IDs hat will be sent to the task fragments (the work) 
 	protected static final int CAST_TASK_ID = 0;
 	protected static final int SUMMARY_TASK_ID = 1;
 	protected static final int EPISODE_DATA_TASK_ID = 2;
+	protected static final int RATING_TASK_ID = 3;
 	
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,35 +101,20 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	        // At this point the activity may have been recreated due to a rotation,
 	        // and there may be a TaskFragment lying around. So see if we can find it.
 	        // Check to see if we have retained the worker fragment.
-	        TaskFragment castTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK1_FRAGMENT_TAG);
+	        TaskManagementFragment taskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
 
-	        if (castTaskFragment == null){
-	            castTaskFragment = new TaskFragment();
+	        if (taskFragment == null){
+	        	taskFragment = new TaskManagementFragment();
 	            
-	            // And create a task for it to monitor. In this implementation the taskFragment
-	            // executes the task, but you could change it so that it is started here.
-	            castTaskFragment.setTask(CAST_TASK_ID, new LoadCastDataTask(seriesId));
-            	
-	            // Show the fragment.
-	            // I'm not sure which of the following two lines is best to use but this one works well.
-	            //taskFragment.show(mFM, TASK_FRAGMENT_TAG);
-	            getSupportFragmentManager().beginTransaction().add(castTaskFragment, TASK1_FRAGMENT_TAG).commit();
+	            // And create tasks for it to monitor
+	        	taskFragment.addTask(CAST_TASK_ID, new LoadCastDataTask(seriesId));
+	        	taskFragment.addTask(SUMMARY_TASK_ID, new LoadSeriesDataTask(seriesId));
+	        	taskFragment.addTask(EPISODE_DATA_TASK_ID, new LoadEpisodeListTask(seriesId));
+	        	
+	            // Start the fragment.
+	            getSupportFragmentManager().beginTransaction().add(taskFragment, TASK_FRAGMENT_TAG).commit();
 	        }
 	        
-	        TaskFragment seriesTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK2_FRAGMENT_TAG);
-	        if (seriesTaskFragment == null){
-	        	seriesTaskFragment = new TaskFragment();
-	        	seriesTaskFragment.setTask(SUMMARY_TASK_ID, new LoadSeriesDataTask(seriesId));
-	            getSupportFragmentManager().beginTransaction().add(seriesTaskFragment, TASK2_FRAGMENT_TAG).commit();
-	        }
-
-	        TaskFragment episodeTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK3_FRAGMENT_TAG);
-	        if (episodeTaskFragment == null){
-	        	episodeTaskFragment = new TaskFragment();
-	        	episodeTaskFragment.setTask(EPISODE_DATA_TASK_ID, new LoadEpisodeListTask(seriesId));
-	        	getSupportFragmentManager().beginTransaction().add(episodeTaskFragment, TASK3_FRAGMENT_TAG).commit();
-	        }
-
 	        
 	        mViewPager = (ViewPager)findViewById(R.id.pager);
 	        mViewPager.setAdapter(mPageAdapter);
@@ -143,7 +127,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	        titleIndicator.setViewPager(mViewPager);
 	    
 	        final float density = getResources().getDisplayMetrics().density;
-	        titleIndicator.setBackgroundColor(0xFF000000);
+	        titleIndicator.setBackgroundColor(getResources().getColor(R.color.blue2));
 	        titleIndicator.setTopPadding(1 * density);
 	        titleIndicator.setFooterColor(getResources().getColor(R.color.tvdb_green));
 	        titleIndicator.setFooterLineHeight(1 * density);
@@ -176,7 +160,6 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				SummaryFragment summaryFragment = mPageAdapter.getSummaryFragment();
 				summaryFragment.populateTheUI(this, seriesInfo); 
 			
-				
 			} else if (taskId == EPISODE_DATA_TASK_ID){
 				TvEpisodeList epList = (TvEpisodeList)resultData;
 				EpisodeListFragment episodeFragment = mPageAdapter.getEpisodeListFragment();
@@ -184,7 +167,11 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				
 				SummaryFragment summaryFragment = mPageAdapter.getSummaryFragment();
 				summaryFragment.populateTheUIPart2(this, epList.getLastAired(), epList.getNextAired());
+				
+			} else if (taskId == RATING_TASK_ID){
+				// do something
 			}
+			
 		} catch (ClassCastException e) {
 			Log.e("SeriesOverview", "onTaskFinished:" + e.getMessage());
 		}
@@ -280,18 +267,18 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
     	super.onRestoreInstanceState(savedInstanceState);
     	// Instance state has been restored. Send data to the fragments.
     	
-    	TaskFragment castTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK1_FRAGMENT_TAG);
-    	Object data = castTaskFragment.getResultData();
+    	TaskManagementFragment castTaskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
+    	Object data = castTaskFragment.getResultData(CAST_TASK_ID);
     	if (data != null)
     		onTaskFinished(CAST_TASK_ID, data);
     	
-    	TaskFragment seriesTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK2_FRAGMENT_TAG);
-    	data = seriesTaskFragment.getResultData();
+    	TaskManagementFragment seriesTaskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
+    	data = seriesTaskFragment.getResultData(SUMMARY_TASK_ID);
     	if (data != null)
     		onTaskFinished(SUMMARY_TASK_ID, data);
     	
-    	TaskFragment episodeTaskFragment = (TaskFragment)getSupportFragmentManager().findFragmentByTag(TASK3_FRAGMENT_TAG);
-    	data = episodeTaskFragment.getResultData();
+    	TaskManagementFragment episodeTaskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
+    	data = episodeTaskFragment.getResultData(EPISODE_DATA_TASK_ID);
     	if (data != null)
     		onTaskFinished(EPISODE_DATA_TASK_ID, data);
     }

@@ -23,9 +23,9 @@ import java.util.ArrayList;
 
 import com.heath_bar.tvdb.data.xmlhandlers.ActorHandler;
 
-public class LoadCastDataTask extends TaskFragmentTask {
+public class LoadCastDataTask extends ManageableTask {
 
-	TaskFragment mTaskFragment;
+	TaskManagementFragment mTaskFragment;
     long seriesId;
     
     public LoadCastDataTask(long seriesId) {
@@ -33,7 +33,7 @@ public class LoadCastDataTask extends TaskFragmentTask {
 	}
         
 	@Override
-	protected ArrayList<Actor> doInBackground(TaskFragment... taskFragment) {
+	protected ArrayList<Actor> doInBackground(TaskManagementFragment... taskFragment) {
 		mTaskFragment = taskFragment[0];
 				
 		ActorHandler actorQuery = new ActorHandler();
@@ -45,6 +45,6 @@ public class LoadCastDataTask extends TaskFragmentTask {
 	@Override
 	protected void onPostExecute(Object data){
 		if (mTaskFragment != null)
-			mTaskFragment.taskFinished(data);
+			mTaskFragment.taskFinished(getTaskId(), data);
 	}
 }

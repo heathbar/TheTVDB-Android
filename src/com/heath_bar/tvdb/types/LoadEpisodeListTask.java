@@ -23,9 +23,9 @@ import android.content.Context;
 
 import com.heath_bar.tvdb.data.xmlhandlers.EpisodeListHandler;
 
-public class LoadEpisodeListTask extends TaskFragmentTask {
+public class LoadEpisodeListTask extends ManageableTask {
 
-	TaskFragment mTaskFragment;
+	TaskManagementFragment mTaskFragment;
     long seriesId;
     
     public LoadEpisodeListTask(long seriesId) {
@@ -33,7 +33,7 @@ public class LoadEpisodeListTask extends TaskFragmentTask {
 	}
         
 	@Override
-	protected TvEpisodeList doInBackground(TaskFragment... taskFragment) {
+	protected TvEpisodeList doInBackground(TaskManagementFragment... taskFragment) {
 		mTaskFragment = taskFragment[0];
 		Context ctx = mTaskFragment.getActivity();
 		
@@ -44,6 +44,6 @@ public class LoadEpisodeListTask extends TaskFragmentTask {
 	@Override
 	protected void onPostExecute(Object info){
 		if (mTaskFragment != null)
-			mTaskFragment.taskFinished(info);
+			mTaskFragment.taskFinished(getTaskId(), info);
 	}
 }

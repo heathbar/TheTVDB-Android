@@ -7,7 +7,7 @@
     android:paddingTop="8dip"
     android:paddingBottom="8dip"
     android:textColor="@color/tvdb_green"
-    android:drawableLeft="@drawable/arrow_right"
+    android:drawableLeft="@drawable/ic_collapsed"
     android:textIsSelectable="false" />
 
 <!-- 

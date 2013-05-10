@@ -3,43 +3,47 @@ package com.heath_bar.tvdb.types;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.SparseArray;
 
-public class TaskFragment extends Fragment {
+public class TaskManagementFragment extends Fragment {
 
-	TaskFragmentTask mTask;
-	Object mResultData;
-	int mId = -1;
+	SparseArray<ManageableTask> mTasks = new SparseArray<ManageableTask>();
+	SparseArray<Object> mResultData = new SparseArray<Object>();
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
 		
-		if (mTask != null)
-			mTask.execute(this);
+		for (int i=0; i<mTasks.size(); i++){
+			ManageableTask t = mTasks.valueAt(i);
+			if (t != null){
+				t.setTaskId(mTasks.keyAt(i));
+				t.execute(this);
+			}
+		}
 	}
 
-	public void setTask(int id, TaskFragmentTask task){
-		mId = id;
-		mTask = task;
+	public void addTask(int id, ManageableTask task) throws IllegalArgumentException{
+		if (mTasks.get(id) != null)
+			throw new IllegalArgumentException("There is already a task defined for that ID");
+		else
+			mTasks.put(id, task);
 	}
 	
-	// This is called by the AsyncTask.
-    public void updateProgress(int percent) { }
-
     // This is also called by the AsyncTask.
-    public void taskFinished(Object resultData)
+    public void taskFinished(int id, Object resultData)
     {
-        mTask = null;
-        mResultData = resultData; 
+        mTasks.delete(id);
+        mResultData.put(id, resultData); 
 
         // Tell the activity that we are done.
         if (mListener != null)
-        	mListener.onTaskFinished(mId, resultData);
+        	mListener.onTaskFinished(id, resultData);
 	}
     
-    public Object getResultData(){
-    	return mResultData;
+    public Object getResultData(int id){
+    	return mResultData.get(id);
     }
     
     

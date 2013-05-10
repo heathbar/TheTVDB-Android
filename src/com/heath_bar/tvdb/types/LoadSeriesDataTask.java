@@ -29,9 +29,9 @@ import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapWebUtil;
 import com.heath_bar.tvdb.data.xmlhandlers.SeriesDetailsHandler;
 
-public class LoadSeriesDataTask extends TaskFragmentTask {
+public class LoadSeriesDataTask extends ManageableTask {
 
-	TaskFragment mTaskFragment;
+	TaskManagementFragment mTaskFragment;
     long seriesId;
     
     public LoadSeriesDataTask(long seriesId) {
@@ -39,7 +39,7 @@ public class LoadSeriesDataTask extends TaskFragmentTask {
 	}
         
 	@Override
-	protected TvSeries doInBackground(TaskFragment... taskFragment) {
+	protected TvSeries doInBackground(TaskManagementFragment... taskFragment) {
 		mTaskFragment = taskFragment[0];
 		Context ctx = mTaskFragment.getActivity();
 		
@@ -84,6 +84,6 @@ public class LoadSeriesDataTask extends TaskFragmentTask {
 	@Override
 	protected void onPostExecute(Object info){
 		if (mTaskFragment != null)
-			mTaskFragment.taskFinished(info);
+			mTaskFragment.taskFinished(getTaskId(), info);
 	}
 }

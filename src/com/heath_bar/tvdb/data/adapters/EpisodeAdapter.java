@@ -89,9 +89,9 @@ public class EpisodeAdapter extends BaseExpandableListAdapter {
 			text.setText("Season " + mSeasonList.get(groupPosition));
 		
 		if (isExpanded)
-			text.setCompoundDrawablesWithIntrinsicBounds(mContext.getResources().getDrawable(R.drawable.arrow_down), null, null, null);
+			text.setCompoundDrawablesWithIntrinsicBounds(mContext.getResources().getDrawable(R.drawable.ic_expanded), null, null, null);
 		else
-			text.setCompoundDrawablesWithIntrinsicBounds(mContext.getResources().getDrawable(R.drawable.arrow_right), null, null, null);
+			text.setCompoundDrawablesWithIntrinsicBounds(mContext.getResources().getDrawable(R.drawable.ic_collapsed), null, null, null);
 		
 		return convertView;
 	}
