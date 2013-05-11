@@ -28,11 +28,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
 import com.heath_bar.tvdb.data.adapters.lazylist.LazyBitmapAdapter;
 import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
 import com.heath_bar.tvdb.data.adapters.lazylist.WebImageList;
@@ -48,10 +47,9 @@ public class BannerListing extends SherlockListActivity {
 	// OnCreate... display essentially just a loading screen while we call LoadBannerListTask in the background
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setContentView(R.layout.banner_listing);
+        setContentView(R.layout.list);
 
 		try {
 			
@@ -66,12 +64,7 @@ public class BannerListing extends SherlockListActivity {
 		    	// Apply Preferences
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 				cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-				float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
-						    	
-				TextView textview = (TextView)findViewById(android.R.id.empty);
-				textview.setTextSize(textSize);
-				textview.setText(getResources().getString(R.string.loading));
-				
+	
 				// Start the asynchronous load process
 		    	setSupportProgressBarIndeterminateVisibility(true);
 				new LoadBannerThumbsTask().execute(String.valueOf(seriesId));
@@ -102,7 +95,8 @@ public class BannerListing extends SherlockListActivity {
 		@Override
 		protected void onPostExecute(WebImageList banners){
 			SetupAdapter(banners);
-			setSupportProgressBarIndeterminateVisibility(false);
+			ProgressBar progress = (ProgressBar)findViewById(R.id.progress);
+			if (progress != null) progress.setVisibility(View.GONE);
 		}	
 	}
 	
