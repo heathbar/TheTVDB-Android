@@ -29,8 +29,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListActivity;
@@ -45,6 +47,7 @@ public class SearchResults extends SherlockListActivity {
 	
 	private TvSeriesListAdapter adapter;
 	
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -55,29 +58,57 @@ public class SearchResults extends SherlockListActivity {
 	    // Load Preferences
 	    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
      	float textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+     	String languageCode = settings.getString("language", "en");
+     	String languageText = "English";
+     	
+     	if (!languageCode.equals("en")){
+	     	String[] languageCodeList = getResources().getStringArray(R.array.languageOptionValues);
+	     	String[] languageTextList = getResources().getStringArray(R.array.languageOptions);
+	     	
+	     	for (int i=0; i<languageCodeList.length; i++){
+	     		if (languageCodeList[i].equals(languageCode))
+	     			languageText = languageTextList[i]; 
+	     	}
+     	}
      	
      	
 	    // Get the intent, verify the action and get the query
 	    Intent intent = getIntent();
 	    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-	    	String query = intent.getStringExtra(SearchManager.QUERY);
+	    	final String query = intent.getStringExtra(SearchManager.QUERY);
 	    	
 	    	View header = getLayoutInflater().inflate(R.layout.text, null);
 
-	    	TextView header_text = (TextView) header.findViewById(R.id.text);
-	        header_text.setText("search results for: " + query);
+	    	final TextView header_text = (TextView) header.findViewById(R.id.text);
+	        header_text.setText("results for: " + query + " in " + languageText + " (search all languages)");
 	        header_text.setTextSize(textSize);
 	        header_text.setTextColor(Color.WHITE);
 	        header_text.setBackgroundColor(getResources().getColor(R.color.tvdb_green));
 	        header_text.setTypeface(null, Typeface.BOLD);
+	        header_text.setPadding(4, 8, 4, 8);
+	        header_text.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					
+					// hide the list view
+					setListAdapter(null);
+					
+					// update the header
+					header_text.setText("results for: " + query + " in all languages");
+					header_text.setOnClickListener(null);
+					
+					// show some progress
+					ProgressBar progress = (ProgressBar)findViewById(R.id.progress);
+			        progress.setVisibility(View.VISIBLE);
+			        
+			        // re-search in all languages
+					new SearchTask().execute(query, "all");
+				}
+			});
 			
 	        getListView().addHeaderView(header, null, false);
 	        
-	        TextView empty = (TextView)findViewById(android.R.id.empty);
-	        empty.setText(getResources().getString(R.string.loading));
-	        empty.setTextSize(textSize);
-
-			new SearchTask().execute(query);
+			new SearchTask().execute(query, languageCode);
 	    }
 	}
 	
@@ -89,8 +120,8 @@ public class SearchResults extends SherlockListActivity {
 			
 			try {
 				// Search the tvdb API
-				SeriesSearchHandler tvdbApiSearch = new SeriesSearchHandler(getApplicationContext());
-				return tvdbApiSearch.searchSeries(query[0]);
+				SeriesSearchHandler tvdbApiSearch = new SeriesSearchHandler();
+				return tvdbApiSearch.searchSeries(query[0], query[1]);
 				
 			}catch (Exception e){
 				e.printStackTrace();
@@ -107,9 +138,8 @@ public class SearchResults extends SherlockListActivity {
 	        setListAdapter(adapter);
 	        getListView().setOnItemClickListener(new ItemClickedListener());
 	        
-	        // Replace the loading text with empty text in case no items were found
-	        TextView empty = (TextView)findViewById(android.R.id.empty);
-	        empty.setText(getResources().getString(R.string.empty_list));
+	        ProgressBar progress = (ProgressBar)findViewById(R.id.progress);
+	        progress.setVisibility(View.GONE);
 		}
 	}
 

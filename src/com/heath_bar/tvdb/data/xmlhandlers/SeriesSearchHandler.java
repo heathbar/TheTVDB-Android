@@ -32,9 +32,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
@@ -46,13 +43,7 @@ public class SeriesSearchHandler extends DefaultHandler {
     private TvSeries currentSeries = null;
     private ArrayList<TvSeries> seriesList = null;
     private StringBuilder sb;
-    private Context context;
-    private String languageCode = "en";
     
-    public SeriesSearchHandler(Context ctx){
-    	context = ctx;
-    }
-
     @Override
 	public void startElement(String uri, String name, String qName, Attributes atts) {
 	    name = name.trim().toLowerCase(Locale.getDefault());				// format the current element name
@@ -78,9 +69,7 @@ public class SeriesSearchHandler extends DefaultHandler {
 			name = name.trim().toLowerCase(Locale.getDefault());
 			
 			if (name.equals("series")){
-				if (currentSeries.getLanguage().equals(languageCode))	// only add series that match my language
-					seriesList.add(currentSeries);								// End of a mirror, add it to the list
-			
+				seriesList.add(currentSeries);			
 			}else if (name.equals("id")){
 				currentSeries.setId(Long.valueOf(sb.toString()));
 			}else if (name.equals("banner")){
@@ -106,12 +95,9 @@ public class SeriesSearchHandler extends DefaultHandler {
 		}
 	}
     
-	public ArrayList<TvSeries> searchSeries(String seriesName) {
+	public ArrayList<TvSeries> searchSeries(String seriesName, String languagePreference) {
 	    try {
-	    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-	    	languageCode = settings.getString("language", "en");
-	    	
-			URL url = new URL(AppSettings.SERIES_BASIC_URL + URLEncoder.encode(seriesName,"UTF-8"));		//http://www.thetvdb.com/api/GetSeries.php?seriesname=
+			URL url = new URL(AppSettings.SERIES_BASIC_URL + URLEncoder.encode(seriesName,"UTF-8") + "&language=" + languagePreference);		//http://www.thetvdb.com/api/GetSeries.php?seriesname=
 			
 			seriesList = new ArrayList<TvSeries>();
 
