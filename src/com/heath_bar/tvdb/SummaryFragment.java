@@ -277,36 +277,41 @@ public class SummaryFragment extends SherlockFragment  {
 		ll = (LinearLayout)activity.findViewById(R.id.next_episode_row);
 		textview = (TextView)activity.findViewById(R.id.next_episode);
 
-		if (next == null){
-			 textview.setText("Next Episode: unknown");
+		if (seriesInfo != null && !seriesInfo.getStatus().equals("Ended")){
+	
+			if (next == null){
+				 textview.setText("Next Episode: unknown");
+			}else{
+			
+				textview.setText("Next Episode:");
+				ll.setId(next.getId());
+				ll.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						episodeListener.onClick(v);
+					}
+				});
+				
+				textview = (TextView)ll.findViewById(R.id.episode_number);
+				textview.setText(next.getSeason() + "." + String.format("%02d", next.getNumber()));
+				
+				textview = (TextView)ll.findViewById(R.id.episode_name);
+				textview.setTextColor(getResources().getColor(R.color.tvdb_green));
+				textview.setText(next.getName());
+								
+				String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(next.getAirDate())) : DateUtil.toString(next.getAirDate());
+				textview = (TextView)ll.findViewById(R.id.episode_date);
+				textview.setText(dateString);
+				
+				ll.startAnimation(fade);
+			}
 		}else{
-		
-			textview.setText("Next Episode:");
-			ll.setId(next.getId());
-			ll.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					episodeListener.onClick(v);
-				}
-			});
-			
-			textview = (TextView)ll.findViewById(R.id.episode_number);
-			textview.setText(next.getSeason() + "." + String.format("%02d", next.getNumber()));
-			
-			textview = (TextView)ll.findViewById(R.id.episode_name);
-			textview.setTextColor(getResources().getColor(R.color.tvdb_green));
-			textview.setText(next.getName());
-			
-			
-			String dateString = (useNiceDates) ? DateUtil.toNiceString(DateUtil.toString(next.getAirDate())) : DateUtil.toString(next.getAirDate());
-			textview = (TextView)ll.findViewById(R.id.episode_date);
-			textview.setText(dateString);
-			
-			ll.startAnimation(fade);
+			textview.setVisibility(View.GONE);
+			ll.setVisibility(View.GONE);
 		}
 		
-		ProgressBar pb = (ProgressBar)activity.findViewById(R.id.progress_summary2);
-		pb.setVisibility(View.GONE);
+		ProgressBar progress = (ProgressBar)activity.findViewById(R.id.progress_summary2);
+		progress.setVisibility(View.GONE);
 	}
 
 		// Handle episode clicks
