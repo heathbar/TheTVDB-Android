@@ -9,6 +9,7 @@ public class TaskManagementFragment extends Fragment {
 
 	SparseArray<ManageableTask> mTasks = new SparseArray<ManageableTask>();
 	SparseArray<Object> mResultData = new SparseArray<Object>();
+	boolean isCreated = false;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -18,17 +19,23 @@ public class TaskManagementFragment extends Fragment {
 		for (int i=0; i<mTasks.size(); i++){
 			ManageableTask t = mTasks.valueAt(i);
 			if (t != null){
-				t.setTaskId(mTasks.keyAt(i));
 				t.execute(this);
 			}
 		}
+		isCreated = true;
 	}
 
 	public void addTask(int id, ManageableTask task) throws IllegalArgumentException{
-		if (mTasks.get(id) != null)
-			throw new IllegalArgumentException("There is already a task defined for that ID");
-		else
+		if (mTasks.get(id) != null){
+			//throw new IllegalArgumentException("There is already a task defined for that ID");
+		}else{
+			task.setTaskId(id);
 			mTasks.put(id, task);
+			
+			if (isCreated){
+				task.execute(this);
+			}
+		}
 	}
 	
     // This is also called by the AsyncTask.

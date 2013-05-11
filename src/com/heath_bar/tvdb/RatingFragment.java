@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 public class RatingFragment extends DialogFragment {
 	
+	protected int initialRating = 5;
 	protected int rating;
 	protected String title;
 	
@@ -54,7 +55,7 @@ public class RatingFragment extends DialogFragment {
 	    super.onStart();
 
 		// set default value
-	    rating = 5;
+	    rating = initialRating;
 	    TextView value = (TextView)getDialog().findViewById(R.id.value);
 		value.setText(String.valueOf(rating));
 		
@@ -110,4 +111,8 @@ public class RatingFragment extends DialogFragment {
             throw new ClassCastException(activity.toString() + " must implement NoticeDialogListener");
         }
     }
+
+	public void setInitialValue(int rating) {
+		initialRating = rating;		
+	}
 }

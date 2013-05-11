@@ -19,73 +19,49 @@
 
 package com.heath_bar.tvdb.types;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.preference.PreferenceManager;
+import android.widget.Toast;
 
-import com.heath_bar.tvdb.AppSettings;
-import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
-import com.heath_bar.tvdb.data.adapters.lazylist.BitmapWebUtil;
-import com.heath_bar.tvdb.data.xmlhandlers.SeriesDetailsHandler;
+import com.heath_bar.tvdb.data.xmlhandlers.GetRatingHandler;
+import com.heath_bar.tvdb.types.exceptions.RatingNotFoundException;
 
-public class LoadSeriesDataTask extends ManageableTask {
+public class LoadRatingTask extends ManageableTask {
 
 	TaskManagementFragment mTaskFragment;
     long seriesId;
+    String userAccountId;
+    private Exception e;
     
-    public LoadSeriesDataTask(long seriesId) {
+    public LoadRatingTask(long seriesId, String userAccountId) {
 		this.seriesId = seriesId;
+		this.userAccountId = userAccountId;
 	}
         
 	@Override
-	protected TvSeries doInBackground(TaskManagementFragment... taskFragment) {
+	protected Integer doInBackground(TaskManagementFragment... taskFragment) {
 		mTaskFragment = taskFragment[0];
-		Context ctx = mTaskFragment.getActivity();
-		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
-		int cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-		
+				
 		try {
-
-			// Lookup basic series info
-			SeriesDetailsHandler infoQuery = new SeriesDetailsHandler(ctx);
-    		TvSeries seriesInfo = infoQuery.getInfo(seriesId);
-
-    		Bitmap bitmap;
-	    	BitmapFileCache fileCache = new BitmapFileCache(ctx, cacheSize);
-	    	
-	    	if (fileCache.contains(seriesInfo.getBanner().getId())){
-	    		bitmap = fileCache.get(seriesInfo.getBanner().getId());
-	    	}else{
-	    		BitmapWebUtil web = new BitmapWebUtil(ctx);
-	    		bitmap = web.downloadBitmap(seriesInfo.getBanner().getUrl());
-				fileCache.put(seriesInfo.getBanner().getId(), bitmap);
-			}
-			seriesInfo.getBanner().setBitmap(bitmap);
-	
-//			//There is no need to load the poster at this time.			
-//			
-//			if (fileCache.contains(seriesInfo.getPoster().getId())){
-//	    		bitmap = fileCache.get(seriesInfo.getPoster().getId());
-//	    	}else{
-//	    		BitmapWebUtil web = new BitmapWebUtil(ctx);
-//	    		bitmap = web.downloadBitmap(seriesInfo.getPoster().getUrl());
-//				fileCache.put(seriesInfo.getPoster().getId(), bitmap);
-//			}
-//			seriesInfo.getPoster().setBitmap(bitmap);
-			
-			return seriesInfo;
-
+    		GetRatingHandler ratingAdapter = new GetRatingHandler();
+    		Rating r = ratingAdapter.getSeriesRating(userAccountId, seriesId);
+    		return Integer.valueOf(r.getUserRating());
+		}catch (RatingNotFoundException e){
+			return 0;
 		}catch (Exception e){
-			e.printStackTrace();
+			this.e = e;
 		}
-		return null;
+		return 0;		
 	}
 	
 	@Override
-	protected void onPostExecute(Object info){
-		if (mTaskFragment != null)
-			mTaskFragment.taskFinished(getTaskId(), info);
+	protected void onPostExecute(Object data){
+		
+		if (mTaskFragment != null){
+			
+			if (e != null)
+				Toast.makeText(mTaskFragment.getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+			
+			mTaskFragment.taskFinished(getTaskId(), data);
+		}
+			
 	}
 }

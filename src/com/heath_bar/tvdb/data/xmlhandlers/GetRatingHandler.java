@@ -20,6 +20,7 @@ package com.heath_bar.tvdb.data.xmlhandlers;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -100,7 +101,8 @@ public class GetRatingHandler extends DefaultHandler{
 	    
 	    public Rating getSeriesRating(String accountId, long seriesId) throws Exception {
 		    try {
-				URL url = new URL(AppSettings.SET_RATING_URL + "accountid=" + accountId + "&seriesid=" + seriesId);	
+		    	Date date = new Date();
+				URL url = new URL(AppSettings.SET_RATING_URL + "accountid=" + accountId + "&seriesid=" + seriesId + "&nocache=" + date.getTime());	
 								
 			    SAXParserFactory spf = SAXParserFactory.newInstance();
 			    SAXParser sp = spf.newSAXParser();
@@ -130,7 +132,8 @@ public class GetRatingHandler extends DefaultHandler{
 	    
 	    public Rating getEpisodeRating(String accountId, long seriesId, long episodeId) throws Exception {
 		    try {
-				URL url = new URL(AppSettings.SET_RATING_URL + "accountid=" + accountId + "&seriesid=" + seriesId);	
+		    	Date date = new Date();
+				URL url = new URL(AppSettings.SET_RATING_URL + "accountid=" + accountId + "&seriesid=" + seriesId + "&nocache=" + date.getTime());	
 				this.episodeId = episodeId;
 				
 			    SAXParserFactory spf = SAXParserFactory.newInstance();

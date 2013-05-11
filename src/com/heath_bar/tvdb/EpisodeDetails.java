@@ -67,6 +67,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 	protected TvEpisode myEpisode = null;
 	protected long cacheSize;
 	protected String userAccountId;
+	protected int userRating;
 	protected boolean useNiceDates;
 	
 	// OnCreate... display essentially just a loading screen while we call LoadInfoTask in the background
@@ -310,7 +311,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
  	/** Update the GUI with the specified rating */
  	private void setUserRatingTextView(int rating){
 		
-		String ratingText = (rating == 0) ? "rate" : StringUtil.wordify(rating);
+		String ratingText = (rating == 0) ? "RATE" : StringUtil.wordify(rating);
 		
 		int start = 0;
 		int end = ratingText.length();				
@@ -326,6 +327,8 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
  		TextView ratingTextView = (TextView)findViewById(R.id.rating_link);
 		ratingTextView.setText(ssb, BufferType.SPANNABLE);
 		ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+		
+		userRating = rating;
  	}
  	
  	
@@ -336,6 +339,7 @@ public class EpisodeDetails extends SherlockFragmentActivity implements RatingFr
 		}else{
 			RatingFragment dialog = new RatingFragment();
 			dialog.setTitle(myEpisode.getName());
+			dialog.setInitialValue(userRating);
 			dialog.show(getSupportFragmentManager(), "RatingFragment");
 		}
 	}

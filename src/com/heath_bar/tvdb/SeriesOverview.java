@@ -22,8 +22,10 @@ package com.heath_bar.tvdb;
 import java.util.ArrayList;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -44,6 +46,7 @@ import com.heath_bar.tvdb.types.Actor;
 import com.heath_bar.tvdb.types.FavoriteSeriesInfo;
 import com.heath_bar.tvdb.types.LoadCastDataTask;
 import com.heath_bar.tvdb.types.LoadEpisodeListTask;
+import com.heath_bar.tvdb.types.LoadRatingTask;
 import com.heath_bar.tvdb.types.LoadSeriesDataTask;
 import com.heath_bar.tvdb.types.TaskManagementFragment;
 import com.heath_bar.tvdb.types.TvEpisodeList;
@@ -127,7 +130,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	        titleIndicator.setViewPager(mViewPager);
 	    
 	        final float density = getResources().getDisplayMetrics().density;
-	        titleIndicator.setBackgroundColor(getResources().getColor(R.color.blue2));
+	        titleIndicator.setBackgroundColor(getResources().getColor(R.color.background1));
 	        titleIndicator.setTopPadding(1 * density);
 	        titleIndicator.setFooterColor(getResources().getColor(R.color.tvdb_green));
 	        titleIndicator.setFooterLineHeight(1 * density);
@@ -135,6 +138,8 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	        titleIndicator.setFooterIndicatorStyle(IndicatorStyle.Triangle);
 	        titleIndicator.setSelectedBold(true);
 	    
+	        // Set the favorite icon
+	        new CheckFavoriteTask(this).execute(seriesId);
 	    }
  	}
 	
@@ -151,15 +156,18 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 			} else if (taskId == SUMMARY_TASK_ID){
 				seriesInfo = (TvSeries)resultData;
 				
-				// redraw the options menu with the correct icon
-				FavoritesDAL db = new FavoritesDAL(this);
-				isFavorite = db.isFavoriteSeries(seriesInfo.getId());
-				supportInvalidateOptionsMenu();
-				
 				// Update the summary fragment
 				SummaryFragment summaryFragment = mPageAdapter.getSummaryFragment();
 				summaryFragment.populateTheUI(this, seriesInfo); 
-			
+
+				
+				// Launch the LoadRatingTask
+				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+				String userAccountId = settings.getString("accountId", "").trim();
+								
+				TaskManagementFragment taskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
+				taskFragment.addTask(RATING_TASK_ID, new LoadRatingTask(seriesId, userAccountId));
+				
 			} else if (taskId == EPISODE_DATA_TASK_ID){
 				TvEpisodeList epList = (TvEpisodeList)resultData;
 				EpisodeListFragment episodeFragment = mPageAdapter.getEpisodeListFragment();
@@ -169,7 +177,9 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 				summaryFragment.populateTheUIPart2(this, epList.getLastAired(), epList.getNextAired());
 				
 			} else if (taskId == RATING_TASK_ID){
-				// do something
+				
+				SummaryFragment summaryFragment = mPageAdapter.getSummaryFragment();
+				summaryFragment.setUserRatingTextView((Integer)resultData);
 			}
 			
 		} catch (ClassCastException e) {
@@ -206,6 +216,25 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 
 	// Favorites functions /////////////////////////////////////////////////////////////////
 
+ 	private class CheckFavoriteTask extends AsyncTask<Long, Void, Boolean>{
+ 		SeriesOverview activity;
+ 		
+ 		public CheckFavoriteTask(SeriesOverview activity){
+ 			this.activity = activity;
+ 		}
+ 		
+ 		@Override
+ 		protected Boolean doInBackground(Long... seriesId){
+ 		// redraw the options menu with the correct icon
+			FavoritesDAL db = new FavoritesDAL(getApplicationContext());
+			return db.isFavoriteSeries(seriesId[0]);
+ 		}
+ 		protected void onPostExecute(Boolean isFavorite){
+			activity.isFavorite = isFavorite;
+ 			activity.supportInvalidateOptionsMenu();
+ 		}
+ 	}
+ 	
 	public void addToFavorites(){
 		new AddFavoriteTask().execute(seriesInfo);		
 	}
@@ -267,20 +296,23 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
     	super.onRestoreInstanceState(savedInstanceState);
     	// Instance state has been restored. Send data to the fragments.
     	
-    	TaskManagementFragment castTaskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
-    	Object data = castTaskFragment.getResultData(CAST_TASK_ID);
+    	TaskManagementFragment taskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
+    	Object data = taskFragment.getResultData(CAST_TASK_ID);
     	if (data != null)
     		onTaskFinished(CAST_TASK_ID, data);
     	
-    	TaskManagementFragment seriesTaskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
-    	data = seriesTaskFragment.getResultData(SUMMARY_TASK_ID);
+    	data = taskFragment.getResultData(SUMMARY_TASK_ID);
     	if (data != null)
     		onTaskFinished(SUMMARY_TASK_ID, data);
     	
-    	TaskManagementFragment episodeTaskFragment = (TaskManagementFragment)getSupportFragmentManager().findFragmentByTag(TASK_FRAGMENT_TAG);
-    	data = episodeTaskFragment.getResultData(EPISODE_DATA_TASK_ID);
+    	data = taskFragment.getResultData(EPISODE_DATA_TASK_ID);
     	if (data != null)
     		onTaskFinished(EPISODE_DATA_TASK_ID, data);
+    	
+    	data = taskFragment.getResultData(RATING_TASK_ID);
+    	if (data != null)
+    		onTaskFinished(RATING_TASK_ID, data);
+    	
     }
     
     

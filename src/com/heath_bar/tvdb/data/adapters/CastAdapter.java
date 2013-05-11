@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.heath_bar.tvdb.AppSettings;
 import com.heath_bar.tvdb.ImageViewer;
 import com.heath_bar.tvdb.R;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapLoader;
@@ -82,11 +83,7 @@ public class CastAdapter extends BaseAdapter {
 			}
 		});
 		
-		if (position % 2 == 0){
-			convertView.setBackgroundColor(context.getResources().getColor(R.color.blue1));
-		}else{
-			convertView.setBackgroundColor(context.getResources().getColor(R.color.blue2));
-		}
+		convertView.setBackgroundColor(AppSettings.listBackgroundColors[position % AppSettings.listBackgroundColors.length]);
 		
 		ProgressBar progress = (ProgressBar)convertView.findViewById(R.id.progress_actors);
 		ImageView image = (ImageView)convertView.findViewById(R.id.image);

@@ -62,6 +62,7 @@ public class SummaryFragment extends SherlockFragment  {
 	protected String userAccountId;
 	protected Boolean isFavorite = null;
 	protected boolean useNiceDates;
+	protected int userRating;
 	protected FragmentManager mFragmentManager;
 	protected static final String TASK_FRAGMENT_TAG = "series_task";
 	protected static final int TASK_FRAGMENT = 0;
@@ -331,7 +332,7 @@ public class SummaryFragment extends SherlockFragment  {
 	 		String communityRatingText = communityRating + " / 10";
 			
 			String ratingTextA = communityRatingText + "  (";
-			String ratingTextB = (rating == 0) ? "rate" : String.valueOf(rating);
+			String ratingTextB = (rating == 0) ? "RATE" : StringUtil.wordify(rating);
 			String ratingTextC = ")";
 			
 			int start = ratingTextA.length();
@@ -349,6 +350,8 @@ public class SummaryFragment extends SherlockFragment  {
 			ssb.setSpan(new TextAppearanceSpan(getActivity(), R.style.episode_link), start, end, 0);	// Set the style of the text
 			ratingTextView.setText(ssb, BufferType.SPANNABLE);
 			ratingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+			
+			userRating = rating;
  		}catch (Exception e){
  			Log.e("SeriesOverview", "Failed to setUserRatingTextView: " + e.getMessage());
  		}
@@ -361,6 +364,7 @@ public class SummaryFragment extends SherlockFragment  {
 		}else{
 			RatingFragment dialog = new RatingFragment();
 			dialog.setTitle(seriesInfo.getName());
+			dialog.setInitialValue(userRating);
 			dialog.show(getActivity().getSupportFragmentManager(), "RatingFragment");
 		}
 	}

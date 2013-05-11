@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -121,12 +122,12 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		else 
 			isRefreshing = true;				
 				
-		// Hide refresh button and show Progress animation
+		// Show Progress animation
 		setSupportProgressBarIndeterminateVisibility(true);
-				
-		// Set the empty list text
-		TextView emptyList = (TextView)findViewById(android.R.id.empty);
-		emptyList.setText(getResources().getString(R.string.loading));
+		ProgressBar progress = (ProgressBar)findViewById(R.id.progress);
+		if (progress != null) progress.setVisibility(View.VISIBLE);
+		View firstRun = findViewById(android.R.id.empty);
+    	if (firstRun != null) firstRun.setVisibility(View.GONE);
 						
 		// Register for responses from the update service
 		if (updateReceiver != null)
@@ -162,6 +163,9 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 			
 			cursor = c;
 			
+			ProgressBar progress = (ProgressBar)findViewById(R.id.progress);
+			if (progress != null) progress.setVisibility(View.GONE);
+			
 			// Apply the cursor to the ListView
 			String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
 	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
@@ -176,7 +180,12 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	        	if(AppSettings.LOG_ENABLED)
 	        		Log.e("TheTVDBActivity","Failed to set the cursor");
 	        	Toast.makeText(getApplicationContext(), "There was a problem loading your favorite shows from the database", Toast.LENGTH_SHORT).show();
-	        }			
+	        }
+	        
+	        if (cursor.getCount() == 0){
+	        	View firstRun = findViewById(android.R.id.empty);
+	        	if (firstRun != null) firstRun.setVisibility(View.VISIBLE);	
+	        }
 		}
 	}
 		
@@ -192,16 +201,11 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 				
 		        try {
 			        adapter.changeCursor(refreshCursor);
-			        //setListAdapter(adapter);
 		        }catch(Exception e){}
 		        
 			} else if (intent.getAction().equals(UpdateService.ACTION_COMPLETE)){
 				// Hide the progress animation and show the refresh button
 				setSupportProgressBarIndeterminateVisibility(false);
-				
-				// Reset the empty list text
-				TextView emptyList = (TextView)findViewById(android.R.id.empty);
-				emptyList.setText(getResources().getString(R.string.empty_list_favorites));
 				
 				isRefreshing = false;
 			}
