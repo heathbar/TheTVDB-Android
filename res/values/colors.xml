@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="tvdb_green">#B6D415</color>
-    <color name="blue1">#002337</color>
-    <color name="blue2">#001D2D</color>
-    <color name="header_white">#FFFFFF</color>
+    <color name="background1">#000000</color>
+    <color name="background2">#001D2D</color>
+    <color name="background3">#002337</color>
 </resources>

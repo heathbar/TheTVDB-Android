@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue2">
+    android:background="@color/background1">
     
     <ProgressBar
 	    android:id="@+id/progress_summary"
@@ -58,7 +58,7 @@
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
 			    android:textSize="24sp"
-			    android:textColor="@color/header_white"
+			    android:textColor="@android:color/white"
 			    android:visibility="gone"
 			    android:text="@string/airs" />
 			
@@ -88,7 +88,7 @@
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
 			    android:textSize="24sp"
-			    android:textColor="@color/header_white"
+			    android:textColor="@android:color/white"
 			    android:visibility="gone"
 			    android:text="@string/rating" />
 	        
@@ -106,7 +106,7 @@
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
 			    android:textSize="24sp"
-			    android:textColor="@color/header_white"
+			    android:textColor="@android:color/white"
 			    android:visibility="gone"
 			    android:text="@string/genre" />
 			
@@ -124,7 +124,7 @@
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
 			    android:textSize="24sp"
-			    android:textColor="@color/header_white"
+			    android:textColor="@android:color/white"
 			    android:visibility="gone"
 			    android:text="@string/runtime" />
 			
