@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.heath_bar.tvdb"
     android:installLocation="auto"
-    android:versionCode="11"
-    android:versionName="0.7.0">
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="16"/>
+    android:versionCode="12"
+    android:versionName="0.8.0">
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="17"/>
 	<permission android:name="com.heath_bar.tvdb.search"></permission>
 	
 	<uses-permission android:name="android.permission.INTERNET" />
@@ -29,8 +29,6 @@
         <activity android:label="Series Overview" android:name="com.heath_bar.tvdb.SeriesOverview">
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
         </activity>
-        
-                
         
         <activity android:name="com.heath_bar.tvdb.EpisodeDetails">
             <meta-data android:name="android.app.default_searchable" android:value="com.heath_bar.tvdb.SearchResults" />
