@@ -38,17 +38,20 @@ public class ShareUtil {
         */
 		
 		BitmapFileCache cache = new BitmapFileCache(context);
-		if (cache.getCacheDir().getAbsolutePath().contains("sdcard")){
+		
+		try {
 			// I'm going to assume the image hasn't been trimmed from the cache...
 			String path = cache.makeJPG(imageId);
 			share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
-			
-			
+				
 			return Intent.createChooser(share, "Share Image");
+		}catch (Exception e){
 			
-		}else{
-			Toast.makeText(context, "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
+			if (!cache.getCacheDir().getAbsolutePath().contains("sdcard"))	
+				Toast.makeText(context, "You must have an SD card mounted in order to share images", Toast.LENGTH_LONG).show();
+			
 			return null;
 		}
+		
 	}
 }
