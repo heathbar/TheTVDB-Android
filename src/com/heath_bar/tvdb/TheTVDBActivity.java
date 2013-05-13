@@ -115,7 +115,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	private void RefreshFavoritesAsync(){
 		
 		// Refresh from the db 
-		new QueryDatabaseTask().execute();
+		new QueryDatabaseTask(this).execute();
 		
 		if (isRefreshing)
 			return; 
@@ -145,6 +145,11 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	
 	private class QueryDatabaseTask extends AsyncTask<Void, Void, Cursor>{
 	
+		protected Context context;
+		public QueryDatabaseTask(Context context){
+			this.context = context;
+		}
+		
 		@Override
 		protected Cursor doInBackground(Void... params) {
 			
@@ -153,7 +158,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		        return favorites.fetchNamedFavorites(sortBy);
 		        
 			}catch (Exception e){
-				e.printStackTrace();
+				Log.e("TheTVDBActivity", "QueryDatabaseTask: " + e.getMessage());
 			}
 			return null;
 		}
@@ -167,12 +172,12 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 			if (progress != null) progress.setVisibility(View.GONE);
 			
 			// Apply the cursor to the ListView
-			String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED};
-	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired};
+			String[] from = new String[]{SeriesDbAdapter.KEY_TITLE, SeriesDbAdapter.KEY_LAST_AIRED, SeriesDbAdapter.KEY_NEXT_AIRED, SeriesDbAdapter.KEY_POSTER};
+	        int[] to = new int[]{R.id.list_item_title, R.id.last_aired, R.id.next_aired, R.id.image};
 	      
 	        try{
 	        	
-		        adapter = new SeriesAiredListAdapter(getApplicationContext(), R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors, useNiceDates);
+		        adapter = new SeriesAiredListAdapter(context, R.layout.show_aired_row, cursor, from, to, 0, AppSettings.listBackgroundColors, useNiceDates);
 				setListAdapter(adapter);
 				getListView().setOnItemClickListener(new ItemClickedListener());
 				registerForContextMenu(getListView());
@@ -182,7 +187,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 	        	Toast.makeText(getApplicationContext(), "There was a problem loading your favorite shows from the database", Toast.LENGTH_SHORT).show();
 	        }
 	        
-	        if (cursor.getCount() == 0){
+	        if (cursor == null || cursor.getCount() == 0){
 	        	View firstRun = findViewById(android.R.id.empty);
 	        	if (firstRun != null) firstRun.setVisibility(View.VISIBLE);	
 	        }
@@ -248,12 +253,17 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
     public boolean onContextItemSelected(android.view.MenuItem item) {
 		// Delete the show in the background
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		new RemoveFavoriteTask().execute(info.id);
+		new RemoveFavoriteTask(this).execute(info.id);
 
 		return true;
     }
 	
 	private class RemoveFavoriteTask extends AsyncTask<Long, Void, Boolean>{
+		protected Context context;
+		public RemoveFavoriteTask(Context context){
+			this.context = context;
+		}
+		
 		@Override
 		protected Boolean doInBackground(Long... params) {
 			return favorites.removeSeries(params[0]);
@@ -262,7 +272,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		@Override
 		protected void onPostExecute(Boolean result) {
 			Toast.makeText(getApplicationContext(), "The show has been removed from your favorites.", Toast.LENGTH_SHORT).show();
-			new QueryDatabaseTask().execute();
+			new QueryDatabaseTask(context).execute();
 		}
 	}
 	
@@ -297,7 +307,7 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		prefEditor.putString("sortBy", sortBy);
 		prefEditor.commit();		
 		
-		new QueryDatabaseTask().execute();		
+		new QueryDatabaseTask(this).execute();		
 	}
 	
 	

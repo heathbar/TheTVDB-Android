@@ -242,7 +242,7 @@ public class SeriesOverview extends SherlockFragmentActivity implements RatingFr
 	private class AddFavoriteTask extends AsyncTask<TvSeries, Void, Void>{
 		@Override
 		protected Void doInBackground(TvSeries... params) {
-			FavoriteSeriesInfo info = new FavoriteSeriesInfo(Long.valueOf(params[0].getId()), params[0].getName(), 0, 0);
+			FavoriteSeriesInfo info = new FavoriteSeriesInfo(Long.valueOf(params[0].getId()), params[0].getName(), 0, 0, params[0].getPoster().getUrl().substring(AppSettings.BANNER_URL.length()));
 			FavoritesDAL favorites = new FavoritesDAL(getApplicationContext());
 			favorites.createFavoriteSeries(info);
 			favorites.close();

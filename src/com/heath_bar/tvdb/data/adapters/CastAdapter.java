@@ -60,6 +60,7 @@ public class CastAdapter extends BaseAdapter {
 			imageList.add(actors.get(i).getImage());
 
 		loader = new BitmapLoader(context, imageList, false);
+		loader.setResampleSize(100);
 	}
 	
 	@Override

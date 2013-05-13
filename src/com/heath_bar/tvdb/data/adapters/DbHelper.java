@@ -36,18 +36,24 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-        String DATABASE_CREATE =
+        final String DATABASE_CREATE =
                 "create table " + SeriesDbAdapter.FAVORITES_TABLE + " ("
             	+ SeriesDbAdapter.KEY_ID + " integer primary key, "
                 + SeriesDbAdapter.KEY_TITLE + " text not null, "
                 + SeriesDbAdapter.KEY_LAST_AIRED + " integer, "
-                + SeriesDbAdapter.KEY_NEXT_AIRED + " integer);";
+                + SeriesDbAdapter.KEY_NEXT_AIRED + " integer, "
+                + SeriesDbAdapter.KEY_POSTER + " text null);";
             db.execSQL(DATABASE_CREATE);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		
+		if (newVersion == 2){
+			final String SQL = 
+					"alter table " + SeriesDbAdapter.FAVORITES_TABLE 
+					+ " add column " + SeriesDbAdapter.KEY_POSTER + " text null;";
+			db.execSQL(SQL);
+		}
 	}
 
 }

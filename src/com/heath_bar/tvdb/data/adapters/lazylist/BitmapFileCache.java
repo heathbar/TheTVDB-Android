@@ -35,6 +35,8 @@ import android.util.Log;
 public class BitmapFileCache {
 	protected File cacheDir;
 	protected long maxSize;
+	protected int resampleSize;
+	protected float density;
 
 	
 	/** Constructor */
@@ -56,6 +58,9 @@ public class BitmapFileCache {
             cacheDir.mkdirs();
         
         this.maxSize = maxCacheSize;
+        
+        density = context.getResources().getDisplayMetrics().density;
+        resampleSize = (int)(400 * density);
 	}
 	
 	
@@ -106,7 +111,7 @@ public class BitmapFileCache {
 	
 	public Bitmap getResampled(String key){
         File file = new File(cacheDir, key);
-		return decodeSampledBitmapFromFile(file.getAbsolutePath(), 200, 200);
+		return decodeSampledBitmapFromFile(file.getAbsolutePath(), resampleSize, resampleSize);
     }
 	public Bitmap getThumbResampled(String key){
         return getResampled(key + "T");
@@ -149,6 +154,12 @@ public class BitmapFileCache {
     	}
     }
     
+    public int getResampleSize(){
+    	return resampleSize;
+    }
+    public void setResampleSize(int size){
+    	resampleSize = (int)(size * density);
+    }
     
     
     

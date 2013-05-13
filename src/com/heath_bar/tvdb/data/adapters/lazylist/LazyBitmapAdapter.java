@@ -42,7 +42,7 @@ public class LazyBitmapAdapter extends BaseAdapter {
     	this.imageview = imageview;
 
         inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        loader = new BitmapLoader(activity.getApplicationContext(), banners, true);
+        loader = new BitmapLoader(activity, banners, true);
     }
     
 	@Override

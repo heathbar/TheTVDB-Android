@@ -31,7 +31,7 @@ public final class AppSettings {
 	public static final String FAVORITES_URL = "http://thetvdb.com/api/User_Favorites.php?";
 	public static final String BANNER_URL = "http://thetvdb.com/banners/";
 	public static final boolean LOG_ENABLED = true;
-	public static final int DATABASE_VERSION = 1;
+	public static final int DATABASE_VERSION = 2;
 	public static final int[] listBackgroundColors = new int[]{0xff000000, 0xff001d2d};	// R.color.background1 & R.color.background2
 	public static final String PREFS_NAME = "TheTVDBSettings";
 	public static final int THUMBNAIL_SIZE = 100;

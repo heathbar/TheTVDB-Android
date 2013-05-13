@@ -23,24 +23,32 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import com.heath_bar.tvdb.AppSettings;
+import com.heath_bar.tvdb.R;
+import com.heath_bar.tvdb.data.adapters.lazylist.BitmapLoader;
+import com.heath_bar.tvdb.data.adapters.lazylist.WebImage;
 import com.heath_bar.tvdb.util.DateUtil;
 
 public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 
-	public String[] _from;
-	public int[] _to;
-	public int[] _colors;
+	private String[] _from;
+	private int[] _to;
+	private int[] _colors;
 	private float _textSize;
 	private boolean _useNiceDates;
+	private BitmapLoader loader;
 	
     @SuppressWarnings("deprecation")
 	public SeriesAiredListAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, int[] colors, boolean useNiceDates) throws Exception {
     	super(context, layout, c, from, to);
 
-    	if (to.length != 3 || from.length != 3)
+    	if (to.length != 4 || from.length != 4)
     		throw new Exception("SeriesAiredAdapter requires exactly 3 'to' and 'from' elements.");
     	
     	_from = from.clone();
@@ -50,46 +58,57 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
     	
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
     	_textSize = Float.parseFloat(settings.getString("textSize", "18.0"));
+
+    	loader = new BitmapLoader(context);
     }
 
 		@Override
 	    public void bindView(View view, Context context, Cursor cursor) {
-	        super.bindView(view, context, cursor);
-
+			
 	        ViewHolder holder = (ViewHolder) view.getTag();
 	        if (holder == null) {
 	            holder = new ViewHolder();
 	            holder.textView1 = (TextView) view.findViewById(_to[0]);
 	            holder.textView2 = (TextView) view.findViewById(_to[1]);
 	            holder.textView3 = (TextView) view.findViewById(_to[2]);
-	            holder.column1 = cursor.getColumnIndexOrThrow(_from[0]);
-                holder.column2 = cursor.getColumnIndexOrThrow(_from[1]);
-	            holder.column3 = cursor.getColumnIndexOrThrow(_from[2]);
-	            
+	            holder.imageView = (ImageView) view.findViewById(_to[3]);
+	            holder.columnTitle = cursor.getColumnIndexOrThrow(_from[0]);
+                holder.columnLast = cursor.getColumnIndexOrThrow(_from[1]);
+	            holder.columnNext = cursor.getColumnIndexOrThrow(_from[2]);
+	            holder.columnPoster = cursor.getColumnIndexOrThrow(_from[3]);
 	            view.setTag(holder);
-	            
 	        }
 	        view.setBackgroundColor(_colors[cursor.getPosition() % _colors.length]);
 
-	        holder.textView1.setText(cursor.getString(holder.column1));
+	        holder.textView1.setText(cursor.getString(holder.columnTitle));
 	        holder.textView1.setTextSize(_textSize*1.6f);
 	        
 	        
 	        if (_useNiceDates)
-	        	holder.textView2.setText("Last Aired: " + DateUtil.toNiceString(cursor.getString(holder.column2)));
+	        	holder.textView2.setText("Last Aired: " + DateUtil.toNiceString(cursor.getString(holder.columnLast)));
 	        else
-	        	holder.textView2.setText("Last Aired: " + cursor.getString(holder.column2));
+	        	holder.textView2.setText("Last Aired: " + cursor.getString(holder.columnLast));
 	        holder.textView2.setTextSize(_textSize*0.7f);
 	        
-	        if (cursor.getString(holder.column3).equals("Unknown"))
+	        if (cursor.getString(holder.columnNext).equals("Unknown"))
 	        	holder.textView3.setText("Next Aired: Unknown");
-	        else if (cursor.getString(holder.column3).equals("ZZ"))		// ZZ = hack so that it shows up at the bottom when sorted
+	        else if (cursor.getString(holder.columnNext).equals("ZZ"))		// ZZ = hack so that it shows up at the bottom when sorted
 	        	holder.textView3.setText("Ended");
 	        else if (_useNiceDates)
-	        	holder.textView3.setText("Next Aired: " + DateUtil.toNiceString(cursor.getString(holder.column3)));
+	        	holder.textView3.setText("Next Aired: " + DateUtil.toNiceString(cursor.getString(holder.columnNext)));
 	        else
-	        	holder.textView3.setText("Next Aired: " + cursor.getString(holder.column3));
+	        	holder.textView3.setText("Next Aired: " + cursor.getString(holder.columnNext));
 	        holder.textView3.setTextSize(_textSize*0.7f);
+	        
+            String url = AppSettings.BANNER_URL + cursor.getString(holder.columnPoster);
+            String filename = url.substring(url.lastIndexOf('/')+1);
+            WebImage wi = new WebImage(filename, url, "");
+            
+            ViewGroup parent = (ViewGroup)holder.imageView.getParent();
+            ProgressBar progress = (ProgressBar)parent.findViewById(R.id.progress_favorite_item);
+            
+            loader.setResampleSize(65);
+            loader.Load(cursor.getPosition(), wi, holder.imageView, progress);
 	    }
 		
 		
@@ -98,8 +117,10 @@ public class SeriesAiredListAdapter extends SimpleCursorAdapter {
 	        TextView textView1;
 	        TextView textView2;
 	        TextView textView3;
-	        int column1; 
-	        int column2;
-	        int column3;
+	        ImageView imageView;
+	        int columnTitle; 
+	        int columnLast;
+	        int columnNext;
+	        int columnPoster;
 	    }
 	}

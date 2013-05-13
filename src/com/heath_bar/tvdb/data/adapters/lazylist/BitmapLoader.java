@@ -25,8 +25,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.heath_bar.tvdb.AppSettings;
-
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -36,6 +34,8 @@ import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.heath_bar.tvdb.AppSettings;
+
 public class BitmapLoader {
 	
 	private BitmapMemoryCache memCache;
@@ -44,10 +44,21 @@ public class BitmapLoader {
 	private WebImageList images;						// Holds a map of ids (keys) and urls (values)
 	private Map<ImageView, String> lastAssignments; 	// keep track of what URL was last assigned to a given imageview
 	private boolean preferThumbnails;
-    ExecutorService asyncQueue; 
+    private ExecutorService asyncQueue;
+    private Context context;
 
-	
-	public BitmapLoader(Context ctx, WebImageList images, boolean preferThumbnails){
+    public BitmapLoader(Context ctx){
+		this.context = ctx;
+    	this.images = new WebImageList();
+		memCache = new BitmapMemoryCache();
+		fileCache = new BitmapFileCache(ctx);
+		web = new BitmapWebUtil(ctx);
+		lastAssignments = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
+		asyncQueue = Executors.newFixedThreadPool(1);
+	}
+    
+    public BitmapLoader(Context ctx, WebImageList images, boolean preferThumbnails){
+    	this.context = ctx;
 		memCache = new BitmapMemoryCache();
 		fileCache = new BitmapFileCache(ctx);
 		web = new BitmapWebUtil(ctx);
@@ -59,11 +70,26 @@ public class BitmapLoader {
 	}
 
 	/** Load the bitmap from the cache into the specified image view; on cache miss load it asynchronously */
-	public void Load(int position, ImageView image, ProgressBar progress) {
+	public void Load(int position, WebImage wi, ImageView image, ProgressBar progress) {
 		
+		while (images.size() < position)
+			images.add(null);
+		images.add(position, wi);
+		
+		Load(position, image, progress);
+	}
+
+	/** Load the bitmap from the cache into the specified image view; on cache miss load it asynchronously */
+	public void Load(int position, ImageView image, ProgressBar progress) {
+		       
 		// Make sure we have an image
 		if (!images.get(position).getUrl().equals(AppSettings.BANNER_URL)){
 			String id = images.get(position).getId();
+
+	        // if the WebImage is already loaded in the correct ImageView, quit now instead of reloading it 
+	        if (lastAssignments.get(image) != null && lastAssignments.get(image).equals(id))
+	        	return;
+	        	        
 			lastAssignments.put(image, id);
 			Bitmap bitmap = memCache.get(id);
 	
@@ -134,7 +160,6 @@ public class BitmapLoader {
     			
     				// Get the resampled Bitmap
     				bitmap = fileCache.getResampled(wi.getId());			// Get the resampled Bitmap
-    			
     			}
     		} catch (IOException e) {
 				Log.e("BitmapLoader", "Error: " + e.getMessage());
@@ -148,8 +173,8 @@ public class BitmapLoader {
         	
         
     		// Display the bitmap in the image view on the UI thread
-    		((Activity)image.getContext()).runOnUiThread(new BitmapDisplayer(bitmap, image, progress));
-
+    		((Activity)context).runOnUiThread(new BitmapDisplayer(bitmap, image, progress));
+    		
     		// Add the bitmap to the memory cache
     		memCache.put(wi.getId(), bitmap);
         }
@@ -199,6 +224,10 @@ public class BitmapLoader {
 	
 	public void setFileCacheMaxSize(long maxSize){
 		fileCache.setMaxSize(maxSize);
+	}
+	
+	public void setResampleSize(int size){
+		fileCache.setResampleSize(size);
 	}
 
 }

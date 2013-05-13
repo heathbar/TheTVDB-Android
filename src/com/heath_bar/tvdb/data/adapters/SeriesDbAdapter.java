@@ -36,6 +36,7 @@ public class SeriesDbAdapter {
     public static final String KEY_TITLE = "title";
     public static final String KEY_LAST_AIRED = "last_aired";
     public static final String KEY_NEXT_AIRED = "next_aired";
+    public static final String KEY_POSTER = "poster";
 
     private DbHelper mDbHelper;
     private SQLiteDatabase mDb;
@@ -72,6 +73,7 @@ public class SeriesDbAdapter {
         initialValues.put(KEY_TITLE, "");
         initialValues.put(KEY_LAST_AIRED, 0);
         initialValues.put(KEY_NEXT_AIRED, 0);
+        initialValues.put(KEY_POSTER, "");
 
         return mDb.insert(FAVORITES_TABLE, "0", initialValues);
 	}
@@ -82,6 +84,7 @@ public class SeriesDbAdapter {
         initialValues.put(KEY_TITLE, info.getSeriesName());
         initialValues.put(KEY_LAST_AIRED, info.getLastAired());
         initialValues.put(KEY_NEXT_AIRED, info.getNextAired());
+        initialValues.put(KEY_POSTER, info.getPoster());
 
         return mDb.insert(FAVORITES_TABLE, "0", initialValues);
     }
@@ -97,7 +100,8 @@ public class SeriesDbAdapter {
         			KEY_ID, 
         			KEY_TITLE,
         			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_LAST_AIRED,
-        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' WHEN " + KEY_NEXT_AIRED + " = -1 THEN 'ZZ' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED	// using ZZ = hack so that it shows up at the bottom when sorted
+        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' WHEN " + KEY_NEXT_AIRED + " = -1 THEN 'ZZ' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED,	// using ZZ = hack so that it shows up at the bottom when sorted
+        			KEY_POSTER
     			},
                 KEY_TITLE + " <> ''", null, null, null, sortBy + ", " + KEY_TITLE);
     }
@@ -108,7 +112,8 @@ public class SeriesDbAdapter {
         			KEY_ID, 
         			KEY_TITLE,
         			"CASE WHEN " + KEY_LAST_AIRED + " = 0 THEN 'Unknown' ELSE date(datetime("+KEY_LAST_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_LAST_AIRED,
-        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' WHEN " + KEY_NEXT_AIRED + " = -1 THEN 'ZZ' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED	// using ZZ = hack so that it shows up at the bottom when sorted
+        			"CASE WHEN " + KEY_NEXT_AIRED + " = 0 THEN 'Unknown' WHEN " + KEY_NEXT_AIRED + " = -1 THEN 'ZZ' ELSE date(datetime("+KEY_NEXT_AIRED+", 'unixepoch', 'localtime')) END AS " + KEY_NEXT_AIRED,	// using ZZ = hack so that it shows up at the bottom when sorted
+        			KEY_POSTER
     			},
                 null, null, null, null, null);
     }
@@ -123,6 +128,7 @@ public class SeriesDbAdapter {
 	        	newValues.put(KEY_TITLE, info.getSeriesName());
         	newValues.put(KEY_LAST_AIRED, info.getLastAired());
         	newValues.put(KEY_NEXT_AIRED, info.getNextAired());
+        	newValues.put(KEY_POSTER, info.getPoster());
 	        
 	    	mDb.update(FAVORITES_TABLE, newValues, KEY_ID + " = ?", new String[]{String.valueOf(info.getSeriesId())});
     	}

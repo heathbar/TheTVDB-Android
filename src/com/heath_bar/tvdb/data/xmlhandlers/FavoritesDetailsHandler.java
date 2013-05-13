@@ -87,6 +87,8 @@ public class FavoritesDetailsHandler extends DefaultHandler {
 				
 				if (airedDate > timeNow && (info.getNextAired() == 0 || airedDate < info.getNextAired()))
 					info.setNextAired(airedDate);
+			}else if (name.equals("poster")){
+				info.setPoster(sb.toString());
 			}
 		    
 		} catch (Exception e) {
@@ -104,7 +106,7 @@ public class FavoritesDetailsHandler extends DefaultHandler {
 			timeNow = System.currentTimeMillis() / 1000L;
 			
 
-			info = new FavoriteSeriesInfo(seriesId, "", 0, 0);
+			info = new FavoriteSeriesInfo(seriesId, "", 0, 0, "");
 			
 		    SAXParserFactory spf = SAXParserFactory.newInstance();
 		    SAXParser sp = spf.newSAXParser();

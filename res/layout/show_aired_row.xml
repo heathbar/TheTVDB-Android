@@ -1,40 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:stretchColumns="1">
-    <TableRow>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+    
+    <FrameLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        
+        <ProgressBar 
+            android:id="@+id/progress_favorite_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+	    	android:layout_margin="10dp" />
+        
+        <ImageView 
+            android:id="@+id/image"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:contentDescription="@string/favorite_shows"
+		    android:scaleType="centerInside"
+		    android:adjustViewBounds="true" />
+
+    </FrameLayout>
+    
+    <LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical">
+	    
 	    <TextView android:id="@+id/list_item_title"
-		    android:layout_width="fill_parent"
-		    android:layout_height="fill_parent"
-		    android:layout_span="2"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
 		    android:textSize="30sp"
 		    android:textColor="@android:color/white"
 		    android:paddingTop="8dip"
 		    android:paddingBottom="4dip"
 		    android:paddingLeft="5dip"
 		    android:textIsSelectable="false" />
-    </TableRow>
-    <TableRow>
+
     	<TextView android:id="@+id/last_aired"
 		    android:layout_width="wrap_content"
-		    android:layout_height="fill_parent"
+		    android:layout_height="wrap_content"
 		    android:textSize="14sp"
 		    android:paddingTop="0dip"
 		    android:paddingBottom="4dip" 
 		    android:paddingLeft="5dip"
 		    android:textIsSelectable="false" />
+    	
 		<TextView android:id="@+id/next_aired"
 		    android:layout_width="wrap_content"
-		    android:layout_height="fill_parent"
+		    android:layout_height="wrap_content"
 		    android:textSize="14sp"
 		    android:paddingTop="0dip"
 		    android:paddingBottom="4dip"
-		    android:paddingRight="5dip"
+		    android:paddingLeft="5dip"
 		    android:gravity="right"
 		    android:textIsSelectable="false"  />
-	</TableRow>
-</TableLayout>
+	</LinearLayout>
+</LinearLayout>
+
 <!-- 
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
 │                                                  TERMS OF USE: MIT License                                                   │

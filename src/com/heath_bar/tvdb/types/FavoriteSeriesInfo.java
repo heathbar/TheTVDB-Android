@@ -24,12 +24,14 @@ public class FavoriteSeriesInfo {
 	public String seriesName;
 	public long lastAired;
 	public long nextAired;
+	public String poster;
 	
-	public FavoriteSeriesInfo(long id, String name, long lastAired, long nextAired){
+	public FavoriteSeriesInfo(long id, String name, long lastAired, long nextAired, String poster){
 		seriesId = id;
 		seriesName = name;
 		this.lastAired = lastAired;
 		this.nextAired = nextAired;
+		this.poster = poster;
 	}
 
 	public long getSeriesId() {
@@ -63,6 +65,15 @@ public class FavoriteSeriesInfo {
 	public void setNextAired(long _nextAired) {
 		nextAired = _nextAired;
 	}
+
+	public String getPoster() {
+		return poster;
+	}
+
+	public void setPoster(String poster) {
+		this.poster = poster;
+	}
+	
 	
 		
 }
