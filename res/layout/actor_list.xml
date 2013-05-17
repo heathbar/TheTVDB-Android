@@ -4,17 +4,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     <ProgressBar 
-        android:id="@+id/progress_episode"
+        android:id="@+id/progress_actors"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
 
-    <ExpandableListView
-	    android:id="@+id/expandable_list"
+    <ListView
+	    android:id="@android:id/list"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:dividerHeight="0dp"
-	    android:divider="#00000000"
-	    android:groupIndicator="@null" />
+	    android:divider="#00000000" />
     
 </FrameLayout>

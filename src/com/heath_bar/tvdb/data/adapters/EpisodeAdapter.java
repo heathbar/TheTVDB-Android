@@ -97,7 +97,10 @@ public class EpisodeAdapter extends BaseExpandableListAdapter {
 		if (convertView == null){
 			convertView = mInflater.inflate(R.layout.season_row, parent, false);
 		}
-		convertView.setBackgroundColor(AppSettings.listBackgroundColors[groupPosition % AppSettings.listBackgroundColors.length]);
+
+		int color = AppSettings.listBackgroundColors[groupPosition % AppSettings.listBackgroundColors.length];
+		if (color != mContext.getResources().getColor(R.color.background1))
+			convertView.setBackgroundColor(color);
 		
 		TextView text = (TextView)convertView.findViewById(R.id.text);
 		text.setTextSize(mTextSize*1.6f);
@@ -120,7 +123,9 @@ public class EpisodeAdapter extends BaseExpandableListAdapter {
 		if (convertView == null){
 			convertView = mInflater.inflate(R.layout.episode_row, parent, false);
 		}
-		convertView.setBackgroundColor(AppSettings.listBackgroundColors[(groupPosition+childPosition+1) % AppSettings.listBackgroundColors.length]);
+		int color = AppSettings.listBackgroundColors[(groupPosition+childPosition+1) % AppSettings.listBackgroundColors.length];
+		if (color != mContext.getResources().getColor(R.color.background1))
+			convertView.setBackgroundColor(color);
 		
 		final TvEpisode ep = mEpisodeList.getEpisode(mSeasonList.get(groupPosition), childPosition+1);
 		String numText = String.format(Locale.getDefault(), "%02d", childPosition+1);

@@ -49,7 +49,7 @@ public class CastFragment extends SherlockListFragment {
     	if (container == null){
             return null;
     	}else{
-    		return inflater.inflate(R.layout.list, container, false);
+    		return inflater.inflate(R.layout.actor_list, container, false);
         }
     }
     
@@ -78,7 +78,7 @@ public class CastFragment extends SherlockListFragment {
 				// restore state
 				list.setSelection(mScrollPosition);
 			}
-		
+
 			ProgressBar progress = ((ProgressBar)activity.findViewById(R.id.progress_actors));
 			if (progress != null)
 				progress.setVisibility(View.GONE);

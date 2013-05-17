@@ -3,7 +3,8 @@
     <style name="Theme.tvdb" parent="Theme.Sherlock">
 		<item name="actionBarStyle">@style/Widget.Styled.ActionBar</item>
 	    <item name="android:actionBarStyle">@style/Widget.Styled.ActionBar</item>
-	    </style>
+		<item name="android:windowBackground">@color/background1</item>
+    </style>
     
     <style name="Widget.Styled.ActionBar" parent="Widget.Sherlock.ActionBar">
         <item name="background">@drawable/tvdb__ab_background</item>

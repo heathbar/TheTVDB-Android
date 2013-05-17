@@ -102,8 +102,9 @@ public class CastAdapter extends BaseAdapter {
 				context.startActivity(myIntent);				
 			}
 		});
-		
-		convertView.setBackgroundColor(AppSettings.listBackgroundColors[position % AppSettings.listBackgroundColors.length]);
+		int color = AppSettings.listBackgroundColors[position % AppSettings.listBackgroundColors.length];
+		if (color != context.getResources().getColor(R.color.background1))
+			convertView.setBackgroundColor(color);
 		
 		ProgressBar progress = (ProgressBar)convertView.findViewById(R.id.progress_actors);
 		ImageView image = (ImageView)convertView.findViewById(R.id.image);
