@@ -129,9 +129,11 @@ public class TheTVDBActivity extends SherlockListActivity implements OnItemClick
 		View firstRun = findViewById(android.R.id.empty);
     	if (firstRun != null) firstRun.setVisibility(View.GONE);
 						
-		// Register for responses from the update service
-		if (updateReceiver != null)
-			unregisterReceiver(updateReceiver);
+		// Unregister for responses from the update service - throws IllegalArgumentException if it's not registered so we catch that
+		if (updateReceiver != null){
+			try { unregisterReceiver(updateReceiver); }
+			catch (IllegalArgumentException e){ }
+		}
 				
 		updateReceiver = new ResponseReceiver();
 		IntentFilter filter = new IntentFilter();

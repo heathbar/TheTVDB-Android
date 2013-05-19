@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.heath_bar.tvdb.AppSettings;
 import com.heath_bar.tvdb.data.adapters.lazylist.BitmapFileCache;
@@ -40,14 +41,17 @@ public class LoadSeriesDataTask extends ManageableTask {
         
 	@Override
 	protected TvSeries doInBackground(TaskManagementFragment... taskFragment) {
-		mTaskFragment = taskFragment[0];
-		Context ctx = mTaskFragment.getActivity();
-		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
-		int cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
-		
 		try {
-
+			mTaskFragment = taskFragment[0];
+			Context ctx = mTaskFragment.getActivity();
+			
+			if (ctx == null)
+				return null;
+		
+			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
+			int cacheSize = settings.getInt("cacheSize", AppSettings.DEFAULT_CACHE_SIZE) * 1000 * 1000;
+		
+		
 			// Lookup basic series info
 			SeriesDetailsHandler infoQuery = new SeriesDetailsHandler(ctx);
     		TvSeries seriesInfo = infoQuery.getInfo(seriesId);
@@ -78,7 +82,7 @@ public class LoadSeriesDataTask extends ManageableTask {
 			return seriesInfo;
 
 		}catch (Exception e){
-			e.printStackTrace();
+			Log.e("LoadSeriesDataTask", "doInBackground:" + e.getMessage());
 		}
 		return null;
 	}
