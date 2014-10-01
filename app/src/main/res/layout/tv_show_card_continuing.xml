@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:orientation="vertical"
+        android:background="@android:color/white">
+
+        <TextView
+            android:id="@+id/tv_show_name"
+            android:text="The Big Bang Theory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:textSize="20sp"/>
+
+        <include
+            android:id="@+id/tv_show_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_show_name"
+            layout="@layout/web_image"/>
+
+        <LinearLayout
+            android:id="@+id/airs_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_show_banner">
+
+            <TextView
+                android:id="@+id/airs_day"
+                android:text="Mondays"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/text_secondary"/>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/divider"
+                android:layout_margin="8dp"/>
+
+            <TextView
+                android:id="@+id/airs_network"
+                android:text="CBS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/text_secondary"/>
+
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/divider"
+                android:layout_margin="8dp"/>
+
+            <TextView
+                android:id="@+id/airs_duration"
+                android:text="30 Minutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/text_secondary"/>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/horiz_divider1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/activity_background"
+            android:layout_below="@+id/airs_info"/>
+
+        <LinearLayout
+            android:id="@+id/last_episode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_below="@+id/horiz_divider1">
+
+            <TextView
+                android:id="@+id/last_episode_last"
+                android:text="Last:"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"/>
+
+            <TextView
+                android:id="@+id/last_episode_name"
+                android:text="The Status Quo Combustion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/last_episode_number"
+                android:text="S07E24"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textStyle="bold"
+                android:textColor="@color/tvdb_green"
+                android:gravity="right"/>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/horiz_divider2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/activity_background"
+            android:layout_below="@+id/last_episode"/>
+
+        <LinearLayout
+            android:id="@+id/next_episode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_below="@+id/horiz_divider2">
+
+            <TextView
+                android:id="@+id/next_episode_next"
+                android:text="Next:"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"/>
+
+            <TextView
+                android:id="@+id/next_episode_name"
+                android:text="The Locomotion Interruption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/next_episode_number"
+                android:text="S08E01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textStyle="bold"
+                android:textColor="@color/tvdb_green"
+                android:gravity="right"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

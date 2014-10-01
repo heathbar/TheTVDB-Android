@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="activity_background">#EDEDED</color>
+    <color name="tvdb_green">#B6D415</color>
+    <color name="series_ended_red">#880000</color>
+    <color name="divider">#CCCCCC</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_teriary">#999999</color>
+</resources>
